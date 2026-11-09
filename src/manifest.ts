@@ -37,6 +37,5 @@ export const firefoxManifest = {
         required: ['browsingActivity', 'websiteContent', 'websiteActivity'],
       },
     },
-    gecko_android: { strict_min_version: '142.0' },
   },
 };
