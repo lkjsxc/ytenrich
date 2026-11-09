@@ -30,7 +30,7 @@ page signal (watch/shorts videoId) ─► bg.opened (resets suppression for that
 - **Layout** is a pure tree (`wm/layout.ts`): panes hold `tabs: viewId[]`, and each view appears at most once.
   - Persisted at `chrome.storage.local['layout:watch']`. Invalid or unknown entries are dropped; an empty tree falls back to the preset.
 - **Render** rebuilds the DOM on layout change. Own-view mounts persist across re-renders (one per view) and are disposed when their tab closes.
-- **Projection**: native YouTube elements (player, metadata, comments, related, panels, chat) are *never reparented*.
+- **Projection**: native YouTube elements (player, metadata, comments, related, chat) are *never reparented*.
   - The projector tags them `[ytenrich-slot=view]` and writes inline `!important` left/top/width/height equal to the pane body rect (ResizeObserver plus trusted window resize, rAF-batched).
   - Inactive tabs get `[ytenrich-slot-inactive]` (visibility hidden).
   - A player rect change dispatches a synthetic window `resize` (debounced 120ms) so YouTube refits the `<video>`.

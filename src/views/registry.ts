@@ -32,7 +32,6 @@ export const VIEWS: readonly ViewDef[] = [
   { id: 'player', title: 'Player', slot: 'player' },
   { id: 'details', title: 'Details', slot: 'details' },
   { id: 'comments', title: 'Comments', slot: 'comments' },
-  { id: 'panels', title: 'Panels', slot: 'panels' },
   { id: 'chat', title: 'Chat', slot: 'chat' },
   { id: 'videos', title: 'Videos', slot: 'videos' },
   { id: 'shorts', title: 'Shorts', mount: mountShorts, needsScanner: true },

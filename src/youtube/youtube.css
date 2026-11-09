@@ -18,4 +18,3 @@ html[ytenrich-wm] [ytenrich-slot][ytenrich-slot-inactive] { visibility: hidden !
 html[ytenrich-wm]
   [ytenrich-slot="videos"]
   :is(grid-shelf-view-model, ytd-reel-shelf-renderer, ytd-rich-shelf-renderer) { display: none !important; }
-html[ytenrich-wm] [ytenrich-slot="panels"] ytd-engagement-panel-section-list-renderer { max-height: none !important; height: 100% !important; }

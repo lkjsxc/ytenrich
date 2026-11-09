@@ -9,7 +9,7 @@ const shape = (n: L.LayoutNode): unknown =>
 describe('layout', () => {
   it('preset has player, details stack and recommendations', () => {
     expect(shape(watchPreset())).toEqual({
-      row: [{ col: ['player', 'details|comments|panels'] }, 'videos|shorts|stats|settings|log'],
+      row: [{ col: ['player', 'details|comments'] }, 'videos|shorts|stats|settings|log'],
     });
   });
   it('moves a tab to a pane edge, splitting it, and flattens same-direction splits', () => {
@@ -17,7 +17,7 @@ describe('layout', () => {
     const right = L.paneOfView(root, 'videos')!;
     const next = L.moveView(root, 'stats', right.id, 'right');
     expect(shape(next)).toEqual({
-      row: [{ col: ['player', 'details|comments|panels'] }, 'videos|shorts|settings|log', 'stats'],
+      row: [{ col: ['player', 'details|comments'] }, 'videos|shorts|settings|log', 'stats'],
     });
     const s = next as L.SplitNode;
     expect(s.sizes.reduce((a, b) => a + b, 0)).toBeCloseTo(1);
@@ -31,7 +31,7 @@ describe('layout', () => {
   it('removing the last tab removes the pane and collapses the split', () => {
     const root = L.removeView(watchPreset(), 'player')!;
     expect(shape(root)).toEqual({
-      row: ['details|comments|panels', 'videos|shorts|stats|settings|log'],
+      row: ['details|comments', 'videos|shorts|stats|settings|log'],
     });
   });
   it('center drop joins and activates', () => {

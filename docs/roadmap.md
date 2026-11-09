@@ -1,6 +1,6 @@
 # Roadmap (ordered)
 1. WM for home / search / subscriptions / channel (per-kind presets; feed grid as a native slot, filters as own views).
-2. Auto-switch to the Panels tab when an engagement panel opens (chapters/transcript). Add a native view for live chat.
+2. Add a native view for live chat. (Engagement panels — chapters/transcript — are intentionally not projected.)
 3. i3-style keyboard control (focus/move/split/resize keys, numbered tabs).
 4. Channel-level stats (most-pushed channels) and channel auto-hide rules. Add "Don't recommend channel" to quick-dismiss.
 5. Option to auto-send "Not interested" for over-exposed videos.

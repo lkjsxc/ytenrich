@@ -45,7 +45,6 @@ export const WATCH_SLOTS = {
   details: 'ytd-watch-flexy ytd-watch-metadata',
   comments: 'ytd-watch-flexy ytd-comments#comments',
   videos: 'ytd-watch-flexy #related',
-  panels: 'ytd-watch-flexy #panels',
   chat: 'ytd-watch-flexy #chat-container',
 } as const;
 export type WatchSlot = keyof typeof WATCH_SLOTS;
