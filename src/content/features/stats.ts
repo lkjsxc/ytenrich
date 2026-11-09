@@ -20,9 +20,9 @@ export const stats: Feature = {
 
     const flush = (): void => {
       timer = undefined;
-      if (!buffer.length) return;
       const items = buffer;
       buffer = [];
+      if (!items.length || !rt.settings.get().statsEnabled) return;
       rt.call('record', { items }).then(
         (r) => r.suppressed.forEach((id) => rt.suppressed.add(id)),
         (e: unknown) => rt.log.write('warn', 'stats', `record: ${String(e)}`),
@@ -47,9 +47,11 @@ export const stats: Feature = {
     window.addEventListener('pagehide', flush);
     d.add(() => window.removeEventListener('pagehide', flush));
 
+    let lastOpenedNav = 0;
     const opened = (): void => {
-      const { videoId, kind } = rt.page.get();
-      if (!videoId || !rt.settings.get().statsEnabled) return;
+      const { videoId, kind, nav } = rt.page.get();
+      if (!videoId || !rt.settings.get().statsEnabled || nav === lastOpenedNav) return;
+      lastOpenedNav = nav;
       const meta = recent.get(videoId);
       const req = {
         id: videoId,
@@ -64,6 +66,12 @@ export const stats: Feature = {
     };
     opened();
     d.add(rt.page.subscribe(opened));
+    d.add(
+      rt.settings.subscribe((settings) => {
+        if (settings.statsEnabled) opened();
+        else buffer = [];
+      }),
+    );
 
     // Badges: batch count lookups per 100ms.
     let pending = new Map<string, RecoItem[]>();

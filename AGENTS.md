@@ -1,6 +1,6 @@
 # ytenrich — agent entrypoint
 
-MV3 browser extension (Chromium + Firefox ≥128) that enriches youtube.com:
+MV3 browser extension (Chromium + Firefox ≥140) that enriches youtube.com:
 - recommendation impression stats
 - hiding over-exposed unopened videos
 - a one-click "Not interested" button
@@ -9,7 +9,7 @@ MV3 browser extension (Chromium + Firefox ≥128) that enriches youtube.com:
 AI-first repo: no human ergonomics, no backward compatibility, no migrations. Move fast.
 
 ## Commands
-- `pnpm build`: writes `dist/` (load it unpacked). `pnpm dev`: watch build.
+- `pnpm build`: writes Chromium to `dist/`. `pnpm build --firefox`: writes Firefox to `dist-firefox/`. `pnpm dev`: watch build.
 - `pnpm check`: the canonical gate (repo rules + tsc + biome + vitest). Prints `ok check`. `pnpm fix` auto-formats.
 - `pnpm smoke [videoId]`: live Chromium + extension run on youtube.com. Prints JSON facts and writes `tmp/smoke-*.png`. Read the PNGs to judge layout. It is not canonical (depends on the network and on YouTube). It auto-falls back to the newest cached Chromium; `YTE_CHROME=<path>` overrides.
 

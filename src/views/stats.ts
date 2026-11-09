@@ -54,12 +54,16 @@ function rowEl(v: VideoStat, env: ViewEnv, refresh: () => void): HTMLElement {
     h(
       'td',
       null,
-      h('img', {
-        class: 'thumb',
-        src: `https://i.ytimg.com/vi/${v.id}/default.jpg`,
-        loading: 'lazy',
-        alt: '',
-      }),
+      env.settings.get().thumbnailsEnabled
+        ? h('img', {
+            class: 'thumb',
+            crossorigin: 'anonymous',
+            referrerpolicy: 'no-referrer',
+            src: `https://i.ytimg.com/vi/${v.id}/default.jpg`,
+            loading: 'lazy',
+            alt: '',
+          })
+        : null,
     ),
     h(
       'td',
@@ -113,6 +117,11 @@ export function mountStats(el: HTMLElement, env: ViewEnv): () => void {
   };
   el.replaceChildren(
     h('h2', null, 'Recommendation stats'),
+    h(
+      'p',
+      { class: 'muted' },
+      'Enable local recommendation recording in Settings to build your stats.',
+    ),
     head,
     h(
       'div',
@@ -143,5 +152,9 @@ export function mountStats(el: HTMLElement, env: ViewEnv): () => void {
     ),
   );
   refresh();
-  return () => void (token = -1);
+  const offSettings = env.settings.subscribe(refresh);
+  return () => {
+    offSettings();
+    token = -1;
+  };
 }

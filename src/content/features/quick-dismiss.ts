@@ -25,7 +25,8 @@ export const quickDismiss: Feature = {
           );
           return;
         }
-        if (info) await rt.call('dismissed', { id: info.id }).catch(() => undefined);
+        if (info && rt.settings.get().statsEnabled)
+          await rt.call('dismissed', { id: info.id }).catch(() => undefined);
         rt.log.write('info', 'dismiss', `not interested: ${info?.title ?? info?.id}`);
       });
     };
@@ -43,7 +44,7 @@ export const quickDismiss: Feature = {
         thumb.appendChild(
           h(
             'button',
-            { [BUTTON]: true, type: 'button', title: 'Not interested (ytenrich)', onclick },
+            { [BUTTON]: true, type: 'button', title: 'Tell YouTube: Not interested', onclick },
             '✕',
           ),
         );

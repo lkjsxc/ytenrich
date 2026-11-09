@@ -1,16 +1,18 @@
-// Build: node scripts/build.ts [--watch]. Outputs a loadable unpacked extension in dist/.
+// Build: node scripts/build.ts [--firefox] [--watch].
 import { copyFileSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import * as esbuild from 'esbuild';
-import { manifest } from '../src/manifest.ts';
+import sharp from 'sharp';
+import { chromiumManifest, firefoxManifest } from '../src/manifest.ts';
 
 const watch = process.argv.includes('--watch');
-const out = 'dist';
+const firefox = process.argv.includes('--firefox');
+const out = firefox ? 'dist-firefox' : 'dist';
 rmSync(out, { recursive: true, force: true });
 mkdirSync(out, { recursive: true });
 
 const common: esbuild.BuildOptions = {
   bundle: true,
-  target: ['chrome120', 'firefox128'],
+  target: firefox ? 'firefox140' : 'chrome120',
   minify: !watch,
   sourcemap: watch ? 'inline' : false,
   loader: { '.css': 'text' },
@@ -38,13 +40,20 @@ const builds: esbuild.BuildOptions[] = [
   },
 ];
 
-const statics = (): void => {
+const statics = async (): Promise<void> => {
+  const manifest = firefox ? firefoxManifest : chromiumManifest;
   writeFileSync(`${out}/manifest.json`, JSON.stringify(manifest, null, 1));
   copyFileSync('src/youtube/youtube.css', `${out}/youtube.css`);
   copyFileSync('src/pages/options/options.html', `${out}/options.html`);
+  copyFileSync('LICENSE', `${out}/LICENSE`);
+  await Promise.all(
+    Object.entries(manifest.icons).map(([size, path]) =>
+      sharp('src/icon.svg').resize(Number(size)).png().toFile(`${out}/${path}`),
+    ),
+  );
 };
 
-statics();
+await statics();
 if (watch) {
   for (const b of builds) await (await esbuild.context(b)).watch();
   console.log('watching');

@@ -7,8 +7,9 @@ export const DEFAULT_SETTINGS = {
   hideThreshold: 5,
   dismissEnabled: true,
   dismissLabel: '',
-  statsEnabled: true,
+  statsEnabled: false,
   badgeEnabled: true,
+  thumbnailsEnabled: false,
 };
 export type Settings = typeof DEFAULT_SETTINGS;
 export type SettingKey = keyof Settings;
@@ -21,8 +22,17 @@ export type SettingField =
 
 export const SETTINGS_SCHEMA: readonly SettingField[] = [
   { key: 'wmEnabled', label: 'Tiling layout on watch pages (Alt+W)', type: 'bool' },
-  { key: 'statsEnabled', label: 'Record recommendation impressions', type: 'bool' },
+  {
+    key: 'statsEnabled',
+    label: 'Record YouTube recommendations and opens on this device for stats and filtering',
+    type: 'bool',
+  },
   { key: 'badgeEnabled', label: 'Show impression count badge on thumbnails', type: 'bool' },
+  {
+    key: 'thumbnailsEnabled',
+    label: 'Show images in Stats and Shorts by requesting video IDs from YouTube’s image server',
+    type: 'bool',
+  },
   {
     key: 'hideMode',
     label: 'Over-exposed unopened videos',

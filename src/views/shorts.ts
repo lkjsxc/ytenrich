@@ -25,11 +25,15 @@ export function mountShorts(el: HTMLElement, env: ViewEnv): () => void {
     const t = h(
       'button',
       { class: 'short', title: item.title, onclick: () => open(item) },
-      h('img', {
-        src: `https://i.ytimg.com/vi/${item.id}/hqdefault.jpg`,
-        loading: 'lazy',
-        alt: '',
-      }),
+      env.settings.get().thumbnailsEnabled
+        ? h('img', {
+            crossorigin: 'anonymous',
+            referrerpolicy: 'no-referrer',
+            src: `https://i.ytimg.com/vi/${item.id}/hqdefault.jpg`,
+            loading: 'lazy',
+            alt: '',
+          })
+        : null,
       h('span', null, item.title),
     );
     tiles.set(t, item);
@@ -50,8 +54,10 @@ export function mountShorts(el: HTMLElement, env: ViewEnv): () => void {
   };
   render();
   const off = scanner.version.subscribe(render);
+  const offSettings = env.settings.subscribe(render);
   return () => {
     off();
+    offSettings();
     io.disconnect();
   };
 }
