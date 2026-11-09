@@ -9,10 +9,22 @@ const walk = (dir: string): string[] =>
     return statSync(p).isDirectory() ? (n === 'fixtures' ? [] : walk(p)) : [p];
   });
 const problems: string[] = [];
-const files = [...walk('src'), ...walk('scripts'), ...walk('tests'), ...walk('docs'), 'AGENTS.md'];
+const files = [
+  ...walk('src'),
+  ...walk('scripts'),
+  ...walk('tests'),
+  ...walk('docs'),
+  'AGENTS.md',
+  'README.md',
+];
 const YT_DOM = /['"`(\s](ytd-|ytm-|yt-[a-z]|tp-yt-|#movie_player|#related\b|#secondary\b)/;
 
 for (const f of files) {
+  if (f.startsWith('docs/images/')) {
+    if (!f.endsWith('.webp')) problems.push(`${f}: images must be .webp (use pnpm image)`);
+    else if (statSync(f).size > 600 * 1024) problems.push(`${f}: image over 600KB`);
+    continue;
+  }
   const text = readFileSync(f, 'utf8');
   const lines = text.split('\n').length;
   if (lines > 200) problems.push(`${f}: ${lines} lines (max 200)`);
