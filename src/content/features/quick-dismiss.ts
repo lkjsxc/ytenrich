@@ -24,8 +24,10 @@ export const quickDismiss: Feature = {
     const d = createDisposables();
     let queue = Promise.resolve();
     const pending = new Set<Element>();
+    const busy = new WeakSet<Element>(); // items with a dismiss in flight (double-click guard)
 
     const run = (root: Element): void => {
+      busy.add(root);
       queue = queue.then(async () => {
         const info = extractItem(root);
         const result = await clickNotInterested(root, rt.settings.get().dismissLabel);
@@ -41,6 +43,9 @@ export const quickDismiss: Feature = {
           await rt.call('dismissed', { id: info.id }).catch(() => undefined);
         rt.log.write('info', 'dismiss', `not interested: ${info?.title ?? info?.id}`);
       });
+      queue = queue
+        .catch((e: unknown) => rt.log.write('warn', 'dismiss', String(e)))
+        .finally(() => busy.delete(root));
     };
 
     /** Returns false while the item's menu is not rendered yet. */
@@ -51,7 +56,7 @@ export const quickDismiss: Feature = {
       const onclick = (e: Event): void => {
         e.preventDefault();
         e.stopPropagation();
-        run(root);
+        if (e.isTrusted && !busy.has(root)) run(root);
       };
       host.setAttribute(HOST, '');
       host.prepend(

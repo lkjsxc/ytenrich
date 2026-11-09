@@ -8,7 +8,6 @@ export const DEFAULT_SETTINGS = {
   dismissEnabled: true,
   dismissLabel: '',
   statsEnabled: false,
-  badgeEnabled: true,
   thumbnailsEnabled: false,
 };
 export type Settings = typeof DEFAULT_SETTINGS;
@@ -27,7 +26,6 @@ export const SETTINGS_SCHEMA: readonly SettingField[] = [
     label: 'Record YouTube recommendations and opens on this device for stats and filtering',
     type: 'bool',
   },
-  { key: 'badgeEnabled', label: 'Show impression count badge on thumbnails', type: 'bool' },
   {
     key: 'thumbnailsEnabled',
     label: 'Show images in Stats and Shorts by requesting video IDs from YouTube’s image server',

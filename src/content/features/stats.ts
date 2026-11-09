@@ -1,10 +1,7 @@
-// Impression recording (seen once per navigation), "opened" tracking, and per-thumbnail count badges.
-import { toggleAttr } from '../../shared/dom.ts';
+// Impression recording (seen once per navigation) and "opened" tracking.
 import { createDisposables } from '../../shared/signal.ts';
 import type { Impression, Kind } from '../../shared/types.ts';
-import { thumbOf } from '../../youtube/extract.ts';
 import type { Feature } from '../features.ts';
-import type { RecoItem } from '../scanner.ts';
 
 const FLUSH_MS = 2000;
 const MAX_BUFFER = 500; // impressions buffered between flushes
@@ -73,39 +70,8 @@ export const stats: Feature = {
       }),
     );
 
-    // Badges: batch count lookups per 100ms.
-    let pending = new Map<string, RecoItem[]>();
-    let badgeTimer: ReturnType<typeof setTimeout> | undefined;
-    const lookup = (): void => {
-      badgeTimer = undefined;
-      const batch = pending;
-      pending = new Map();
-      rt.call('counts', { ids: [...batch.keys()] }).then(
-        (counts) => {
-          for (const [id, items] of batch) {
-            const n = counts[id] ?? 0;
-            for (const it of items)
-              toggleAttr(
-                thumbOf(it.el),
-                'ytenrich-count',
-                n > 0 && it.anchor.isConnected,
-                String(n),
-              );
-          }
-        },
-        () => undefined,
-      );
-    };
-    d.add(
-      rt.scanner.onItem((item) => {
-        if (!rt.settings.get().badgeEnabled) return;
-        pending.set(item.id, [...(pending.get(item.id) ?? []), item]);
-        badgeTimer ??= setTimeout(lookup, 100);
-      }),
-    );
     d.add(() => {
       clearTimeout(timer);
-      clearTimeout(badgeTimer);
       flush();
     });
     return d.dispose;

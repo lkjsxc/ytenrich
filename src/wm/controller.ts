@@ -1,11 +1,14 @@
 // WM controller for one page kind: layout state, persistence, rendering, own-view mounts, projection.
 import type { Runtime } from '../content/runtime.ts';
+import { layoutKey } from '../shared/layout-store.ts';
 import { patchSettings } from '../shared/settings.ts';
 import type { Disposer } from '../shared/signal.ts';
 import { VIEW_BY_ID, VIEWS, type ViewEnv } from '../views/registry.ts';
+import { onGuideButton } from '../youtube/guide.ts';
 import { mastheadHeight } from '../youtube/slots.ts';
 import { createHost } from './host.ts';
 import * as L from './layout.ts';
+import { parseLayout } from './layout-parse.ts';
 import { openMenu } from './menus.ts';
 import { watchPreset } from './presets.ts';
 import { createProjector } from './projector.ts';
@@ -13,8 +16,9 @@ import { type Rendered, renderLayout } from './render.ts';
 import { startResize } from './resize.ts';
 import { startTabDrag } from './tab-drag.ts';
 
-const KEY = 'layout:watch';
+const KEY = layoutKey('watch');
 const SAVE_MS = 400;
+const GUIDE_PX = 240;
 
 export type Wm = { refresh(): void; dispose(): void };
 
@@ -65,7 +69,7 @@ export function createWmController(rt: Runtime): Wm {
         panes: rendered?.panes ?? new Map(),
         layer: host.layer,
         onClick: () => set(L.activate(root, view)),
-        onDrop: (paneId, zone) => set(L.moveView(root, view, paneId, zone)),
+        onDrop: (paneId, zone, index) => set(L.moveView(root, view, paneId, zone, index)),
       });
     },
     onClose: (view: string) => set(L.removeView(root, view)),
@@ -110,12 +114,30 @@ export function createWmController(rt: Runtime): Wm {
     projector.sync(entries);
   }
 
+  // Follow stored layout changes (reset from Settings, edits in other tabs); our own saves are no-ops.
+  const adopt = (value: unknown): void => {
+    const saved = value === undefined ? watchPreset() : parseLayout(value);
+    const next = saved && L.retainViews(saved, known);
+    if (!next || disposed || JSON.stringify(next) === JSON.stringify(root)) return;
+    clearTimeout(saveTimer);
+    set(next, false);
+  };
+  const onStorage = (c: Record<string, chrome.storage.StorageChange>, area: string): void => {
+    if (area === 'local' && c[KEY]) adopt(c[KEY].newValue);
+  };
+  chrome.storage.onChanged.addListener(onStorage);
+
+  // Hamburger toggles the Guide tile: add it on the far left, focus it, or close it.
+  const offGuide = onGuideButton(() => {
+    const p = L.paneOfView(root, 'guide');
+    if (!p) set(L.addEdge(root, 'guide', 'left', GUIDE_PX / Math.max(innerWidth, 1)));
+    else if (p.active !== 'guide') set(L.activate(root, 'guide'));
+    else set(L.removeView(root, 'guide'));
+  });
+
   render();
   projector.refresh();
-  void chrome.storage.local.get(KEY).then((s) => {
-    const saved = L.parseLayout(s[KEY]);
-    if (saved && !disposed) set(L.retainViews(saved, known), false);
-  });
+  void chrome.storage.local.get(KEY).then((s) => s[KEY] !== undefined && adopt(s[KEY]));
 
   return {
     refresh() {
@@ -125,6 +147,8 @@ export function createWmController(rt: Runtime): Wm {
     dispose() {
       disposed = true;
       clearTimeout(saveTimer);
+      chrome.storage.onChanged.removeListener(onStorage);
+      offGuide();
       projector.dispose();
       for (const m of mounts.values()) m.dispose();
       mounts.clear();

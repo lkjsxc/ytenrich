@@ -1,4 +1,5 @@
 import { h } from '../shared/h.ts';
+import { resetLayouts } from '../shared/layout-store.ts';
 import {
   patchSettings,
   SETTINGS_SCHEMA,
@@ -44,11 +45,35 @@ function field(f: SettingField, s: Settings): HTMLElement {
   return h('label', { class: 'field' }, h('span', null, f.label), input);
 }
 
+function actions(env: ViewEnv): HTMLElement {
+  const reset = (): void =>
+    void resetLayouts().then(() => env.log.write('info', 'settings', 'layout reset to default'));
+  const clear = (): void => {
+    if (confirm('Delete all ytenrich statistics? This cannot be undone.'))
+      void env.call('clear', null).then(() => env.log.write('info', 'settings', 'stats cleared'));
+  };
+  return h(
+    'div',
+    { class: 'actions' },
+    h(
+      'button',
+      { onclick: reset, title: 'Applies to every open YouTube tab' },
+      'Reset tiling layout',
+    ),
+    h('button', { class: 'danger', onclick: clear }, 'Clear statistics…'),
+  );
+}
+
 export function mountSettings(el: HTMLElement, env: ViewEnv): () => void {
   const render = (s: Settings): void => {
     const focused = (el.getRootNode() as Document | ShadowRoot).activeElement;
     if (focused && el.contains(focused)) return;
-    el.replaceChildren(h('h2', null, 'Settings'), ...SETTINGS_SCHEMA.map((f) => field(f, s)));
+    el.replaceChildren(
+      h('h2', null, 'Settings'),
+      ...SETTINGS_SCHEMA.map((f) => field(f, s)),
+      h('h2', { class: 'section' }, 'Layout & data'),
+      actions(env),
+    );
   };
   render(env.settings.get());
   return env.settings.subscribe(render);

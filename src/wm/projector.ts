@@ -1,5 +1,6 @@
 // Native projection: YouTube elements stay in place but are fixed-positioned over WM pane bodies.
 import type { Log } from '../shared/log.ts';
+import { wakeGuide } from '../youtube/guide.ts';
 import type { WatchSlot } from '../youtube/selectors.ts';
 import { resolveWatchSlot } from '../youtube/slots.ts';
 
@@ -66,6 +67,7 @@ export function createProjector(log: Log): Projector {
       }
     }
     for (const [slot, t] of tagged) if (!live.has(slot)) release(t.el), tagged.delete(slot);
+    if (missing.includes('guide')) void wakeGuide().then((ok) => ok && invalidate());
     missing = missing.filter((s) => REQUIRED.includes(s));
     if (missing.length && retries > 0) {
       retries--;
@@ -83,6 +85,11 @@ export function createProjector(log: Log): Projector {
   const schedule = (): void => {
     frame ||= requestAnimationFrame(apply);
   };
+  /** Re-applies every rect (and refits the player): YouTube may have measured mid-drawer-toggle. */
+  const invalidate = (): void => {
+    for (const t of tagged.values()) t.rect = '';
+    schedule();
+  };
   const onResize = (e: Event): void => {
     if (e.isTrusted) schedule();
   };
@@ -93,13 +100,11 @@ export function createProjector(log: Log): Projector {
       ro.disconnect();
       entries = next;
       for (const e of entries) if (e.body) ro.observe(e.body);
-      for (const t of tagged.values()) t.rect = '';
-      schedule();
+      invalidate();
     },
     refresh() {
       retries = RETRIES;
-      for (const t of tagged.values()) t.rect = '';
-      schedule();
+      invalidate();
     },
     dispose() {
       ro.disconnect();

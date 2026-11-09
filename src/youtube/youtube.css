@@ -2,7 +2,6 @@
 [ytenrich-hidden] { display: none !important; }
 [ytenrich-dim] { opacity: 0.2; transition: opacity 0.15s; }
 [ytenrich-dim]:hover { opacity: 1; }
-[ytenrich-count]::after { content: attr(ytenrich-count) "×"; position: absolute; top: 4px; left: 4px; z-index: 3; pointer-events: none; padding: 0 5px; border-radius: 4px; background: rgba(0, 0, 0, 0.72); color: #fff; font: 600 11px / 17px Roboto, Arial, sans-serif; }
 /* Dismiss button lives inside the 3-dot menu container (forced visible, laid out as a row). */
 [ytenrich-menu-host] { display: flex !important; align-items: center; opacity: 1 !important; }
 [ytenrich-menu-host]::before, [ytenrich-menu-host]::after { display: none !important; }
@@ -27,3 +26,9 @@ html[ytenrich-wm] [ytenrich-slot][ytenrich-slot-inactive] { visibility: hidden !
 html[ytenrich-wm]
   [ytenrich-slot="videos"]
   :is(grid-shelf-view-model, ytd-reel-shelf-renderer, ytd-rich-shelf-renderer) { display: none !important; }
+/* Guide tile: the drawer's #contentContainer is transformed (a containing block for fixed children) and the
+   drawer sits at z 2030 above our host; neutralize both while the guide is projected. Hidden while waking. */
+html[ytenrich-wm] tp-yt-app-drawer#guide:has([ytenrich-slot]) { z-index: 1 !important; }
+html[ytenrich-wm] tp-yt-app-drawer#guide:has([ytenrich-slot]) #contentContainer { transform: none !important; will-change: auto !important; contain: none !important; filter: none !important; }
+html[ytenrich-wm] [ytenrich-slot="guide"] { padding: 4px 0 !important; pointer-events: auto; }
+html[ytenrich-guide-wake] tp-yt-app-drawer#guide { visibility: hidden !important; }

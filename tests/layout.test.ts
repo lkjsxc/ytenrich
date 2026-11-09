@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import * as L from '../src/wm/layout.ts';
+import { parseLayout } from '../src/wm/layout-parse.ts';
 import { watchPreset } from '../src/wm/presets.ts';
-import { zoneAt } from '../src/wm/tab-drag.ts';
+import { insertAt, zoneAt } from '../src/wm/tab-drag.ts';
 
 const shape = (n: L.LayoutNode): unknown =>
   n.type === 'pane' ? n.tabs.join('|') : { [n.dir]: n.children.map(shape) };
@@ -43,12 +44,53 @@ describe('layout', () => {
       active: 'comments',
     });
   });
+  it('reorders tabs within a strip and inserts at an index across panes', () => {
+    const root = watchPreset();
+    const right = L.paneOfView(root, 'videos')!;
+    const r1 = L.moveView(root, 'log', right.id, 'center', 0);
+    expect(L.paneOfView(r1, 'log')?.tabs).toEqual(['log', 'videos', 'shorts', 'stats', 'settings']);
+    const r2 = L.moveView(root, 'videos', right.id, 'center', 3);
+    expect(L.paneOfView(r2, 'videos')?.tabs).toEqual([
+      'shorts',
+      'stats',
+      'videos',
+      'settings',
+      'log',
+    ]);
+    const r3 = L.moveView(root, 'shorts', right.id, 'center', 2);
+    expect(shape(r3)).toEqual(shape(root));
+    const det = L.paneOfView(root, 'details')!;
+    const r4 = L.moveView(root, 'stats', det.id, 'center', 1);
+    expect(L.paneOfView(r4, 'stats')).toMatchObject({
+      tabs: ['details', 'stats', 'comments'],
+      active: 'stats',
+    });
+  });
+  it('addEdge wraps the layout with a sized edge pane and moves an existing view there', () => {
+    const next = L.addEdge(watchPreset(), 'guide', 'left', 0.15) as L.SplitNode;
+    expect(shape(next)).toEqual({
+      row: ['guide', { col: ['player', 'details|comments'] }, 'videos|shorts|stats|settings|log'],
+    });
+    expect(next.sizes[0]).toBeCloseTo(0.15);
+    expect(next.sizes[1]).toBeCloseTo(0.85 * 0.66);
+    const moved = L.addEdge(watchPreset(), 'log', 'left', 0.2);
+    expect(L.paneOfView(moved, 'log')?.tabs).toEqual(['log']);
+    expect(L.views(moved).filter((v) => v === 'log')).toHaveLength(1);
+  });
   it('retainViews drops unknown and duplicate views; parse round-trips', () => {
     const root = L.split('row', [L.pane(['a', 'x']), L.pane(['a', 'b'])]);
     expect(shape(L.retainViews(root, new Set(['a', 'b']))!)).toEqual({ row: ['a', 'b'] });
     const preset = watchPreset();
-    expect(L.parseLayout(JSON.parse(JSON.stringify(preset)))).toEqual(preset);
-    expect(L.parseLayout({ type: 'split', id: 'x', dir: 'diag', children: [] })).toBeNull();
+    expect(parseLayout(JSON.parse(JSON.stringify(preset)))).toEqual(preset);
+    expect(parseLayout({ type: 'split', id: 'x', dir: 'diag', children: [] })).toBeNull();
+  });
+  it('insertAt picks the gap nearest the pointer', () => {
+    const tab = (left: number) => ({ left, width: 50, right: left + 50 }) as DOMRect;
+    const tabs = [tab(0), tab(50), tab(100)];
+    expect(insertAt(tabs, 10)).toEqual([0, 0]);
+    expect(insertAt(tabs, 60)).toEqual([1, 50]);
+    expect(insertAt(tabs, 140)).toEqual([3, 150]);
+    expect(insertAt([], 5)).toEqual([0, 0]);
   });
   it('zoneAt maps pointer position to drop zones', () => {
     const r = { left: 0, top: 0, width: 400, height: 400, right: 400, bottom: 400 } as DOMRect;

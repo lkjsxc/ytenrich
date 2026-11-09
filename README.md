@@ -6,11 +6,12 @@ A browser extension that makes YouTube more personal and more comfortable to use
 
 ## Features
 - **Tiling watch page**: player, details, comments and recommendations sit in resizable panes, and each pane scrolls on its own.
-  - Drag a tab to a pane edge to split that pane; drop it on the center to join that pane's tabs.
+  - Drag a tab to a pane edge to split that pane, onto a pane to join its tabs, or between tabs of a strip to reorder.
+  - The ☰ button toggles YouTube's guide (sidebar) as a tile on the left instead of an overlay drawer.
   - Recommendations are split into separate Videos and Shorts tabs.
-  - Stats, Settings and Log open as tabs inside the panes.
+  - Stats, Settings and Log open as tabs inside the panes. Settings can reset the layout.
   - `Alt+W` turns tiling off and on.
-- **Recommendation stats**: each recommendation counts as seen once it is at least half visible, at most once per page view. Thumbnails show how many times you have seen a video.
+- **Recommendation stats**: each recommendation counts as seen once it is at least half visible, at most once per page view. The Stats view updates live; clicking a video opens it in the same tab.
 - **Hide over-exposed videos**: videos recommended N times that you never opened are hidden or dimmed. You choose N.
 - **One-click "Not interested"**: an always-visible ⊘ button right next to every recommendation's ⋮ menu.
 

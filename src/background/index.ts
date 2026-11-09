@@ -1,5 +1,11 @@
 // Background: owns the stats DB and answers typed protocol messages.
-import type { Api, Message, Method, Reply } from '../shared/protocol.ts';
+import {
+  type Api,
+  type Message,
+  type Method,
+  type Reply,
+  STATS_REV_KEY,
+} from '../shared/protocol.ts';
 import { DEFAULT_SETTINGS, loadSettings, onSettings } from '../shared/settings.ts';
 import * as repo from './stats-repo.ts';
 
@@ -9,6 +15,17 @@ onSettings((s) => (threshold = s.hideThreshold));
 
 const PRUNE_EVERY = 2000; // impressions between prune passes
 let sincePrune = 0;
+
+const REV_MS = 1500; // at most one stats-changed broadcast per window (trailing)
+let revTimer: ReturnType<typeof setTimeout> | undefined;
+const bumpRev = (): void => {
+  if (revTimer) return;
+  revTimer = setTimeout(() => {
+    revTimer = undefined;
+    void chrome.storage.local.set({ [STATS_REV_KEY]: Date.now() });
+  }, REV_MS);
+};
+const MUTATING: ReadonlySet<Method> = new Set(['record', 'opened', 'dismissed', 'allow', 'clear']);
 
 type Handlers = { [K in Method]: (req: Api[K]['req']) => Promise<Api[K]['res']> };
 const handlers: Handlers = {
@@ -39,7 +56,6 @@ const handlers: Handlers = {
     return null;
   },
   suppressed: () => repo.suppressedIds(threshold),
-  counts: ({ ids }) => repo.counts(ids),
   query: (q) => repo.query(q, threshold),
   summary: () => repo.summary(threshold),
   async allow({ id, allowed }) {
@@ -57,7 +73,10 @@ chrome.runtime.onMessage.addListener(
     const handler = handlers[msg.type] as ((req: unknown) => Promise<unknown>) | undefined;
     if (!handler) return false;
     handler(msg.req).then(
-      (ok) => sendResponse({ ok }),
+      (ok) => {
+        if (MUTATING.has(msg.type)) bumpRev();
+        sendResponse({ ok });
+      },
       (e: unknown) => sendResponse({ error: String(e) }),
     );
     return true;

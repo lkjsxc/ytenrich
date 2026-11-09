@@ -1,9 +1,17 @@
-# Roadmap (ordered)
-1. WM for home / search / subscriptions / channel (per-kind presets; feed grid as a native slot, filters as own views).
-2. Add a native view for live chat. (Engagement panels — chapters/transcript — are intentionally not projected.)
-3. i3-style keyboard control (focus/move/split/resize keys, numbered tabs).
-4. Channel-level stats (most-pushed channels) and channel auto-hide rules. Add "Don't recommend channel" to quick-dismiss.
-5. Option to auto-send "Not interested" for over-exposed videos.
-6. Compact related-list density options (thumbnail size) in the Videos pane.
-7. MAIN-world bridge (manifest `world: "MAIN"`) for data-level access, only if DOM automation proves fragile.
-8. Export/import of stats, settings and layouts.
+# Roadmap
+
+## North star: YouTube *is* the tiling WM
+Every part of youtube.com becomes a view in one tiling layout. Native parts are projected; parts that are
+awkward natively are rebuilt as own views. Steps, in order:
+1. **WM on every page kind.** One `page` native view projects the current `ytd-page-manager` page (home/search/channel/subscriptions/…). Watch-specific views stay as they are. Each page kind keeps its own layout (`layout:<kind>`) with a preset. The Guide tile then works everywhere.
+2. **Absorb the masthead.** Add own views: `search` (input + suggestions, navigating via native SPA links where possible), `account`, `notifications` and `create`. Then hide `#masthead-container` and start the host at top 0. Keep a slim fallback (Alt+W restores everything).
+3. **Session-wide layout.** A single layout across navigations (player keeps playing in its tile while you browse home/search in another tile, like a miniplayer).
+4. i3-style keyboard control (focus/move/split/resize keys, numbered tabs).
+
+## Other
+- Add a native view for live chat. (Engagement panels — chapters/transcript — are intentionally not projected.)
+- Channel-level stats (most-pushed channels) and channel auto-hide rules. Add "Don't recommend channel" to quick-dismiss.
+- Option to auto-send "Not interested" for over-exposed videos.
+- Compact related-list density options (thumbnail size) in the Videos pane.
+- MAIN-world bridge (manifest `world: "MAIN"`) for data-level access (SPA navigation to arbitrary URLs, guide data), only when DOM automation proves fragile.
+- Export/import of stats, settings and layouts.

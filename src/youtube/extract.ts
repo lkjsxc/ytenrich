@@ -5,7 +5,6 @@ import {
   ITEM_ROOT_OUTER,
   MENU_HOST,
   NOT_RECO,
-  THUMB,
   TITLE,
   VIDEO_ANCHOR,
 } from './selectors.ts';
@@ -54,8 +53,4 @@ export function extractItem(root: Element): ItemInfo | undefined {
 
 export function menuHostOf(root: Element): Element | null {
   return root.querySelector(MENU_HOST);
-}
-
-export function thumbOf(root: Element): Element {
-  return root.querySelector(THUMB) ?? root;
 }

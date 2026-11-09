@@ -14,7 +14,7 @@ AI-first repo: no human ergonomics, no backward compatibility, no migrations. Mo
 - `pnpm smoke [videoId]`: live Chromium + extension run on youtube.com. Prints JSON facts and writes `tmp/smoke-*.png`. Read the PNGs to judge layout. It is not canonical (depends on the network and on YouTube). It auto-falls back to the newest cached Chromium; `YTE_CHROME=<path>` overrides.
 
 ## Rules (enforced by scripts/check.ts)
-- **YouTube DOM names only in `src/youtube/`** (selectors.ts, youtube.css, slots, menu, extract). When YouTube changes, fix only there, and refresh `tests/fixtures/` from live DOM.
+- **YouTube DOM names only in `src/youtube/`** (selectors.ts, youtube.css, slots, menu, extract, guide, wait). When YouTube changes, fix only there, and refresh `tests/fixtures/` from live DOM.
 - No HTML string sinks (`innerHTML` etc.), because YouTube enforces Trusted Types. Build DOM with `src/shared/h.ts`.
 - No `class`. Use `create*` factories that return handles with idempotent `dispose`. Prefer pure functions and reducers.
 - Every file ≤200 lines. Every long-lived collection documents its bound in a comment.
@@ -29,7 +29,7 @@ AI-first repo: no human ergonomics, no backward compatibility, no migrations. Mo
   - `features.ts`: registry.
   - `features/*.ts`: one feature each.
 - `src/wm/`:
-  - `layout.ts`: the pure tree.
+  - `layout.ts`: the pure tree. `layout-parse.ts`: validation of stored JSON.
   - `controller.ts`: state, render, persistence.
   - `projector.ts`: native slot positioning.
   - `render`, `resize`, `tab-drag`, `menus`, `host`, `presets`.

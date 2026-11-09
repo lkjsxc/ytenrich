@@ -1,8 +1,15 @@
 // Fixtures are trimmed live YouTube DOM captured 2026-11 (refresh them when YouTube changes).
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { anchorsIn, extractItem, itemRootOf, parseHref, thumbOf } from '../src/youtube/extract.ts';
+import {
+  anchorsIn,
+  extractItem,
+  itemRootOf,
+  menuHostOf,
+  parseHref,
+} from '../src/youtube/extract.ts';
 import { pageKind, pageVideoId } from '../src/youtube/route.ts';
+import { MENU_BUTTON } from '../src/youtube/selectors.ts';
 
 const load = (name: string): HTMLElement => {
   const host = document.createElement('div');
@@ -17,7 +24,6 @@ const items = (root: Element) => {
     tag: r.tagName.toLowerCase(),
     ...extractItem(r),
     anchor: undefined,
-    thumb: thumbOf(r).tagName.toLowerCase(),
   }));
 };
 
@@ -36,7 +42,6 @@ describe('youtube extract', () => {
       id: 'yPYZpwSpKmA',
       kind: 'video',
       channel: 'Rick Astley',
-      thumb: 'yt-thumbnail-view-model',
     });
     expect(got[0]?.title).toContain('Together Forever');
   });
@@ -60,5 +65,21 @@ describe('youtube extract', () => {
     expect(pageKind(new URL('https://www.youtube.com/@x/videos'))).toBe('channel');
     expect(pageVideoId(new URL('https://www.youtube.com/watch?v=abcdefghijk'))).toBe('abcdefghijk');
     expect(pageVideoId(new URL('https://www.youtube.com/shorts/abcdefghijk'))).toBe('abcdefghijk');
+  });
+  it('menu host holds our button but MENU_BUTTON still finds the native 3-dot', () => {
+    for (const name of ['watch-related.html', 'search-shorts.html', 'search-video.html']) {
+      const host = load(name);
+      const roots = [...new Set([...anchorsIn(host)].map(itemRootOf))].filter(
+        (r): r is Element => r !== null,
+      );
+      const root = roots.find((r) => menuHostOf(r));
+      expect(root, name).toBeDefined();
+      const ours = document.createElement('button');
+      ours.setAttribute('ytenrich-dismiss', '');
+      menuHostOf(root!)!.prepend(ours);
+      const found = root!.querySelector(MENU_BUTTON);
+      expect(found, name).not.toBeNull();
+      expect(found, name).not.toBe(ours);
+    }
   });
 });

@@ -6,7 +6,6 @@ export type Api = {
   opened: { req: { id: string; kind: Kind; title: string; channel: string }; res: null };
   dismissed: { req: { id: string }; res: null };
   suppressed: { req: null; res: string[] };
-  counts: { req: { ids: readonly string[] }; res: Record<string, number> };
   query: { req: StatsQuery; res: VideoStat[] };
   summary: { req: null; res: Summary };
   allow: { req: { id: string; allowed: boolean }; res: null };
@@ -23,4 +22,15 @@ export async function call<K extends Method>(type: K, req: Api[K]['req']): Promi
   if (!reply) throw new Error(`no reply for ${type}`);
   if ('error' in reply) throw new Error(reply.error);
   return reply.ok;
+}
+
+/** Bumped (throttled) by the background after any stats mutation; storage events reach every context. */
+export const STATS_REV_KEY = 'statsRev';
+
+export function onStatsChanged(fn: () => void): () => void {
+  const listener = (changes: Record<string, chrome.storage.StorageChange>, area: string): void => {
+    if (area === 'local' && changes[STATS_REV_KEY]) fn();
+  };
+  chrome.storage.onChanged.addListener(listener);
+  return () => chrome.storage.onChanged.removeListener(listener);
 }

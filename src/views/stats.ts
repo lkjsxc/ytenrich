@@ -1,6 +1,9 @@
 // Recommendation statistics: summary, daily bars, and a filterable table with unhide/allow actions.
+// Refreshes itself on stats changes (background rev bump), deferred while the view is not visible.
 import { h } from '../shared/h.ts';
+import { onStatsChanged } from '../shared/protocol.ts';
 import type { StatsFilter, StatsQuery, StatsSort, Summary, VideoStat } from '../shared/types.ts';
+import { openVideo, videoUrl } from './open.ts';
 import type { ViewEnv } from './registry.ts';
 
 const FILTERS: readonly StatsFilter[] = ['unopened', 'suppressed', 'all', 'opened', 'dismissed'];
@@ -42,10 +45,6 @@ function summaryEl(s: Summary): HTMLElement {
 }
 
 function rowEl(v: VideoStat, env: ViewEnv, refresh: () => void): HTMLElement {
-  const href =
-    v.kind === 'short'
-      ? `https://www.youtube.com/shorts/${v.id}`
-      : `https://www.youtube.com/watch?v=${v.id}`;
   const toggle = (): void =>
     void env.call('allow', { id: v.id, allowed: !v.allowed }).then(refresh);
   return h(
@@ -68,7 +67,14 @@ function rowEl(v: VideoStat, env: ViewEnv, refresh: () => void): HTMLElement {
     h(
       'td',
       null,
-      h('a', { href, target: '_blank', rel: 'noopener' }, v.title || v.id),
+      h(
+        'a',
+        {
+          href: videoUrl(v.id, v.kind),
+          onclick: (e) => openVideo(e as MouseEvent, v.id, v.kind, env),
+        },
+        v.title || v.id,
+      ),
       h('div', { class: 'muted' }, v.channel),
     ),
     h('td', { class: 'num' }, String(v.seen)),
@@ -100,9 +106,16 @@ export function mountStats(el: HTMLElement, env: ViewEnv): () => void {
       },
       opts.map((o) => h('option', { value: o, selected: q[key] === o }, o)),
     );
+  const note = h('p', { class: 'muted' });
   let token = 0;
+  let visible = false;
+  let dirty = false;
   const refresh = (): void => {
+    dirty = false;
     const my = ++token;
+    note.textContent = env.settings.get().statsEnabled
+      ? ''
+      : 'Recording is off: enable it in Settings to build your stats.';
     void Promise.all([env.call('summary', null), env.call('query', q)]).then(
       ([s, rows]) => {
         if (my !== token) return;
@@ -112,16 +125,22 @@ export function mountStats(el: HTMLElement, env: ViewEnv): () => void {
       (e: unknown) => head.replaceChildren(h('p', { class: 'error' }, String(e))),
     );
   };
-  const clear = (): void => {
-    if (confirm('Delete all ytenrich statistics?')) void env.call('clear', null).then(refresh);
+  const changed = (): void => {
+    if (visible && document.visibilityState === 'visible') refresh();
+    else dirty = true;
   };
+  const io = new IntersectionObserver((entries) => {
+    visible = entries.some((e) => e.isIntersecting);
+    if (visible && dirty) refresh();
+  });
+  io.observe(el);
+  const onVisibility = (): void => {
+    if (dirty) changed();
+  };
+  document.addEventListener('visibilitychange', onVisibility);
   el.replaceChildren(
     h('h2', null, 'Recommendation stats'),
-    h(
-      'p',
-      { class: 'muted' },
-      'Enable local recommendation recording in Settings to build your stats.',
-    ),
+    note,
     head,
     h(
       'div',
@@ -133,8 +152,6 @@ export function mountStats(el: HTMLElement, env: ViewEnv): () => void {
         placeholder: 'search title/channel',
         oninput: (e) => ((q.search = (e.target as HTMLInputElement).value), refresh()),
       }),
-      h('button', { onclick: refresh }, 'Refresh'),
-      h('button', { onclick: clear }, 'Clear data'),
     ),
     h(
       'table',
@@ -153,8 +170,12 @@ export function mountStats(el: HTMLElement, env: ViewEnv): () => void {
   );
   refresh();
   const offSettings = env.settings.subscribe(refresh);
+  const offStats = onStatsChanged(changed);
   return () => {
     offSettings();
+    offStats();
+    io.disconnect();
+    document.removeEventListener('visibilitychange', onVisibility);
     token = -1;
   };
 }

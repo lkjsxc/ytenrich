@@ -119,13 +119,52 @@ export function addView(root: LayoutNode, paneId: string, view: ViewId, zone: Zo
   return normalize(next) ?? root;
 }
 
-export function moveView(root: LayoutNode, view: ViewId, paneId: string, zone: Zone): LayoutNode {
+/** Moves a tab. `index` (center only) inserts at that position of the target strip, enabling reorder. */
+export function moveView(
+  root: LayoutNode,
+  view: ViewId,
+  paneId: string,
+  zone: Zone,
+  index?: number,
+): LayoutNode {
   const src = paneOfView(root, view);
+  if (zone === 'center' && index !== undefined) {
+    const target = panes(root).find((p) => p.id === paneId);
+    if (!target) return root;
+    const from = target.tabs.indexOf(view);
+    const at = from >= 0 && from < index ? index - 1 : index;
+    const next = mapPanes(root, (p) => {
+      const tabs = p.tabs.filter((t) => t !== view);
+      if (p.id !== paneId) return { ...p, tabs };
+      tabs.splice(Math.max(0, Math.min(at, tabs.length)), 0, view);
+      return { ...p, tabs, active: view };
+    });
+    return normalize(next) ?? root;
+  }
   if (src?.id === paneId && (zone === 'center' || src.tabs.length === 1))
     return activate(root, view);
   const removed = src ? removeView(root, view) : root;
   if (!removed || !panes(removed).some((p) => p.id === paneId)) return root;
   return addView(removed, paneId, view, zone);
+}
+
+/** Puts `view` in a new pane along an edge of the whole layout (e.g. the guide on the far left). */
+export function addEdge(
+  root: LayoutNode,
+  view: ViewId,
+  zone: Exclude<Zone, 'center'>,
+  size: number,
+): LayoutNode {
+  const base = removeView(root, view);
+  const fresh = pane([view]);
+  if (!base) return fresh;
+  const f = Math.min(0.9, Math.max(0.05, size));
+  const before = zone === 'left' || zone === 'top';
+  const dir = zone === 'left' || zone === 'right' ? 'row' : 'col';
+  const node = before
+    ? split(dir, [fresh, base], [f, 1 - f])
+    : split(dir, [base, fresh], [1 - f, f]);
+  return normalize(node) ?? root;
 }
 
 export function resize(root: LayoutNode, splitId: string, sizes: readonly number[]): LayoutNode {
@@ -141,31 +180,4 @@ export function closePane(root: LayoutNode, paneId: string): LayoutNode | null {
 
 export function views(root: LayoutNode): ViewId[] {
   return panes(root).flatMap((p) => p.tabs);
-}
-
-export function parseLayout(value: unknown): LayoutNode | null {
-  if (typeof value !== 'object' || value === null) return null;
-  const v = value as Record<string, unknown>;
-  if (typeof v.id !== 'string') return null;
-  const strings = (x: unknown): x is string[] =>
-    Array.isArray(x) && x.every((t) => typeof t === 'string');
-  if (v.type === 'pane' && strings(v.tabs))
-    return {
-      type: 'pane',
-      id: v.id,
-      tabs: v.tabs,
-      active: typeof v.active === 'string' ? v.active : '',
-    };
-  if (v.type !== 'split' || (v.dir !== 'row' && v.dir !== 'col') || !Array.isArray(v.children))
-    return null;
-  const children = v.children.map(parseLayout);
-  if (children.some((c) => !c)) return null;
-  const sizes = Array.isArray(v.sizes) ? v.sizes.map(Number) : [];
-  return normalize({
-    type: 'split',
-    id: v.id,
-    dir: v.dir,
-    children: children as LayoutNode[],
-    sizes,
-  });
 }

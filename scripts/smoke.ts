@@ -33,6 +33,7 @@ const page = ctx.pages()[0] ?? (await ctx.newPage());
 page.on('console', (m) => m.text().includes('ytenrich') && errors.push(`${m.type()}: ${m.text()}`));
 page.on('pageerror', (e) => String(e.stack).includes('chrome-extension') && errors.push(String(e)));
 const sw = ctx.serviceWorkers()[0] ?? (await ctx.waitForEvent('serviceworker'));
+await sw.evaluate(() => chrome.storage.local.set({ settings: { statsEnabled: true } }));
 
 await page.goto(`https://www.youtube.com/watch?v=${video}`, { waitUntil: 'domcontentloaded' });
 await page.waitForTimeout(8000);
@@ -102,6 +103,15 @@ await lockup.hover();
 await lockup.locator('[ytenrich-dismiss]').click();
 await page.waitForTimeout(2000);
 const dismissStayed = page.url() === urlBefore;
+// Stats (now in its own pane after the drag) must refresh itself as new impressions arrive.
+const impressions = () =>
+  page.evaluate(() =>
+    Number(
+      document.querySelector('ytenrich-root')?.shadowRoot?.querySelectorAll('.tile b')[2]
+        ?.textContent ?? -1,
+    ),
+  );
+const impBefore = await impressions();
 // SPA navigation via a related video.
 await page
   .locator('[ytenrich-slot=videos] yt-lockup-view-model a[href^="/watch"] >> nth=2')
@@ -113,17 +123,48 @@ const afterNav = await page.evaluate(() => ({
   playerTagged: Boolean(document.querySelector('[ytenrich-slot=player]')),
 }));
 await page.screenshot({ path: 'tmp/smoke-nav.png' });
-// Guide drawer + scrim must stack above the WM (body.lock-scrollbar makes body a stacking context).
-await page.locator('#guide-button').first().click();
-await page.waitForTimeout(1200);
-const guideOnTop = await page.evaluate(() => {
-  const s = document.querySelector('ytenrich-root')?.shadowRoot?.querySelector('.strip');
-  const r = s?.getBoundingClientRect();
-  return r ? !document.elementFromPoint(r.left + 40, r.top + 15)?.closest('ytenrich-root') : null;
+const statsLive = { before: impBefore, after: await impressions() };
+// Hamburger toggles a Guide tile on the far left (no overlay drawer while tiling).
+await page.click('ytd-masthead #guide-button');
+await page.waitForTimeout(2500);
+const guide = await page.evaluate(() => {
+  const sh = document.querySelector('ytenrich-root')?.shadowRoot;
+  const r = (e: Element | null | undefined) => {
+    const b = e?.getBoundingClientRect();
+    return b ? [b.left, b.top, b.width, b.height].map(Math.round).join(',') : null;
+  };
+  return {
+    slot: r(document.querySelector('[ytenrich-slot=guide]')),
+    body: r(sh?.querySelector('.body[data-view=guide]')),
+    entries: document.querySelectorAll('[ytenrich-slot=guide] ytd-guide-entry-renderer').length,
+    drawerOpened: document.querySelector('tp-yt-app-drawer#guide')?.hasAttribute('opened'),
+  };
 });
 await page.screenshot({ path: 'tmp/smoke-guide.png' });
-await page.keyboard.press('Escape');
+await page.click('ytd-masthead #guide-button');
 await page.waitForTimeout(600);
+// Reorder: drop the Log tab onto the left half of the Videos tab.
+const strip = () =>
+  page.evaluate(() =>
+    [...(document.querySelector('ytenrich-root')?.shadowRoot?.querySelectorAll('.tab') ?? [])]
+      .map((t) => (t as HTMLElement).dataset.view)
+      .join('|'),
+  );
+const logTab = await box('ytenrich-root .tab[data-view=log]');
+const vidTab = await box('ytenrich-root .tab[data-view=videos]');
+await page.mouse.move(logTab.x + 10, logTab.y + 8);
+await page.mouse.down();
+await page.mouse.move(vidTab.x + 4, vidTab.y + 8, { steps: 8 });
+await page.mouse.up();
+await page.waitForTimeout(500);
+const reordered = await strip();
+// Settings > Reset tiling layout restores the preset (3 panes) through storage.
+await page.locator('ytenrich-root .tab[data-view=settings]').click();
+await page.locator('ytenrich-root button:has-text("Reset tiling layout")').click();
+await page.waitForTimeout(1000);
+const panesAfterReset = await page.evaluate(
+  () => document.querySelector('ytenrich-root')?.shadowRoot?.querySelectorAll('.pane').length,
+);
 await page.keyboard.press('Alt+KeyW');
 await page.waitForTimeout(800);
 const offState = await page.evaluate(() => ({
@@ -132,7 +173,17 @@ const offState = await page.evaluate(() => ({
   host: Boolean(document.querySelector('ytenrich-root')),
 }));
 await page.screenshot({ path: 'tmp/smoke-off.png' });
-const extra = { guideOnTop, afterResize, panesAfterDrag, dismissStayed, afterNav, offState };
+const extra = {
+  guide,
+  reordered,
+  panesAfterReset,
+  statsLive,
+  afterResize,
+  panesAfterDrag,
+  dismissStayed,
+  afterNav,
+  offState,
+};
 const dbCount = await sw.evaluate(
   () =>
     new Promise<number>((res) => {

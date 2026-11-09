@@ -63,14 +63,6 @@ export async function suppressedIds(threshold: number): Promise<string[]> {
   return ids;
 }
 
-export async function counts(ids: readonly string[]): Promise<Record<string, number>> {
-  const store = (await openDb()).transaction(VIDEOS).objectStore(VIDEOS);
-  const out: Record<string, number> = {};
-  const rows = await Promise.all(ids.map((id) => done<VideoStat | undefined>(store.get(id))));
-  for (const row of rows) if (row) out[row.id] = row.seen;
-  return out;
-}
-
 const FILTERS: Record<StatsQuery['filter'], (s: VideoStat, t: number) => boolean> = {
   all: () => true,
   unopened: (s) => s.opened === 0,

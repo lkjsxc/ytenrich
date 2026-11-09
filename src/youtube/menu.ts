@@ -1,6 +1,7 @@
 // One-click "Not interested": drive YouTube's own menu with the popup made invisible.
 import { NOT_INTERESTED_LABELS, normalizeLabel } from './i18n-labels.ts';
 import { MENU_BUTTON, MENU_ITEM, MENU_ITEM_CLICK } from './selectors.ts';
+import { waitFor } from './wait.ts';
 
 export type DismissResult = 'ok' | 'no-menu' | 'no-item';
 const SILENT = 'ytenrich-silent-menu';
@@ -13,18 +14,6 @@ function findItem(labels: ReadonlySet<string>): HTMLElement | undefined {
       return el.querySelector<HTMLElement>(MENU_ITEM_CLICK) ?? el;
   }
   return undefined;
-}
-
-function waitFor<T>(probe: () => T | undefined, ms: number): Promise<T | undefined> {
-  const end = performance.now() + ms;
-  return new Promise((resolve) => {
-    const tick = (): void => {
-      const hit = probe();
-      if (hit !== undefined || performance.now() > end) resolve(hit);
-      else requestAnimationFrame(tick);
-    };
-    tick();
-  });
 }
 
 export async function clickNotInterested(

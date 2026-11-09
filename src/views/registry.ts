@@ -29,6 +29,7 @@ export type ViewDef = {
 };
 
 export const VIEWS: readonly ViewDef[] = [
+  { id: 'guide', title: 'Guide', slot: 'guide' },
   { id: 'player', title: 'Player', slot: 'player' },
   { id: 'details', title: 'Details', slot: 'details' },
   { id: 'comments', title: 'Comments', slot: 'comments' },

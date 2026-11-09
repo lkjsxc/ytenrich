@@ -26,13 +26,16 @@ export const CHANNEL = [
   '.ytContentMetadataViewModelMetadataRow:first-child .ytContentMetadataViewModelMetadataText',
 ] as const;
 
+/** The native 3-dot button. Our dismiss button lives in the same containers, so it is excluded. */
 export const MENU_BUTTON = [
   '.ytLockupMetadataViewModelMenuButton button',
   '.shortsLockupViewModelHostOutsideMetadataMenu button',
   'ytd-menu-renderer yt-icon-button button',
   'ytd-menu-renderer button',
   '#menu button',
-].join(', ');
+]
+  .map((s) => `${s}:not([ytenrich-dismiss])`)
+  .join(', ');
 /** Container of an item's 3-dot menu; the dismiss button is inserted as its first child. */
 export const MENU_HOST = [
   '.ytLockupMetadataViewModelMenuButton',
@@ -52,10 +55,11 @@ export const WATCH_SLOTS = {
   comments: 'ytd-watch-flexy ytd-comments#comments',
   videos: 'ytd-watch-flexy #related',
   chat: 'ytd-watch-flexy #chat-container',
+  guide: 'tp-yt-app-drawer#guide #guide-inner-content',
 } as const;
 export type WatchSlot = keyof typeof WATCH_SLOTS;
 
 export const MASTHEAD = '#masthead-container';
-
-/** Thumbnail box inside an item: hosts the impression badge. */
-export const THUMB = 'yt-thumbnail-view-model, ytd-thumbnail';
+export const GUIDE_BUTTON = 'ytd-masthead #guide-button';
+export const GUIDE_DRAWER = 'tp-yt-app-drawer#guide';
+export const GUIDE_RENDERER = 'tp-yt-app-drawer#guide ytd-guide-renderer';
