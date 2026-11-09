@@ -1,17 +1,29 @@
-// One-click "Not interested" button on every recommendation thumbnail.
-import { h } from '../../shared/h.ts';
+// One-click "Not interested" button, always visible, right before each recommendation's 3-dot menu.
+import { h, svg } from '../../shared/h.ts';
 import { createDisposables } from '../../shared/signal.ts';
-import { extractItem, thumbOf } from '../../youtube/extract.ts';
+import { extractItem, menuHostOf } from '../../youtube/extract.ts';
 import { clickNotInterested } from '../../youtube/menu.ts';
 import type { Feature } from '../features.ts';
+import type { RecoItem } from '../scanner.ts';
 
 const BUTTON = 'ytenrich-dismiss';
+const HOST = 'ytenrich-menu-host';
+const MAX_PENDING = 1000; // items whose menu has not rendered yet; oldest dropped beyond this
+
+const icon = (): SVGElement =>
+  svg(
+    'svg',
+    { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': 2 },
+    svg('circle', { cx: 12, cy: 12, r: 8.5 }),
+    svg('path', { d: 'M6 6l12 12' }),
+  );
 
 export const quickDismiss: Feature = {
   id: 'dismiss',
   start(rt) {
     const d = createDisposables();
     let queue = Promise.resolve();
+    const pending = new Set<Element>();
 
     const run = (root: Element): void => {
       queue = queue.then(async () => {
@@ -31,25 +43,40 @@ export const quickDismiss: Feature = {
       });
     };
 
+    /** Returns false while the item's menu is not rendered yet. */
+    const attach = (root: Element): boolean => {
+      const host = menuHostOf(root);
+      if (!host) return false;
+      if (host.querySelector(`:scope > [${BUTTON}]`)) return true;
+      const onclick = (e: Event): void => {
+        e.preventDefault();
+        e.stopPropagation();
+        run(root);
+      };
+      host.setAttribute(HOST, '');
+      host.prepend(
+        h(
+          'button',
+          { [BUTTON]: true, type: 'button', title: 'Tell YouTube: Not interested', onclick },
+          icon(),
+        ),
+      );
+      return true;
+    };
+
     d.add(
-      rt.scanner.onItem((item) => {
-        if (!rt.settings.get().dismissEnabled) return;
-        const thumb = thumbOf(item.el);
-        if (thumb.querySelector(`:scope > [${BUTTON}]`)) return;
-        const onclick = (e: Event): void => {
-          e.preventDefault();
-          e.stopPropagation();
-          run(item.el);
-        };
-        thumb.appendChild(
-          h(
-            'button',
-            { [BUTTON]: true, type: 'button', title: 'Tell YouTube: Not interested', onclick },
-            '✕',
-          ),
-        );
+      rt.scanner.onItem((item: RecoItem) => {
+        if (!rt.settings.get().dismissEnabled || attach(item.el)) return;
+        pending.add(item.el);
+        if (pending.size > MAX_PENDING) pending.delete(pending.values().next().value as Element);
       }),
     );
+    d.add(
+      rt.scanner.onTick(() => {
+        for (const el of pending) if (!el.isConnected || attach(el)) pending.delete(el);
+      }),
+    );
+    d.add(() => pending.clear());
     const toggle = (on: boolean): void => {
       document.documentElement.toggleAttribute('ytenrich-no-dismiss', !on);
     };

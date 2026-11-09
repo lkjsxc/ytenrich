@@ -20,6 +20,8 @@ const MAX_PAGE_ITEMS = 3000; // per-navigation item index bound (cleared on navi
 export type Scanner = {
   onItem(fn: Listener): () => void;
   onSeen(fn: Listener): () => void;
+  /** Called at most once per frame after any observed DOM mutation (for late-rendered item parts). */
+  onTick(fn: () => void): () => void;
   /** Items found during the current navigation, keyed by video id. */
   pageItems(): ReadonlyMap<string, RecoItem>;
   readonly version: Signal<number>;
@@ -34,6 +36,12 @@ export function createScanner(page: Signal<Page>, version: Signal<number>): Scan
   let items = new Map<string, RecoItem>();
   let seen = new Set<string>(); // bounded by items per navigation
   let bumpQueued = false;
+  const tickListeners = new Set<() => void>();
+  let tickFrame = 0;
+  const tick = (): void => {
+    tickFrame = 0;
+    for (const fn of tickListeners) fn();
+  };
 
   const bump = (): void => {
     if (bumpQueued) return;
@@ -84,6 +92,7 @@ export function createScanner(page: Signal<Page>, version: Signal<number>): Scan
       if (r.type === 'attributes') visit(r.target as Element);
       else for (const n of r.addedNodes) if (n.nodeType === 1) scan(n as Element);
     }
+    if (tickListeners.size) tickFrame ||= requestAnimationFrame(tick);
   });
   mo.observe(document.documentElement, {
     childList: true,
@@ -108,12 +117,18 @@ export function createScanner(page: Signal<Page>, version: Signal<number>): Scan
       seenListeners.add(fn);
       return () => seenListeners.delete(fn);
     },
+    onTick(fn) {
+      tickListeners.add(fn);
+      return () => tickListeners.delete(fn);
+    },
     pageItems: () => items,
     version,
     markSeen,
     dispose() {
       mo.disconnect();
       io.disconnect();
+      cancelAnimationFrame(tickFrame);
+      tickListeners.clear();
       unsubPage();
       itemListeners.clear();
       seenListeners.clear();

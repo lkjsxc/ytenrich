@@ -14,6 +14,20 @@ export function h<K extends keyof HTMLElementTagNameMap>(
   return el;
 }
 
+const SVG_NS = 'http://www.w3.org/2000/svg';
+
+/** SVG counterpart of h() (icons). Attributes only, no listeners. */
+export function svg(
+  tag: string,
+  attrs: Record<string, string | number>,
+  ...children: SVGElement[]
+): SVGElement {
+  const el = document.createElementNS(SVG_NS, tag) as SVGElement;
+  for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, String(v));
+  el.append(...children);
+  return el;
+}
+
 export function setAttrs(el: Element, attrs: Attrs): void {
   for (const [key, value] of Object.entries(attrs)) {
     if (typeof value === 'function') el.addEventListener(key.slice(2), value);

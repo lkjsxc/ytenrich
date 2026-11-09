@@ -3,9 +3,18 @@
 [ytenrich-dim] { opacity: 0.2; transition: opacity 0.15s; }
 [ytenrich-dim]:hover { opacity: 1; }
 [ytenrich-count]::after { content: attr(ytenrich-count) "×"; position: absolute; top: 4px; left: 4px; z-index: 3; pointer-events: none; padding: 0 5px; border-radius: 4px; background: rgba(0, 0, 0, 0.72); color: #fff; font: 600 11px / 17px Roboto, Arial, sans-serif; }
-[ytenrich-dismiss] { position: absolute; top: 4px; right: 4px; z-index: 4; width: 26px; height: 26px; padding: 0; border: 0; border-radius: 50%; background: rgba(0, 0, 0, 0.75); color: #fff; font: 600 13px / 26px Roboto, Arial, sans-serif; cursor: pointer; opacity: 0; transition: opacity 0.1s; }
-:hover > [ytenrich-dismiss] { opacity: 1; }
-[ytenrich-dismiss]:hover { background: #cc0000; }
+/* Dismiss button lives inside the 3-dot menu container (forced visible, laid out as a row). */
+[ytenrich-menu-host] { display: flex !important; align-items: center; opacity: 1 !important; }
+[ytenrich-menu-host]::before, [ytenrich-menu-host]::after { display: none !important; }
+/* Shorts tiles reserve only one icon of width beside the title: stack the button under the menu. */
+.shortsLockupViewModelHostOutsideMetadataMenu[ytenrich-menu-host] { flex-direction: column-reverse; }
+/* Grid lockups reserve title space for one icon only: reserve one more. */
+.ytLockupMetadataViewModelVertical:has(> [ytenrich-menu-host]) > .ytLockupMetadataViewModelTextContainer { margin-right: 40px; }
+/* Classic renderers: the 3-dot icon button overflows its 24px row upward; align with it. */
+#menu[ytenrich-menu-host] > [ytenrich-dismiss] { position: relative; top: -5px; }
+[ytenrich-dismiss] { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; padding: 0; margin: 0; border: 0; border-radius: 50%; background: transparent; color: var(--yt-spec-text-secondary, #606060); cursor: pointer; }
+[ytenrich-dismiss]:hover { background: var(--yt-spec-10-percent-layer, rgba(0, 0, 0, 0.1)); color: #e00; }
+[ytenrich-dismiss] svg { width: 20px; height: 20px; pointer-events: none; }
 html[ytenrich-no-dismiss] [ytenrich-dismiss] { display: none !important; }
 html[ytenrich-silent-menu] ytd-popup-container tp-yt-iron-dropdown { opacity: 0 !important; }
 /* Tiling WM: native slots are fixed-positioned over pane bodies (rects set inline by the projector). */

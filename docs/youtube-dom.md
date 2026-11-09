@@ -9,13 +9,17 @@ All names live in `src/youtube/selectors.ts` and `src/youtube/youtube.css`. Fixt
 - Search uses classic `ytd-video-renderer` (`#video-title`, `ytd-channel-name`) plus shorts grid shelves.
 - Home grid cells are `ytd-rich-item-renderer`, which wins as the item root so hiding removes the whole cell.
 - Ids come from the href only (`/watch?v=ID`, `/shorts/ID`). Mix links carry `&list=RD…&start_radio=1`, but the id is still `v`.
-- Lockup title is `h3[title]`. Channel is the first `.ytContentMetadataViewModelMetadataRow` text. The thumbnail box is `yt-thumbnail-view-model` (hosts our button and badge).
+- Lockup title is `h3[title]`. Channel is the first `.ytContentMetadataViewModelMetadataRow` text. The thumbnail box is `yt-thumbnail-view-model` (hosts our count badge).
 - `#movie_player` contains end-screen `/watch` anchors, which are excluded via `NOT_RECO`.
 
 ## Menus
 - The item menu button is `.ytLockupMetadataViewModelMenuButton button` (aria-label "More actions"). For shorts, use `.shortsLockupViewModelHostOutsideMetadataMenu button`.
 - The popup is `ytd-popup-container > tp-yt-iron-dropdown > … yt-sheet-view-model … yt-list-item-view-model > button[role=menuitem]`.
 - Logged-out menus have no "Not interested" (queue / save / offline / share only), so `clickNotInterested` returns `no-item`. This is expected in smoke runs.
+- Menu containers (`MENU_HOST`) host our ⊘ button as their first child, marked `[ytenrich-menu-host]`:
+  - Lockups: `.ytLockupMetadataViewModelMenuButton`, absolute at right 0, opacity 0 until hover (`…ShowMenuButtonOnHover`), with radial-gradient `::before/::after` backdrops. We force it visible and drop the backdrops. Vertical (grid) lockups reserve title space for one icon only, so the text container gets an extra 40px margin. Compact (watch) lockups put the menu at the bottom right, so there is no overlap.
+  - Shorts: `.shortsLockupViewModelHostOutsideMetadataMenu`, absolute top-right, with a 36px gutter. The button stacks under ⋮ (`column-reverse`).
+  - Classic `ytd-video-renderer #menu` (search): `ytd-menu-renderer` stamps *after* the item's anchor appears. Quick-dismiss keeps a bounded pending set retried on `scanner.onTick`. The ⋮ icon button overflows its 24px row upward (aligned via `top:-5px`).
 - Labels are matched by normalized text (`i18n-labels.ts`). The user can add an exact label in Settings.
 
 ## Watch page

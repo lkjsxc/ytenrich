@@ -12,7 +12,7 @@ A browser extension that makes YouTube more personal and more comfortable to use
   - `Alt+W` turns tiling off and on.
 - **Recommendation stats**: each recommendation counts as seen once it is at least half visible, at most once per page view. Thumbnails show how many times you have seen a video.
 - **Hide over-exposed videos**: videos recommended N times that you never opened are hidden or dimmed. You choose N.
-- **One-click "Not interested"**: hover a thumbnail and click ✕.
+- **One-click "Not interested"**: an always-visible ⊘ button right next to every recommendation's ⋮ menu.
 
 Enable recommendation recording in **Settings** to build your stats and filter repeated recommendations. Images in the extension's Stats and Shorts views are a separate opt-in. See the [privacy policy](PRIVACY.md).
 

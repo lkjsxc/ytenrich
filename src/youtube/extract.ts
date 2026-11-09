@@ -3,6 +3,7 @@ import {
   CHANNEL,
   ITEM_ROOT_INNER,
   ITEM_ROOT_OUTER,
+  MENU_HOST,
   NOT_RECO,
   THUMB,
   TITLE,
@@ -49,6 +50,10 @@ export function extractItem(root: Element): ItemInfo | undefined {
   const parsed = anchor && parseHref(anchor.getAttribute('href') ?? '');
   if (!anchor || !parsed) return undefined;
   return { ...parsed, anchor, title: firstText(root, TITLE), channel: firstText(root, CHANNEL) };
+}
+
+export function menuHostOf(root: Element): Element | null {
+  return root.querySelector(MENU_HOST);
 }
 
 export function thumbOf(root: Element): Element {

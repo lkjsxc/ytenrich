@@ -33,6 +33,12 @@ export const MENU_BUTTON = [
   'ytd-menu-renderer button',
   '#menu button',
 ].join(', ');
+/** Container of an item's 3-dot menu; the dismiss button is inserted as its first child. */
+export const MENU_HOST = [
+  '.ytLockupMetadataViewModelMenuButton',
+  '.shortsLockupViewModelHostOutsideMetadataMenu',
+  '#menu:has(> ytd-menu-renderer)',
+].join(', ');
 export const MENU_ITEM = [
   'ytd-popup-container tp-yt-iron-dropdown yt-list-item-view-model',
   'ytd-popup-container tp-yt-iron-dropdown ytd-menu-service-item-renderer',
@@ -51,5 +57,5 @@ export type WatchSlot = keyof typeof WATCH_SLOTS;
 
 export const MASTHEAD = '#masthead-container';
 
-/** Thumbnail box inside an item: hosts the dismiss button and impression badge. */
+/** Thumbnail box inside an item: hosts the impression badge. */
 export const THUMB = 'yt-thumbnail-view-model, ytd-thumbnail';
