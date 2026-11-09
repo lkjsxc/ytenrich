@@ -95,8 +95,11 @@ await page.screenshot({ path: 'tmp/smoke-drag.png' });
 // Dismiss button must not navigate.
 const urlBefore = page.url();
 await page.locator('ytenrich-root .tab:has-text("Videos")').first().click();
-await page.hover('[ytenrich-slot=videos] yt-lockup-view-model >> nth=1');
-await page.locator('[ytenrich-slot=videos] [ytenrich-dismiss] >> nth=1').click();
+const lockup = page
+  .locator('[ytenrich-slot=videos] yt-lockup-view-model:has([ytenrich-dismiss])')
+  .nth(1);
+await lockup.hover();
+await lockup.locator('[ytenrich-dismiss]').click();
 await page.waitForTimeout(2000);
 const dismissStayed = page.url() === urlBefore;
 // SPA navigation via a related video.
@@ -110,6 +113,17 @@ const afterNav = await page.evaluate(() => ({
   playerTagged: Boolean(document.querySelector('[ytenrich-slot=player]')),
 }));
 await page.screenshot({ path: 'tmp/smoke-nav.png' });
+// Guide drawer + scrim must stack above the WM (body.lock-scrollbar makes body a stacking context).
+await page.locator('#guide-button').first().click();
+await page.waitForTimeout(1200);
+const guideOnTop = await page.evaluate(() => {
+  const s = document.querySelector('ytenrich-root')?.shadowRoot?.querySelector('.strip');
+  const r = s?.getBoundingClientRect();
+  return r ? !document.elementFromPoint(r.left + 40, r.top + 15)?.closest('ytenrich-root') : null;
+});
+await page.screenshot({ path: 'tmp/smoke-guide.png' });
+await page.keyboard.press('Escape');
+await page.waitForTimeout(600);
 await page.keyboard.press('Alt+KeyW');
 await page.waitForTimeout(800);
 const offState = await page.evaluate(() => ({
@@ -118,7 +132,7 @@ const offState = await page.evaluate(() => ({
   host: Boolean(document.querySelector('ytenrich-root')),
 }));
 await page.screenshot({ path: 'tmp/smoke-off.png' });
-const extra = { afterResize, panesAfterDrag, dismissStayed, afterNav, offState };
+const extra = { guideOnTop, afterResize, panesAfterDrag, dismissStayed, afterNav, offState };
 const dbCount = await sw.evaluate(
   () =>
     new Promise<number>((res) => {

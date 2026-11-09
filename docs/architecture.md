@@ -24,7 +24,7 @@ page signal (watch/shorts videoId) ─► bg.opened (resets suppression for that
 ## Tiling WM
 - Active only when `wmEnabled && page.kind==='watch' && !fullscreen`. Alt+W toggles it.
 - `html[ytenrich-wm]` gates every WM CSS rule in `youtube/youtube.css`.
-- `<ytenrich-root>` is appended to `<html>`, uses position fixed below the masthead and `z-index:2`, and carries an open shadow root.
+- `<ytenrich-root>` is appended to `<body>` (never `<html>`, see Stacking), uses position fixed below the masthead and `z-index:2`, and carries an open shadow root.
   - It contains `.wm` (layout) and `.layer` (menus, drag preview).
   - The root has pointer-events none. Strips, handles, own bodies and menus are auto.
 - **Layout** is a pure tree (`wm/layout.ts`): panes hold `tabs: viewId[]`, and each view appears at most once.
@@ -35,7 +35,7 @@ page signal (watch/shorts videoId) ─► bg.opened (resets suppression for that
   - Inactive tabs get `[ytenrich-slot-inactive]` (visibility hidden).
   - A player rect change dispatches a synthetic window `resize` (debounced 120ms) so YouTube refits the `<video>`.
   - `#columns` is visibility hidden, so unprojected YouTube content is invisible and inert.
-- Stacking: native slots have z-index 1; our host has 2, so the drop preview sits above slots and holes stay transparent. YouTube popups (z≈2200) stay above everything.
+- Stacking: native slots have z-index 1; our host has 2, so the drop preview sits above slots and holes stay transparent. YouTube overlays (masthead 2020, guide drawer + scrim 2030, popups ≈2200) stay above us because the host shares body's stacking context; `body.lock-scrollbar` (drawer/dialog open) makes body `position:fixed`, which would isolate YouTube below a host mounted on `<html>`.
 
 ## Invariants
 - Disposal restores YouTube exactly: attributes and inline props are removed, the host is removed, and a resize is dispatched.

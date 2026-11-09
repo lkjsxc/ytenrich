@@ -26,3 +26,4 @@ All names live in `src/youtube/selectors.ts` and `src/youtube/youtube.css`. Fixt
 - No ancestor of the slots creates a containing block (transform/contain/filter), so `position:fixed` maps to the viewport. Re-check this when the projection breaks.
 - In theater mode YouTube moves `#player-container` into `#full-bleed-container`. Projection targets the element, not the path, so it still works.
 - The theme is `html[dark]` (absent means light).
+- Opening the guide drawer (or a modal) adds `body.lock-scrollbar` → body `position:fixed` → body becomes a stacking context. Anything of ours that must stack *between* YouTube layers has to live inside body.

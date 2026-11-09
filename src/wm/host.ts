@@ -1,4 +1,6 @@
 // Shadow-root host for all ytenrich UI on youtube.com. Lives outside the YouTube app root so YouTube never re-renders it.
+// Must be a child of <body>, not <html>: YouTube's scroll lock (guide drawer, dialogs) makes body position:fixed,
+// i.e. a stacking context, and a host outside it would paint above every YouTube overlay.
 
 import { h } from '../shared/h.ts';
 import css from '../ui/ui.css';
@@ -24,13 +26,16 @@ export function createHost(): Host {
   const mo = new MutationObserver(theme);
   mo.observe(html, { attributes: true, attributeFilter: ['dark'] });
   theme();
-  html.appendChild(host);
+  const mount = (): void => void (document.body ?? html).appendChild(host);
+  mount();
+  if (!document.body) document.addEventListener('DOMContentLoaded', mount, { once: true });
   return {
     root,
     layer,
     setTop: (px) => void (host.style.top = `${px}px`),
     dispose() {
       mo.disconnect();
+      document.removeEventListener('DOMContentLoaded', mount);
       host.remove();
     },
   };
