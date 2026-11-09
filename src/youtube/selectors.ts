@@ -1,0 +1,56 @@
+// The ONLY place that names YouTube DOM. Verified against live DOM 2026-11 (see docs/youtube-dom.md).
+export const VIDEO_ANCHOR = 'a[href^="/watch?v="], a[href^="/shorts/"]';
+
+/** Grid cells / wrappers win over inner lockups so hiding removes the whole cell. */
+export const ITEM_ROOT_OUTER = 'ytd-rich-item-renderer, .ytGridShelfViewModelGridShelfItem';
+export const ITEM_ROOT_INNER = [
+  'yt-lockup-view-model',
+  'ytm-shorts-lockup-view-model-v2',
+  'ytd-video-renderer',
+  'ytd-compact-video-renderer',
+  'ytd-grid-video-renderer',
+  'ytd-reel-item-renderer',
+].join(', ');
+/** Anchors inside these are never recommendations (player end screens, queue panels, ads). */
+export const NOT_RECO =
+  '#movie_player, ytd-playlist-panel-renderer, ad-button-view-model, ytd-miniplayer';
+
+export const TITLE = [
+  'h3[title]',
+  'a[title].shortsLockupViewModelHostOutsideMetadataEndpoint',
+  '#video-title',
+  'h3',
+] as const;
+export const CHANNEL = [
+  'ytd-channel-name #text',
+  '.ytContentMetadataViewModelMetadataRow:first-child .ytContentMetadataViewModelMetadataText',
+] as const;
+
+export const MENU_BUTTON = [
+  '.ytLockupMetadataViewModelMenuButton button',
+  '.shortsLockupViewModelHostOutsideMetadataMenu button',
+  'ytd-menu-renderer yt-icon-button button',
+  'ytd-menu-renderer button',
+  '#menu button',
+].join(', ');
+export const MENU_ITEM = [
+  'ytd-popup-container tp-yt-iron-dropdown yt-list-item-view-model',
+  'ytd-popup-container tp-yt-iron-dropdown ytd-menu-service-item-renderer',
+].join(', ');
+export const MENU_ITEM_CLICK = 'button, tp-yt-paper-item';
+
+/** Watch-page native slots projected into WM panes. */
+export const WATCH_SLOTS = {
+  player: 'ytd-watch-flexy #player-container',
+  details: 'ytd-watch-flexy ytd-watch-metadata',
+  comments: 'ytd-watch-flexy ytd-comments#comments',
+  videos: 'ytd-watch-flexy #related',
+  panels: 'ytd-watch-flexy #panels',
+  chat: 'ytd-watch-flexy #chat-container',
+} as const;
+export type WatchSlot = keyof typeof WATCH_SLOTS;
+
+export const MASTHEAD = '#masthead-container';
+
+/** Thumbnail box inside an item: hosts the dismiss button and impression badge. */
+export const THUMB = 'yt-thumbnail-view-model, ytd-thumbnail';

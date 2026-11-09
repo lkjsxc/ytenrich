@@ -1,0 +1,133 @@
+// Live smoke: Chromium + unpacked dist/ on a real watch page. Prints JSON facts + screenshots in tmp/.
+// Not a canonical gate (network/YouTube dependent). Usage: node scripts/smoke.ts [videoId]
+import { existsSync, mkdirSync, mkdtempSync, readdirSync } from 'node:fs';
+import { homedir, tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
+import { chromium } from 'playwright';
+
+const ext = resolve('dist');
+const video = process.argv[2] ?? 'dQw4w9WgXcQ';
+// Prefer Playwright's pinned browser; otherwise fall back to the newest cached Chromium (or YTE_CHROME).
+const cached = (): string | undefined => {
+  const root = join(homedir(), '.cache/ms-playwright');
+  const dirs = existsSync(root)
+    ? readdirSync(root)
+        .filter((d) => /^chromium-\d+$/.test(d))
+        .sort()
+        .reverse()
+    : [];
+  return dirs.map((d) => join(root, d, 'chrome-linux64/chrome')).find(existsSync);
+};
+const exe =
+  process.env.YTE_CHROME ?? (existsSync(chromium.executablePath()) ? undefined : cached());
+mkdirSync('tmp', { recursive: true });
+const ctx = await chromium.launchPersistentContext(mkdtempSync(join(tmpdir(), 'yte-')), {
+  headless: true,
+  ...(exe ? { executablePath: exe } : {}),
+  viewport: { width: 1600, height: 1000 },
+  locale: 'en-US',
+  args: [`--disable-extensions-except=${ext}`, `--load-extension=${ext}`],
+});
+const errors: string[] = [];
+const page = ctx.pages()[0] ?? (await ctx.newPage());
+page.on('console', (m) => m.text().includes('ytenrich') && errors.push(`${m.type()}: ${m.text()}`));
+page.on('pageerror', (e) => String(e.stack).includes('chrome-extension') && errors.push(String(e)));
+const sw = ctx.serviceWorkers()[0] ?? (await ctx.waitForEvent('serviceworker'));
+
+await page.goto(`https://www.youtube.com/watch?v=${video}`, { waitUntil: 'domcontentloaded' });
+await page.waitForTimeout(8000);
+const facts = await page.evaluate(() => {
+  const shadow = document.querySelector('ytenrich-root')?.shadowRoot;
+  const rect = (el: Element | null | undefined) => {
+    const r = el?.getBoundingClientRect();
+    return r ? [r.left, r.top, r.width, r.height].map(Math.round).join(',') : null;
+  };
+  const slots = [...document.querySelectorAll('[ytenrich-slot]')].map((el) => ({
+    view: el.getAttribute('ytenrich-slot'),
+    inactive: el.hasAttribute('ytenrich-slot-inactive'),
+    slot: rect(el),
+    body: rect(shadow?.querySelector(`.body[data-view="${el.getAttribute('ytenrich-slot')}"]`)),
+  }));
+  return {
+    wm: document.documentElement.hasAttribute('ytenrich-wm'),
+    panes: shadow?.querySelectorAll('.pane').length ?? 0,
+    slots,
+    video: rect(document.querySelector('#movie_player video')),
+    items: document.querySelectorAll('[ytenrich-dismiss]').length,
+    docScroll: document.scrollingElement?.scrollHeight,
+  };
+});
+await page.screenshot({ path: 'tmp/smoke-watch.png' });
+for (const tab of ['Comments', 'Shorts', 'Stats']) {
+  await page.locator(`ytenrich-root .tab:has-text("${tab}")`).first().click();
+  await page.waitForTimeout(1200);
+  await page.screenshot({ path: `tmp/smoke-${tab.toLowerCase()}.png` });
+}
+const box = async (sel: string) => (await page.locator(sel).first().boundingBox())!;
+const playerRect = () =>
+  page.evaluate(
+    () => document.querySelector('[ytenrich-slot=player]')?.getBoundingClientRect().width ?? 0,
+  );
+const videoW = () =>
+  page.evaluate(
+    () => document.querySelector('#movie_player video')?.getBoundingClientRect().width ?? 0,
+  );
+// Resize: drag the vertical handle between left column and right pane 200px left.
+const handle = await box('ytenrich-root .split.row > .handle');
+await page.mouse.move(handle.x + 2, handle.y + 300);
+await page.mouse.down();
+await page.mouse.move(handle.x - 200, handle.y + 300, { steps: 5 });
+await page.mouse.up();
+await page.waitForTimeout(800);
+const afterResize = { player: await playerRect(), video: await videoW() };
+// Drag the Stats tab onto the bottom edge of the player pane -> new pane.
+const stats = await box('ytenrich-root .tab:has-text("Stats")');
+const player = await box('ytenrich-root .body[data-view=player]');
+await page.mouse.move(stats.x + 10, stats.y + 8);
+await page.mouse.down();
+await page.mouse.move(player.x + player.width / 2, player.y + player.height - 10, { steps: 8 });
+await page.mouse.up();
+await page.waitForTimeout(800);
+const panesAfterDrag = await page.evaluate(
+  () => document.querySelector('ytenrich-root')?.shadowRoot?.querySelectorAll('.pane').length,
+);
+await page.screenshot({ path: 'tmp/smoke-drag.png' });
+// Dismiss button must not navigate.
+const urlBefore = page.url();
+await page.locator('ytenrich-root .tab:has-text("Videos")').first().click();
+await page.hover('[ytenrich-slot=videos] yt-lockup-view-model >> nth=1');
+await page.locator('[ytenrich-slot=videos] [ytenrich-dismiss] >> nth=1').click();
+await page.waitForTimeout(2000);
+const dismissStayed = page.url() === urlBefore;
+// SPA navigation via a related video.
+await page
+  .locator('[ytenrich-slot=videos] yt-lockup-view-model a[href^="/watch"] >> nth=2')
+  .click();
+await page.waitForTimeout(6000);
+const afterNav = await page.evaluate(() => ({
+  url: location.pathname + location.search.slice(0, 16),
+  wm: document.documentElement.hasAttribute('ytenrich-wm'),
+  playerTagged: Boolean(document.querySelector('[ytenrich-slot=player]')),
+}));
+await page.screenshot({ path: 'tmp/smoke-nav.png' });
+await page.keyboard.press('Alt+KeyW');
+await page.waitForTimeout(800);
+const offState = await page.evaluate(() => ({
+  wm: document.documentElement.hasAttribute('ytenrich-wm'),
+  slots: document.querySelectorAll('[ytenrich-slot]').length,
+  host: Boolean(document.querySelector('ytenrich-root')),
+}));
+await page.screenshot({ path: 'tmp/smoke-off.png' });
+const extra = { afterResize, panesAfterDrag, dismissStayed, afterNav, offState };
+const dbCount = await sw.evaluate(
+  () =>
+    new Promise<number>((res) => {
+      const r = indexedDB.open('ytenrich');
+      r.onsuccess = () => {
+        const c = r.result.transaction('videos').objectStore('videos').count();
+        c.onsuccess = () => res(c.result);
+      };
+    }),
+);
+console.log(JSON.stringify({ ...facts, ...extra, dbCount, errors }, null, 1));
+await ctx.close();

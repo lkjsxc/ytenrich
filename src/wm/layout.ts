@@ -1,0 +1,171 @@
+// Pure layout tree (ported from lkjstr workspace/layout-tree). Tabs are view ids; each view appears at most once.
+export type ViewId = string;
+export type Dir = 'row' | 'col';
+export type Zone = 'center' | 'left' | 'right' | 'top' | 'bottom';
+export type PaneNode = {
+  readonly type: 'pane';
+  readonly id: string;
+  readonly tabs: readonly ViewId[];
+  readonly active: ViewId;
+};
+export type SplitNode = {
+  readonly type: 'split';
+  readonly id: string;
+  readonly dir: Dir;
+  readonly children: readonly LayoutNode[];
+  readonly sizes: readonly number[];
+};
+export type LayoutNode = PaneNode | SplitNode;
+
+const uid = (): string => crypto.randomUUID().slice(0, 8);
+
+export function pane(tabs: readonly ViewId[], active = tabs[0] ?? ''): PaneNode {
+  return { type: 'pane', id: uid(), tabs, active };
+}
+
+export function split(
+  dir: Dir,
+  children: readonly LayoutNode[],
+  sizes?: readonly number[],
+): SplitNode {
+  return {
+    type: 'split',
+    id: uid(),
+    dir,
+    children,
+    sizes: sizes ?? children.map(() => 1 / children.length),
+  };
+}
+
+export function panes(root: LayoutNode): PaneNode[] {
+  return root.type === 'pane' ? [root] : root.children.flatMap(panes);
+}
+
+export function paneOfView(root: LayoutNode, view: ViewId): PaneNode | undefined {
+  return panes(root).find((p) => p.tabs.includes(view));
+}
+
+function mapPanes(root: LayoutNode, fn: (p: PaneNode) => LayoutNode | null): LayoutNode | null {
+  if (root.type === 'pane') return fn(root);
+  const children = root.children.map((c) => mapPanes(c, fn));
+  return { ...root, children: children as LayoutNode[] }; // nulls removed by normalize
+}
+
+const normSizes = (sizes: readonly number[]): number[] => {
+  const valid = sizes.map((s) => (Number.isFinite(s) && s > 0 ? s : 0));
+  const sum = valid.reduce((a, b) => a + b, 0);
+  return sum > 0 && valid.every((s) => s > 0)
+    ? valid.map((s) => s / sum)
+    : valid.map(() => 1 / valid.length);
+};
+
+/** Removes empty panes/splits, flattens same-direction nesting, fixes sizes and active tabs. */
+export function normalize(node: LayoutNode | null): LayoutNode | null {
+  if (!node) return null;
+  if (node.type === 'pane') {
+    const tabs = [...new Set(node.tabs)];
+    if (!tabs.length) return null;
+    return {
+      ...node,
+      tabs,
+      active: tabs.includes(node.active) ? node.active : (tabs[0] as ViewId),
+    };
+  }
+  const kids: LayoutNode[] = [];
+  const sizes: number[] = [];
+  node.children.forEach((child, i) => {
+    const n = normalize(child);
+    const size = node.sizes[i] ?? 0;
+    if (!n) return;
+    if (n.type === 'split' && n.dir === node.dir) {
+      n.children.forEach((c, j) => kids.push(c) && sizes.push(size * (n.sizes[j] ?? 0)));
+    } else kids.push(n) && sizes.push(size);
+  });
+  if (!kids.length) return null;
+  if (kids.length === 1) return kids[0] as LayoutNode;
+  return { ...node, children: kids, sizes: normSizes(sizes) };
+}
+
+/** Keep only known views, each at most once (first occurrence wins). */
+export function retainViews(root: LayoutNode, known: ReadonlySet<ViewId>): LayoutNode | null {
+  const used = new Set<ViewId>();
+  return normalize(
+    mapPanes(root, (p) => {
+      const tabs = p.tabs.filter((t) => known.has(t) && !used.has(t) && used.add(t));
+      return { ...p, tabs };
+    }),
+  );
+}
+
+export function activate(root: LayoutNode, view: ViewId): LayoutNode {
+  return mapPanes(root, (p) => (p.tabs.includes(view) ? { ...p, active: view } : p)) as LayoutNode;
+}
+
+export function removeView(root: LayoutNode, view: ViewId): LayoutNode | null {
+  return normalize(mapPanes(root, (p) => ({ ...p, tabs: p.tabs.filter((t) => t !== view) })));
+}
+
+export function addView(root: LayoutNode, paneId: string, view: ViewId, zone: Zone): LayoutNode {
+  const next = mapPanes(root, (p) => {
+    if (p.id !== paneId) return p;
+    if (zone === 'center') return { ...p, tabs: [...p.tabs, view], active: view };
+    const fresh = pane([view]);
+    const before = zone === 'left' || zone === 'top';
+    return split(
+      zone === 'left' || zone === 'right' ? 'row' : 'col',
+      before ? [fresh, p] : [p, fresh],
+    );
+  });
+  return normalize(next) ?? root;
+}
+
+export function moveView(root: LayoutNode, view: ViewId, paneId: string, zone: Zone): LayoutNode {
+  const src = paneOfView(root, view);
+  if (src?.id === paneId && (zone === 'center' || src.tabs.length === 1))
+    return activate(root, view);
+  const removed = src ? removeView(root, view) : root;
+  if (!removed || !panes(removed).some((p) => p.id === paneId)) return root;
+  return addView(removed, paneId, view, zone);
+}
+
+export function resize(root: LayoutNode, splitId: string, sizes: readonly number[]): LayoutNode {
+  if (root.type === 'pane') return root;
+  if (root.id === splitId && sizes.length === root.children.length)
+    return { ...root, sizes: normSizes(sizes) };
+  return { ...root, children: root.children.map((c) => resize(c, splitId, sizes)) };
+}
+
+export function closePane(root: LayoutNode, paneId: string): LayoutNode | null {
+  return normalize(mapPanes(root, (p) => (p.id === paneId ? null : p)));
+}
+
+export function views(root: LayoutNode): ViewId[] {
+  return panes(root).flatMap((p) => p.tabs);
+}
+
+export function parseLayout(value: unknown): LayoutNode | null {
+  if (typeof value !== 'object' || value === null) return null;
+  const v = value as Record<string, unknown>;
+  if (typeof v.id !== 'string') return null;
+  const strings = (x: unknown): x is string[] =>
+    Array.isArray(x) && x.every((t) => typeof t === 'string');
+  if (v.type === 'pane' && strings(v.tabs))
+    return {
+      type: 'pane',
+      id: v.id,
+      tabs: v.tabs,
+      active: typeof v.active === 'string' ? v.active : '',
+    };
+  if (v.type !== 'split' || (v.dir !== 'row' && v.dir !== 'col') || !Array.isArray(v.children))
+    return null;
+  const children = v.children.map(parseLayout);
+  if (children.some((c) => !c)) return null;
+  const sizes = Array.isArray(v.sizes) ? v.sizes.map(Number) : [];
+  return normalize({
+    type: 'split',
+    id: v.id,
+    dir: v.dir,
+    children: children as LayoutNode[],
+    sizes,
+  });
+}

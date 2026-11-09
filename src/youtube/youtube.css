@@ -1,0 +1,21 @@
+/* Injected into youtube.com by the manifest. Every rule is gated by a ytenrich-* attribute. */
+[ytenrich-hidden] { display: none !important; }
+[ytenrich-dim] { opacity: 0.2; transition: opacity 0.15s; }
+[ytenrich-dim]:hover { opacity: 1; }
+[ytenrich-count]::after { content: attr(ytenrich-count) "×"; position: absolute; top: 4px; left: 4px; z-index: 3; pointer-events: none; padding: 0 5px; border-radius: 4px; background: rgba(0, 0, 0, 0.72); color: #fff; font: 600 11px / 17px Roboto, Arial, sans-serif; }
+[ytenrich-dismiss] { position: absolute; top: 4px; right: 4px; z-index: 4; width: 26px; height: 26px; padding: 0; border: 0; border-radius: 50%; background: rgba(0, 0, 0, 0.75); color: #fff; font: 600 13px / 26px Roboto, Arial, sans-serif; cursor: pointer; opacity: 0; transition: opacity 0.1s; }
+:hover > [ytenrich-dismiss] { opacity: 1; }
+[ytenrich-dismiss]:hover { background: #cc0000; }
+html[ytenrich-no-dismiss] [ytenrich-dismiss] { display: none !important; }
+html[ytenrich-silent-menu] ytd-popup-container tp-yt-iron-dropdown { opacity: 0 !important; }
+/* Tiling WM: native slots are fixed-positioned over pane bodies (rects set inline by the projector). */
+html[ytenrich-wm], html[ytenrich-wm] body { overflow: hidden !important; }
+html[ytenrich-wm] ytd-watch-flexy #columns, html[ytenrich-wm] ytd-watch-flexy #full-bleed-container { visibility: hidden !important; }
+html[ytenrich-wm] [ytenrich-slot] { position: fixed !important; visibility: visible !important; overflow: auto !important; overscroll-behavior: contain; margin: 0 !important; min-width: 0 !important; max-width: none !important; min-height: 0 !important; max-height: none !important; box-sizing: border-box !important; transform: none !important; z-index: 1 !important; padding: 8px 12px !important; background: #fff; }
+html[dark][ytenrich-wm] [ytenrich-slot] { background: #0f0f0f; }
+html[ytenrich-wm] [ytenrich-slot="player"] { overflow: hidden !important; padding: 0 !important; background: #000; }
+html[ytenrich-wm] [ytenrich-slot][ytenrich-slot-inactive] { visibility: hidden !important; pointer-events: none !important; }
+html[ytenrich-wm]
+  [ytenrich-slot="videos"]
+  :is(grid-shelf-view-model, ytd-reel-shelf-renderer, ytd-rich-shelf-renderer) { display: none !important; }
+html[ytenrich-wm] [ytenrich-slot="panels"] ytd-engagement-panel-section-list-renderer { max-height: none !important; height: 100% !important; }
