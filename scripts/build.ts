@@ -1,8 +1,10 @@
 // Build: node scripts/build.ts [--firefox] [--watch].
+
 import { copyFileSync, cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import * as esbuild from 'esbuild';
 import sharp from 'sharp';
 import { chromiumManifest, firefoxManifest } from '../src/manifest.ts';
+import { displayVersion } from './version.ts';
 
 const watch = process.argv.includes('--watch');
 const firefox = process.argv.includes('--firefox');
@@ -43,7 +45,10 @@ const builds: esbuild.BuildOptions[] = [
 
 const statics = async (): Promise<void> => {
   const { version } = JSON.parse(readFileSync('package.json', 'utf8')) as { version: string };
-  const manifest = { ...(firefox ? firefoxManifest : chromiumManifest), version };
+  // Chromium shows `version_name` (the a.b.cd form); Firefox has no such key and shows `version`.
+  const manifest = firefox
+    ? { ...firefoxManifest, version }
+    : { ...chromiumManifest, version, version_name: displayVersion(version) };
   writeFileSync(`${out}/manifest.json`, JSON.stringify(manifest, null, 1));
   cpSync('src/_locales', `${out}/_locales`, { recursive: true });
   copyFileSync('src/youtube/youtube.css', `${out}/youtube.css`);

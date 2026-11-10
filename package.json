@@ -1,6 +1,6 @@
 {
   "name": "ytenrich",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "private": true,
   "type": "module",
   "scripts": {
@@ -9,6 +9,7 @@
     "check": "node scripts/check.ts",
     "smoke": "node scripts/build.ts && node scripts/smoke.ts && node scripts/smoke-browse.ts",
     "package": "node scripts/package.ts",
+    "bump": "node scripts/version.ts",
     "store-assets": "node scripts/build.ts && node scripts/store-assets.ts",
     "test": "vitest run",
     "fix": "biome check --write .",

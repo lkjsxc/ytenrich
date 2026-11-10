@@ -7,7 +7,7 @@ Keep this file in sync with `PRIVACY.md` and the code. Re-check it whenever a fe
   - `ytenrich-<v>-chromium.zip`: Chrome Web Store, Microsoft Edge Add-ons and Opera add-ons all take the same package.
   - `ytenrich-<v>-firefox.zip`: addons.mozilla.org.
   - `ytenrich-<v>-source.zip`: `git archive` of the commit, for reviewers. AMO and Opera require source for bundled or minified code.
-- Bump `package.json` `version` for every upload. Stores reject a version they have already seen.
+- Versions are `a.b.cd`: a single counter that goes up by one per release (`0.2.05` → `0.2.06`, `0.2.99` → `0.3.00`). No digit is a "major" or "minor"; never skip ahead for a big change. `pnpm bump` writes the next one. Manifests cannot hold leading zeros, so `package.json`, the manifests and the tag use `0.2.5` (`v0.2.5`), and the Chromium build also sets `version_name` to the written form `0.2.05`. Stores reject a version they have already seen, so bump for every upload.
 - `pnpm store-assets` writes to `release/store/` (it uses live YouTube, signed out, English, without autoplay, ads or promo popups):
   - screenshots at 1280×800, light and dark: `1-watch`, `2-search`, `3-stats` and `4-welcome-consent`;
   - `promo-440x280.png` (Chrome Web Store small promo tile);
@@ -41,7 +41,7 @@ The workflow requests a short-lived Chrome token. Enter the Edge and Firefox sec
 
 ### Release
 
-1. Bump the version in `package.json` and land it with the release changes on `main`. Check the listing and privacy declarations in each store when data handling, permissions or listing text change. This workflow submits packages to the existing listings. Use the dashboards to update listing details and privacy declarations.
+1. Run `pnpm bump` and land it with the release changes on `main`. Check the listing and privacy declarations in each store when data handling, permissions or listing text change. This workflow submits packages to the existing listings. Use the dashboards to update listing details and privacy declarations.
 2. When ready to submit, push one matching tag at a time from the intended commit on `main`. For example, for version `0.1.1`:
 
    ```sh
