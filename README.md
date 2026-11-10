@@ -2,7 +2,7 @@
 
 A browser extension that makes YouTube more personal and more comfortable to use: recommendation statistics, hiding of recommendations that keep reappearing without being opened, one-click "Not interested", and a tiling window manager layout on every YouTube page.
 
-![Watch page as a tiling window manager](docs/images/watch-tiling-dark.webp)
+![A watch page tiled into panes: player, details, comments, History, Recommended and Stats](docs/images/watch-views-dark.webp)
 
 ## Features
 - **Tiling everywhere**: every page, Shorts included, is a tiling layout, and each pane scrolls on its own.
@@ -55,7 +55,7 @@ pnpm install && pnpm build
 ## Screenshots
 | | |
 |-|-|
-| ![Watch page, dark theme](docs/images/watch-tiling-dark.webp) | Watch page tiling (dark): player, details, comments, recommendations |
+| ![Watch page, dark theme](docs/images/watch-views-dark.webp) | Watch page (dark): the player with Details, Comments and History below it, and ytenrich's Recommended and Stats views on the right |
 
 ## Development
 AI-first repository: start at [AGENTS.md](AGENTS.md).
