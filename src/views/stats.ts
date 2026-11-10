@@ -53,7 +53,7 @@ function rowEl(v: VideoStat, env: ViewEnv, refresh: () => void): HTMLElement {
     h(
       'td',
       null,
-      env.settings.get().thumbnailsEnabled
+      !__FIREFOX__ && env.settings.get().thumbnailsEnabled
         ? h('img', {
             class: 'thumb',
             crossorigin: 'anonymous',

@@ -19,7 +19,7 @@ export type SettingField =
   | { key: SettingKey; label: string; type: 'enum'; options: readonly string[] }
   | { key: SettingKey; label: string; type: 'text'; placeholder: string };
 
-export const SETTINGS_SCHEMA: readonly SettingField[] = [
+const SCHEMA: readonly SettingField[] = [
   { key: 'wmEnabled', label: 'Tiling layout (Alt+W)', type: 'bool' },
   {
     key: 'statsEnabled',
@@ -52,6 +52,13 @@ export const SETTINGS_SCHEMA: readonly SettingField[] = [
     placeholder: 'exact menu text',
   },
 ];
+
+/**
+ * Remote thumbnails send video IDs to i.ytimg.com. The Firefox build declares no data transmission
+ * (data_collection_permissions: none), so it neither offers nor loads them (views test `!__FIREFOX__`
+ * inline so esbuild drops the image code from that build).
+ */
+export const SETTINGS_SCHEMA = SCHEMA.filter((f) => !__FIREFOX__ || f.key !== 'thumbnailsEnabled');
 
 export const SETTINGS_KEY = 'settings';
 

@@ -16,6 +16,7 @@ const common: esbuild.BuildOptions = {
   minify: !watch,
   sourcemap: watch ? 'inline' : false,
   loader: { '.css': 'text' },
+  define: { __FIREFOX__: String(firefox) },
   logLevel: 'warning',
   legalComments: 'none',
 };

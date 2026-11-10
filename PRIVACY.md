@@ -1,23 +1,53 @@
 # ytenrich privacy policy
 
-Effective November 9, 2026
+Last updated: November 10, 2026
 
-ytenrich is a browser extension that changes the layout and recommendations on `www.youtube.com`. It has no developer-operated backend, user account, telemetry, or advertising.
+ytenrich is a browser extension for `www.youtube.com`. It runs entirely in your browser. It has no developer-operated server, account, analytics, telemetry or advertising, and it never sends data to the developer.
 
-## Data stored in your browser
+## What ytenrich stores, and why
 
-Recommendation recording is on by default and can be turned off in Settings. While it is on, the extension reads YouTube video and Shorts IDs, titles, channel names, and where recommendations appeared. It records impressions, opens, dismissal timestamps, and daily totals in the extension's local database. It uses this information to show statistics and hide or dim repeated recommendations. Video exceptions, settings, and pane layouts are also stored in your browser profile. The extension uses no browser sync and does not send its database or aggregate statistics to the developer.
+**Recommendation recording** is on by default. You can turn it off in **Settings**. While it is on, ytenrich keeps a local record of:
+- each video or Short that YouTube shows you as a recommendation and that is at least half visible: its video ID, type (video or Short), title, channel name, the kind of page it appeared on (home, watch, search, channel, subscriptions, Shorts or other), how many times it was shown, and when it was first and last shown;
+- how many times you opened each video, which amounts to a list of the videos you watched;
+- when you used ytenrich's **Not interested** button on a video;
+- videos you exempted from hiding;
+- daily totals of recommendations shown, videos opened and videos dismissed.
 
-You can turn off recommendation recording in **Settings** and erase the stored statistics and video exceptions with **Settings → Clear statistics**. Uninstalling the extension removes its local settings and data. The extension is unavailable in private windows.
+ytenrich uses this record only to show your statistics and to hide or dim recommendations that keep reappearing without being opened. It does not record search queries, comments, or your YouTube account details.
 
-## Interactions with YouTube
+ytenrich also stores your **settings** and **pane layouts**.
 
-If you enable images in **Settings**, the Stats and Shorts views request thumbnails from YouTube's image server (`i.ytimg.com`) over HTTPS using the applicable video IDs. Image requests omit credentials and referrer information. The image server receives ordinary connection information, such as your IP address.
+Everything is stored in your browser profile, in the extension's local storage and database. Browser sync is not used. ytenrich does not run in private windows, so nothing is recorded there.
 
-When you click the extension's **Not interested** button, it selects YouTube's own menu action for that video. YouTube processes the feedback as part of your YouTube session. Opening a video follows YouTube's normal navigation. These interactions with YouTube are subject to [Google's privacy policy](https://policies.google.com/privacy).
+## Retention and deletion
 
-## Limited use and contact
+- A recorded video that you never opened, dismissed or exempted is deleted 90 days after it was last shown.
+- The record holds at most 100,000 videos. Beyond that, the least recently shown videos are deleted first.
+- Other entries and the daily totals stay until you delete them.
+- **Settings → Clear statistics** deletes the whole record, including exemptions.
+- Turning recording off stops new recording. It does not delete what is already stored.
+- Uninstalling the extension deletes all of its stored data.
 
-ytenrich uses browsing activity only to provide its described features. The developer does not sell data or use it for advertising, credit decisions, or profiling. ytenrich follows the Chrome Web Store User Data Policy, including its Limited Use requirements.
+## Network requests
+
+ytenrich makes no network requests of its own except optional images:
+- **Images (Chrome and other Chromium browsers only; off by default).** If you turn on images in **Settings**, the Stats and Shorts views load thumbnails from YouTube's image server (`i.ytimg.com`) over HTTPS. Each request contains a video ID. Requests are sent without cookies and without a referrer. The image server receives ordinary connection information, such as your IP address. The Firefox version does not include this option.
+
+## Actions on YouTube
+
+- **Not interested.** When you click ytenrich's **Not interested** button on a video, ytenrich selects that same option in YouTube's own menu for that video. YouTube receives this feedback as part of your YouTube session, exactly as if you had chosen it yourself. ytenrich never does this without your click.
+- **Opening videos.** Opening a video from the Stats or Shorts view uses YouTube's normal navigation.
+
+Your use of YouTube is subject to [Google's privacy policy](https://policies.google.com/privacy).
+
+## Sharing and limited use
+
+ytenrich does not sell, transfer or share your data with anyone. It does not use your data for advertising, credit decisions or any purpose other than the features described above. No person reads your data. ytenrich's use of the information it handles adheres to the [Chrome Web Store User Data Policy](https://developer.chrome.com/docs/webstore/program-policies), including the Limited Use requirements.
+
+## Changes
+
+Changes to this policy are published in this file, and its history is kept in the project repository. If a change affects what data ytenrich handles, the extension will also tell you about it before the change takes effect.
+
+## Contact
 
 For questions or support, use the [ytenrich issue tracker](https://github.com/lkjsxc/ytenrich/issues).

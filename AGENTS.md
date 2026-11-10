@@ -35,7 +35,7 @@ AI-first repo: no human ergonomics, no backward compatibility, no migrations. Mo
   - `render`, `resize`, `tab-drag`, `menus`, `host`, `presets`.
 - `src/views/`: `registry.ts` lists every tab view. Native views set `slot`; own views set `mount(el, env)`. Own views run in both the WM and the options page.
 - `src/shared/`: h, signal, settings (schema-driven UI), stats-rules, types, log.
-- `docs/architecture.md`: data flow and invariants. `docs/youtube-dom.md`: DOM knowledge and quirks. `docs/features.md`: recipes. `docs/roadmap.md`: next work.
+- `docs/architecture.md`: data flow and invariants. `docs/youtube-dom.md`: DOM knowledge and quirks. `docs/features.md`: recipes. `docs/roadmap.md`: next work. `docs/store.md`: store dashboard answers (keep in sync with `PRIVACY.md`).
 
 ## Images
 - Users drop raw screenshots in `tmp/` (gitignored). Run `pnpm image tmp/<file> <kebab-name>` to write `docs/images/<name>.webp` (≤1920px wide, WebP). Then delete the raw file.

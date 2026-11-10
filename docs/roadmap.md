@@ -9,6 +9,7 @@ awkward natively are rebuilt as own views. Steps, in order:
 4. i3-style keyboard control (focus/move/split/resize keys, numbered tabs).
 
 ## Other
+- Store compliance (Chrome Web Store): add an in-extension disclosure and affirmative consent before recording starts (see `store.md`), or accept the review risk of default-on recording.
 - Add a native view for live chat. (Engagement panels — chapters/transcript — are intentionally not projected.)
 - Channel-level stats (most-pushed channels) and channel auto-hide rules. Add "Don't recommend channel" to quick-dismiss.
 - Option to auto-send "Not interested" for over-exposed videos.

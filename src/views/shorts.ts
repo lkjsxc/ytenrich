@@ -25,7 +25,7 @@ export function mountShorts(el: HTMLElement, env: ViewEnv): () => void {
     const t = h(
       'button',
       { class: 'short', title: item.title, onclick: () => open(item) },
-      env.settings.get().thumbnailsEnabled
+      !__FIREFOX__ && env.settings.get().thumbnailsEnabled
         ? h('img', {
             crossorigin: 'anonymous',
             referrerpolicy: 'no-referrer',

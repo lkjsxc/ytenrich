@@ -33,9 +33,9 @@ export const firefoxManifest = {
     gecko: {
       id: 'ytenrich@lkjsxc',
       strict_min_version: '140.0',
-      data_collection_permissions: {
-        required: ['browsingActivity', 'websiteContent', 'websiteActivity'],
-      },
+      // Stats stay in the browser and remote thumbnails are compiled out of this build (__FIREFOX__),
+      // so nothing is transmitted. Re-check this whenever a feature sends anything off the device.
+      data_collection_permissions: { required: ['none'] },
     },
   },
 };
