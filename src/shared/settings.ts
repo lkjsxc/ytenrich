@@ -28,7 +28,8 @@ const SCHEMA: readonly SettingField[] = [
   },
   {
     key: 'thumbnailsEnabled',
-    label: 'Show images in Stats by requesting video IDs from YouTube’s image server',
+    label:
+      'Show images in Stats, History and Recommended by requesting video IDs from YouTube’s image server',
     type: 'bool',
   },
   {

@@ -14,6 +14,7 @@ awkward natively are rebuilt as own views. Steps, in order:
 - Channel auto-hide rules on top of the `channels` store (Stats → channel row action). Add "Don't recommend channel" to quick-dismiss.
 - Stats: weekday × hour heatmap, per-channel period filter (needs day×channel data), a table/CSV view of the charts.
 - History: native watch history as a tile (same-origin iframe of `/feed/history`, or the MAIN-world bridge); today History is ytenrich's own record of opens.
+- Recommended view opens videos with a full page load when no native anchor exists (needs the MAIN-world bridge for SPA navigation).
 - Shorts tile: verify the projected shelf signed in; fall back to an own grid if the shelf DOM proves unstable.
 - Option to auto-send "Not interested" for over-exposed videos.
 - Compact related-list density options (thumbnail size) in the Videos pane.

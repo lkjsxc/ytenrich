@@ -1,8 +1,9 @@
 export type Kind = 'video' | 'short';
 export type Surface = 'home' | 'watch' | 'search' | 'channel' | 'subs' | 'shorts' | 'other';
 export type PageKind = Surface;
-/** Tiling layout family: watch pages, or every other page (projected whole as the `page` view). */
-export type WmFamily = 'watch' | 'browse';
+/** Tiling layout family: watch pages, the Shorts player, or every other page (the last two are projected
+ * whole as the `page` view). Each family keeps its own saved layout. */
+export type WmFamily = 'watch' | 'browse' | 'shorts';
 
 export type Impression = {
   readonly id: string;
@@ -58,7 +59,15 @@ export type ChannelStat = {
 export type ChannelDelta = Partial<Omit<ChannelStat, 'name' | 'lastSeen'>>;
 export type ChannelSort = 'seen' | 'opened';
 
-export type StatsFilter = 'all' | 'unopened' | 'suppressed' | 'dismissed' | 'opened' | 'allowed';
+/** `pending`: recommended but never opened, dismissed or over-exposed (the Recommended view). */
+export type StatsFilter =
+  | 'pending'
+  | 'all'
+  | 'unopened'
+  | 'suppressed'
+  | 'dismissed'
+  | 'opened'
+  | 'allowed';
 export type StatsSort = 'seen' | 'opened' | 'lastSeen' | 'openedAt';
 export type StatsQuery = {
   sort: StatsSort;

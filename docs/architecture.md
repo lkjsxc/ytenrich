@@ -7,7 +7,7 @@
 - **Background** (`background.js`, service worker / Firefox event page).
   - Sole owner of IndexedDB `ytenrich` (`db.ts`): `videos` by id (indexes `seen`, `opened`, `lastSeen`, `openedAt`, `channel`), `days` by `YYYY-MM-DD` (counters incl. `fresh`/`picked`/`hidden`/`shorts`, `surfaces`, 24 `hours`), `channels` by name (cumulative counters). Upgrades are additive; the v2 upgrade backfills `channels` and `openedAt`.
   - Every write updates video + day + channel rows in one transaction (`stats-repo.ts`). The suppressed-id set is cached in memory per worker lifetime and kept current by each write.
-  - Reads (`stats-read.ts`) are bounded index walks: `query` (page of videos; History is `sort: openedAt`), `overview` (counts + ≤180 days), `channels` (top N).
+  - Reads (`stats-read.ts`) are bounded index walks: `query` (page of videos; History is `sort: openedAt`; Recommended is `filter: pending, sort: lastSeen`), `overview` (counts + ≤180 days), `channels` (top N).
   - Answers `Api` messages (`src/shared/protocol.ts`): `{ok}` | `{error}` replies.
   - Prunes unopened, unallowed, undismissed rows older than 90 days, and caps the store at 100k rows.
 - **Options page** (`options.html`): hosts own views (Stats/Settings/Log) outside YouTube. The toolbar action opens it.
@@ -28,7 +28,7 @@ page signal (watch/shorts videoId) ─► bg.opened (resets suppression for that
 - `patchSettings` stores only values that differ from `DEFAULT_SETTINGS`, so later default changes reach settings the user never touched.
 
 ## Tiling WM
-- Active when `wmEnabled && !fullscreen`; every page kind has a layout family (`wm/presets.ts` `familyOf`): `watch` for watch pages, `browse` for every other kind, Shorts included (the Shorts player is projected whole as `page`). Alt+W toggles it.
+- Active when `wmEnabled && !fullscreen`; every page kind has a layout family (`wm/presets.ts` `familyOf`): `watch` for watch pages, `shorts` for the Shorts player (projected whole as `page`, with the own `recommended` view beside it by default), `browse` for every other kind. Alt+W toggles it.
 - One controller per family (`createWmController(rt, family)`). SPA navigation across families disposes it and creates the other; within a family it only refreshes (and resets the `page` scroll to the top).
 - Views declare `families` in the registry (`viewsOf(family)`); a family's layout, `+` menu and stored-layout filter only use its views.
 - `html[ytenrich-wm]` gates every WM CSS rule in `youtube/youtube.css`.

@@ -32,12 +32,12 @@ Everything is stored in your browser profile, in the extension's local storage a
 ## Network requests
 
 ytenrich makes no network requests of its own except optional images:
-- **Images (Chrome and other Chromium browsers only; off by default).** If you turn on images in **Settings**, the Stats and History views load thumbnails from YouTube's image server (`i.ytimg.com`) over HTTPS. Each request contains a video ID. Requests are sent without cookies and without a referrer. The image server receives ordinary connection information, such as your IP address. The Firefox version does not include this option.
+- **Images (Chrome and other Chromium browsers only; off by default).** If you turn on images in **Settings**, the Stats, History and Recommended views load thumbnails from YouTube's image server (`i.ytimg.com`) over HTTPS. Each request contains a video ID. Requests are sent without cookies and without a referrer. The image server receives ordinary connection information, such as your IP address. The Firefox version does not include this option.
 
 ## Actions on YouTube
 
 - **Not interested.** When you click ytenrich's **Not interested** button on a video, ytenrich selects that same option in YouTube's own menu for that video. YouTube receives this feedback as part of your YouTube session, exactly as if you had chosen it yourself. ytenrich never does this without your click.
-- **Opening videos.** Opening a video from the Stats or History view uses YouTube's normal navigation.
+- **Opening videos.** Opening a video from the Stats, History or Recommended view uses YouTube's normal navigation.
 
 Your use of YouTube is subject to [Google's privacy policy](https://policies.google.com/privacy).
 

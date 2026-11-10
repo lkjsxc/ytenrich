@@ -9,6 +9,7 @@ import type { WmFamily } from '../shared/types.ts';
 import type { NativeSlot } from '../youtube/selectors.ts';
 import { mountHistory } from './history.ts';
 import { mountLog } from './log.ts';
+import { mountRecommended } from './recommended.ts';
 import { mountSettings } from './settings.ts';
 import { mountStats } from './stats/index.ts';
 
@@ -34,13 +35,14 @@ const W: readonly WmFamily[] = ['watch'];
 
 export const VIEWS: readonly ViewDef[] = [
   { id: 'guide', title: 'Guide', slot: 'guide' },
-  { id: 'page', title: 'Page', slot: 'page', families: ['browse'] },
+  { id: 'page', title: 'Page', slot: 'page', families: ['browse', 'shorts'] },
   { id: 'player', title: 'Player', slot: 'player', families: W },
   { id: 'details', title: 'Details', slot: 'details', families: W },
   { id: 'comments', title: 'Comments', slot: 'comments', families: W },
   { id: 'chat', title: 'Chat', slot: 'chat', families: W },
   { id: 'videos', title: 'Videos', slot: 'videos', families: W },
   { id: 'shorts', title: 'Shorts', slot: 'shorts', families: W },
+  { id: 'recommended', title: 'Recommended', mount: mountRecommended },
   { id: 'stats', title: 'Stats', mount: mountStats },
   { id: 'history', title: 'History', mount: mountHistory },
   { id: 'settings', title: 'Settings', mount: mountSettings },

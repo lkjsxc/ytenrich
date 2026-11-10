@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { viewsOf } from '../src/views/registry.ts';
 import * as L from '../src/wm/layout.ts';
 import { parseLayout } from '../src/wm/layout-parse.ts';
-import { browsePreset, familyOf, watchPreset } from '../src/wm/presets.ts';
+import { browsePreset, familyOf, shortsPreset, watchPreset } from '../src/wm/presets.ts';
 import { insertAt, zoneAt } from '../src/wm/tab-drag.ts';
 
 const shape = (n: L.LayoutNode): unknown =>
@@ -23,6 +23,7 @@ describe('layout', () => {
     expect(b.sizes[0]).toBeCloseTo(0.15);
     for (const [family, preset] of [
       ['browse', b],
+      ['shorts', shortsPreset()],
       ['watch', watchPreset()],
     ] as const) {
       const known = new Set(viewsOf(family).map((v) => v.id));
@@ -35,7 +36,7 @@ describe('layout', () => {
       ['watch', 'home', 'search', 'channel', 'subs', 'other', 'shorts'].map((k) =>
         familyOf(k as never),
       ),
-    ).toEqual(['watch', 'browse', 'browse', 'browse', 'browse', 'browse', 'browse']);
+    ).toEqual(['watch', 'browse', 'browse', 'browse', 'browse', 'browse', 'shorts']);
   });
   it('moves a tab to a pane edge, splitting it, and flattens same-direction splits', () => {
     const root = watchPreset();

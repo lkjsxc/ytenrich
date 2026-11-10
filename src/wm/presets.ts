@@ -3,9 +3,9 @@ import { type LayoutNode, pane, split } from './layout.ts';
 
 export const GUIDE_PX = 240; // YouTube's guide renderer width
 
-/** Watch pages have their own family; every other page (Shorts included) is projected whole as `page`. */
+/** Watch pages and the Shorts player have their own families; every other page is `browse`. */
 export function familyOf(kind: PageKind): WmFamily {
-  return kind === 'watch' ? 'watch' : 'browse';
+  return kind === 'watch' || kind === 'shorts' ? kind : 'browse';
 }
 
 /** Default watch-page workspace: player over details | comments+chat, recommendations on the right (Shorts via `+`). */
@@ -34,5 +34,18 @@ export function browsePreset(width = globalThis.innerWidth || 1600): LayoutNode 
   );
 }
 
-export const presetOf = (family: WmFamily): LayoutNode =>
-  family === 'watch' ? watchPreset() : browsePreset();
+/** Default for the Shorts player (a narrow column): recently recommended videos beside it. */
+export function shortsPreset(): LayoutNode {
+  return split(
+    'row',
+    [pane(['page']), pane(['recommended', 'stats', 'history', 'settings', 'log'])],
+    [0.5, 0.5],
+  );
+}
+
+const PRESETS: Record<WmFamily, () => LayoutNode> = {
+  watch: watchPreset,
+  browse: browsePreset,
+  shorts: shortsPreset,
+};
+export const presetOf = (family: WmFamily): LayoutNode => PRESETS[family]();

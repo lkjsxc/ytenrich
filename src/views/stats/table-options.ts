@@ -3,6 +3,7 @@ import type { StatsFilter, StatsQuery, StatsSort } from '../../shared/types.ts';
 
 export const FILTERS: readonly (readonly [StatsFilter, string])[] = [
   ['all', 'All'],
+  ['pending', 'Still recommended'],
   ['suppressed', 'Over-exposed'],
   ['unopened', 'Never opened'],
   ['opened', 'Opened'],
