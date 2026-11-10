@@ -1,17 +1,21 @@
 /* Shadow-root + options-page UI. Dark by default; host [theme=light] mirrors YouTube html[dark] absence. */
-.wm, .layer, .page { --bg: #0f0f0f; --raised: #212121; --fg: #f1f1f1; --muted: #aaa; --line: rgba(255, 255, 255, 0.12); --hover: rgba(255, 255, 255, 0.1); --accent: #3ea6ff; --s1: #3987e5; --s2: #d95926; color: var(--fg); font: 13px / 1.45 Roboto, "Noto Sans JP", Arial, sans-serif; }
-:host([theme="light"]) :is(.wm, .layer) { --bg: #fff; --raised: #f2f2f2; --fg: #0f0f0f; --muted: #606060; --line: rgba(0, 0, 0, 0.12); --hover: rgba(0, 0, 0, 0.06); --accent: #065fd4; --s1: #2a78d6; --s2: #eb6834; }
+.wm, .layer, .page { --bg: #0f0f0f; --raised: #212121; --fg: #f1f1f1; --muted: #aaa; --line: rgba(255, 255, 255, 0.12); --hover: rgba(255, 255, 255, 0.1); --accent: #3ea6ff; --sep: #4a4a4a; --s1: #3987e5; --s2: #d95926; color: var(--fg); font: 13px / 1.45 Roboto, "Noto Sans JP", Arial, sans-serif; }
+:host([theme="light"]) :is(.wm, .layer) { --bg: #fff; --raised: #f2f2f2; --fg: #0f0f0f; --muted: #606060; --line: rgba(0, 0, 0, 0.12); --hover: rgba(0, 0, 0, 0.06); --accent: #065fd4; --sep: #c4c4c4; --s1: #2a78d6; --s2: #eb6834; }
 .wm { position: absolute; inset: 0; display: flex; }
 .wm > .split, .wm > .pane { flex: 1; }
 .split { display: flex; flex: 1; min-width: 0; min-height: 0; }
 .split.row { flex-direction: row; }
 .split.col { flex-direction: column; }
 .cell { display: flex; min-width: 0; min-height: 0; }
-.handle { flex: 0 0 4px; pointer-events: auto; }
+/* Separators are the handles themselves: opaque, with a solid centre line, in the gap between panes where no
+   projected YouTube element can cover them (pane outlines could be painted over). */
+.handle { flex: 0 0 5px; pointer-events: auto; background: var(--bg); }
+.split.row > .handle { background-image: linear-gradient(var(--sep), var(--sep)); background-size: 1px 100%; background-position: center; background-repeat: no-repeat; }
+.split.col > .handle { background-image: linear-gradient(var(--sep), var(--sep)); background-size: 100% 1px; background-position: center; background-repeat: no-repeat; }
 .split.row > .handle { cursor: col-resize; }
 .split.col > .handle { cursor: row-resize; }
-.handle:hover, .handle.active { background: var(--accent); }
-.pane { flex: 1; display: flex; flex-direction: column; min-width: 0; min-height: 0; outline: 1px solid var(--line); outline-offset: -1px; }
+.split > .handle:hover, .split > .handle.active { background: var(--accent); }
+.pane { flex: 1; display: flex; flex-direction: column; min-width: 0; min-height: 0; }
 .strip { display: flex; align-items: center; gap: 2px; flex: 0 0 30px; padding: 0 4px; overflow-x: auto; scrollbar-width: none; background: var(--bg); border-bottom: 1px solid var(--line); pointer-events: auto; }
 [hidden] { display: none !important; }
 button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
