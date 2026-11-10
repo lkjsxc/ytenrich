@@ -14,6 +14,8 @@ export type Runtime = {
   readonly call: typeof call;
   /** Ids the hide feature currently suppresses (shared with views such as Shorts). */
   readonly suppressed: Set<string>;
+  /** Running count of items the hide feature hid (once per navigation and id). */
+  readonly hidden: Signal<number>;
   dispose(): void;
 };
 
@@ -22,13 +24,14 @@ export function createRuntime(): Runtime {
   void loadSettings().then(settings.set);
   const offSettings = onSettings(settings.set);
   const route = createRouteSignal();
-  const scanner = createScanner(route.page, createSignal(0));
+  const scanner = createScanner(route.page);
   return {
     settings,
     page: route.page,
     scanner,
     log: createLog(),
     call,
+    hidden: createSignal(0),
     suppressed: new Set(), // bound: suppressed ids loaded from background (filtered by threshold)
     dispose() {
       offSettings();

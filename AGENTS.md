@@ -4,7 +4,7 @@ MV3 browser extension (Chromium + Firefox ≥140) that enriches youtube.com:
 - recommendation impression stats
 - hiding over-exposed unopened videos
 - a one-click "Not interested" button
-- a tiling window manager (WM) on every page but Shorts (layout families `watch` and `browse`), with ytenrich's own views (Stats/Settings/Log/Shorts) as WM tabs
+- a tiling window manager (WM) on every page (layout families `watch` and `browse`; Shorts and unknown page types tile as `page`), with ytenrich's own views (Stats/History/Settings/Log) as WM tabs
 
 AI-first repo: no human ergonomics, no backward compatibility, no migrations. Move fast.
 
@@ -24,7 +24,7 @@ AI-first repo: no human ergonomics, no backward compatibility, no migrations. Mo
 
 ## Map
 - `src/manifest.ts`: manifest (generated into dist).
-- `src/background/`: IndexedDB stats owner (`stats-repo.ts`) behind the typed protocol in `src/shared/protocol.ts`.
+- `src/background/`: IndexedDB stats owner (`db.ts` schema, `stats-repo.ts` writes, `stats-read.ts` queries) behind the typed protocol in `src/shared/protocol.ts`.
 - `src/content/`:
   - `runtime.ts`: shared context.
   - `scanner.ts`: one MO + IO, giving `RecoItem` and `seen` events.
@@ -35,7 +35,7 @@ AI-first repo: no human ergonomics, no backward compatibility, no migrations. Mo
   - `controller.ts`: state, render, persistence.
   - `projector.ts`: native slot positioning.
   - `render`, `resize`, `tab-drag`, `menus`, `host`, `presets`.
-- `src/views/`: `registry.ts` lists every tab view. Native views set `slot`; own views set `mount(el, env)`. Own views run in both the WM and the options page.
+- `src/views/`: `registry.ts` lists every tab view. Native views set `slot`; own views set `mount(el, env)`. Own views run in both the WM and the options page. `views/stats/` is the Stats view (pure period math in `period.ts`; charts are plain flex DOM in `parts.ts`).
 - `src/shared/`: h, signal, settings (schema-driven UI), stats-rules, types, log.
 - `docs/architecture.md`: data flow and invariants. `docs/youtube-dom.md`: DOM knowledge and quirks. `docs/features.md`: recipes. `docs/roadmap.md`: next work. `docs/store.md`: store dashboard answers (keep in sync with `PRIVACY.md`).
 

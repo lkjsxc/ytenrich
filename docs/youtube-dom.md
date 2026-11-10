@@ -12,6 +12,11 @@ All names live in `src/youtube/selectors.ts` and `src/youtube/youtube.css`. Fixt
 - Lockup title is `h3[title]`. Channel is the first `.ytContentMetadataViewModelMetadataRow` text. The thumbnail box is `yt-thumbnail-view-model` .
 - `#movie_player` contains end-screen `/watch` anchors, which are excluded via `NOT_RECO`.
 
+## Shorts shelf (watch page)
+- The `shorts` slot is the first shelf in `#related` that contains `/shorts/` anchors. Projected, it leaves the Videos list (fixed position) and wraps its items to the pane; without the Shorts tab, shelves stay inline in Videos.
+- Signed out, watch pages showed no Shorts shelf on 2026-11-10, so the projected shelf CSS (`.ytGridShelfViewModelGridShelf*`) is verified only for the empty state. Check it signed in.
+- A native view whose element is missing gets `.body.native.empty` (projector) and shows "Nothing to show here on this page." after 2s.
+
 ## Menus
 - The item menu button is `.ytLockupMetadataViewModelMenuButton button` (aria-label "More actions"). For shorts, use `.shortsLockupViewModelHostOutsideMetadataMenu button`.
 - The popup is `ytd-popup-container > tp-yt-iron-dropdown > … yt-sheet-view-model … yt-list-item-view-model > button[role=menuitem]`.
@@ -34,7 +39,10 @@ All names live in `src/youtube/selectors.ts` and `src/youtube/youtube.css`. Fixt
 - Opening the guide drawer (or a modal) adds `body.lock-scrollbar` → body `position:fixed` → body becomes a stacking context. Anything of ours that must stack *between* YouTube layers has to live inside body.
 
 ## Browse pages (home/search/channel/playlist/feeds)
-- `ytd-page-manager` keeps one element per visited page type; inactive ones carry `[hidden]`. The `page` slot is the visible `ytd-browse` (all feeds, channels, playlists) or `ytd-search`.
+- `ytd-page-manager` keeps one element per visited page type; inactive ones carry `[hidden]`. The `page` slot is its visible child that is not the watch page (`ytd-browse` for feeds/channels/playlists, `ytd-search`, `ytd-shorts`, and any page type added later).
+- `ytd-shorts` fits its player to the tile and keeps its own scroller (`overflow: hidden` on the slot); ArrowDown/Up navigation works (verified 2026-11-10).
+- YouTube sizes `ytd-two-column-browse-results-renderer` and chip bars from the *window* width, so they overflow a narrower tile. The page slot is `overflow-x: hidden` and those parts are forced to 100% width. The sticky chip header gets explicit theme backgrounds (it turned white in dark mode when scrolled sideways).
+- Dark theme in smokes: cookie `PREF=f6=400` (Playwright `colorScheme` alone leaves `html[dark]` unset).
 - Projected whole, it becomes its own scroller. Infinite scroll keeps working (continuations use IntersectionObserver), verified on search and channel videos.
 - Parts that are `position:fixed` against window scroll must be unfixed: the channel/playlist `tp-yt-app-header[fixed]` (absolute at the top of its `tp-yt-app-header-layout`, which already reserves its height as padding; it also has `margin-top: masthead`), and the home `#chips-wrapper` (made relative; not verifiable signed out).
 - Home (signed in) sets `ytd-app #frosted-glass` to `with-chipbar`: fixed at top 0, 112px tall, z 2018, backdrop blur. It sits over our tab strips (host z 2), so it is hidden while tiling. The browse smoke forces that mode and hit-tests the strip.

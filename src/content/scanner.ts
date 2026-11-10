@@ -24,32 +24,21 @@ export type Scanner = {
   onTick(fn: () => void): () => void;
   /** Items found during the current navigation, keyed by video id. */
   pageItems(): ReadonlyMap<string, RecoItem>;
-  readonly version: Signal<number>;
-  markSeen(item: RecoItem): void;
   dispose(): void;
 };
 
-export function createScanner(page: Signal<Page>, version: Signal<number>): Scanner {
+export function createScanner(page: Signal<Page>): Scanner {
   const itemListeners = new Set<Listener>();
   const seenListeners = new Set<Listener>();
   const byEl = new WeakMap<Element, RecoItem>();
   let items = new Map<string, RecoItem>();
   let seen = new Set<string>(); // bounded by items per navigation
-  let bumpQueued = false;
+  const batch = new Set<Element>(); // roots visited in the current scan (cleared after each)
   const tickListeners = new Set<() => void>();
   let tickFrame = 0;
   const tick = (): void => {
     tickFrame = 0;
     for (const fn of tickListeners) fn();
-  };
-
-  const bump = (): void => {
-    if (bumpQueued) return;
-    bumpQueued = true;
-    setTimeout(() => {
-      bumpQueued = false;
-      version.update((v) => v + 1);
-    }, 250);
   };
 
   const markSeen = (item: RecoItem): void => {
@@ -70,7 +59,8 @@ export function createScanner(page: Signal<Page>, version: Signal<number>): Scan
 
   const visit = (anchor: Element): void => {
     const root = itemRootOf(anchor);
-    if (!root) return;
+    if (!root || batch.has(root)) return; // a lockup holds several anchors to the same video
+    batch.add(root);
     const info = extractItem(root);
     if (!info) return;
     const prev = byEl.get(root);
@@ -80,18 +70,21 @@ export function createScanner(page: Signal<Page>, version: Signal<number>): Scan
     byEl.set(root, item);
     if (items.size < MAX_PAGE_ITEMS) items.set(item.id, item);
     for (const fn of itemListeners) fn(item);
-    bump();
   };
 
   const scan = (node: Element): void => {
     for (const a of anchorsIn(node)) visit(a);
   };
-
-  const mo = new MutationObserver((records) => {
+  const scanAll = (records: readonly MutationRecord[]): void => {
     for (const r of records) {
       if (r.type === 'attributes') visit(r.target as Element);
       else for (const n of r.addedNodes) if (n.nodeType === 1) scan(n as Element);
     }
+    batch.clear();
+  };
+
+  const mo = new MutationObserver((records) => {
+    scanAll(records);
     if (tickListeners.size) tickFrame ||= requestAnimationFrame(tick);
   });
   mo.observe(document.documentElement, {
@@ -104,9 +97,8 @@ export function createScanner(page: Signal<Page>, version: Signal<number>): Scan
   const unsubPage = page.subscribe(() => {
     items = new Map();
     seen = new Set();
-    bump();
   });
-  if (document.body) scan(document.body);
+  if (document.body) scan(document.body), batch.clear();
 
   return {
     onItem(fn) {
@@ -122,8 +114,6 @@ export function createScanner(page: Signal<Page>, version: Signal<number>): Scan
       return () => tickListeners.delete(fn);
     },
     pageItems: () => items,
-    version,
-    markSeen,
     dispose() {
       mo.disconnect();
       io.disconnect();

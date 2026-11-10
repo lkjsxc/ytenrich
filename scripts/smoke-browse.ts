@@ -2,7 +2,7 @@
 import { launch, rect, tabs } from './smoke-lib.ts';
 
 const { ctx, page, sw, errors, welcome } = await launch();
-// Consent: the welcome tab opens on install; recording stays off until "Start recording".
+// Consent: the welcome tab opens on install; stats stay off until "Enable stats".
 const consent = { welcome: Boolean(welcome), before: false, after: false };
 if (welcome) {
   await welcome.waitForLoadState();
@@ -15,7 +15,7 @@ if (welcome) {
     );
   consent.before = await on();
   await welcome.screenshot({ path: 'tmp/smoke-welcome.png' });
-  await welcome.locator('button:has-text("Start recording")').click();
+  await welcome.locator('button:has-text("Enable stats")').click();
   await welcome.waitForTimeout(500);
   consent.after = await on();
   await welcome.close();

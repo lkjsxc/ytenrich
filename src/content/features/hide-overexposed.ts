@@ -8,9 +8,15 @@ export const hideOverexposed: Feature = {
   id: 'hide',
   start(rt) {
     const d = createDisposables();
+    let counted = new Set<string>(); // ids hidden in this navigation (bounded by its items)
+    d.add(rt.page.subscribe(() => (counted = new Set())));
     const apply = (item: RecoItem): void => {
       const mode = rt.settings.get().hideMode;
       const hit = mode !== 'off' && rt.suppressed.has(item.id);
+      if (hit && mode === 'hide' && !counted.has(item.id)) {
+        counted.add(item.id);
+        rt.hidden.update((n) => n + 1);
+      }
       toggleAttr(item.el, 'ytenrich-hidden', hit && mode === 'hide');
       toggleAttr(item.el, 'ytenrich-dim', hit && mode === 'dim');
     };

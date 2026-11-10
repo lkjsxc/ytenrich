@@ -23,12 +23,12 @@ const SCHEMA: readonly SettingField[] = [
   { key: 'wmEnabled', label: 'Tiling layout (Alt+W)', type: 'bool' },
   {
     key: 'statsEnabled',
-    label: 'Record YouTube recommendations and opens on this device for stats and filtering',
+    label: 'Stats: count recommendations shown and videos opened, on this device only',
     type: 'bool',
   },
   {
     key: 'thumbnailsEnabled',
-    label: 'Show images in Stats and Shorts by requesting video IDs from YouTube’s image server',
+    label: 'Show images in Stats by requesting video IDs from YouTube’s image server',
     type: 'bool',
   },
   {

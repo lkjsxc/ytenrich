@@ -7,6 +7,7 @@ import {
   STATS_REV_KEY,
 } from '../shared/protocol.ts';
 import { DEFAULT_SETTINGS, loadSettings, onSettings } from '../shared/settings.ts';
+import * as read from './stats-read.ts';
 import * as repo from './stats-repo.ts';
 
 // First install: the welcome page explains the extension and asks for recording consent.
@@ -35,43 +36,22 @@ const MUTATING: ReadonlySet<Method> = new Set(['record', 'opened', 'dismissed', 
 
 type Handlers = { [K in Method]: (req: Api[K]['req']) => Promise<Api[K]['res']> };
 const handlers: Handlers = {
-  async record({ items }) {
+  async record({ items, hidden }) {
     sincePrune += items.length;
     if (sincePrune > PRUNE_EVERY) {
       sincePrune = 0;
       void repo.prune();
     }
-    return { suppressed: await repo.record(items, threshold) };
+    return { suppressed: await repo.record(items, hidden, threshold) };
   },
-  async opened({ id, kind, title, channel }) {
-    await repo.mutate(
-      id,
-      (s) => ({
-        ...s,
-        kind,
-        title: title || s.title,
-        channel: channel || s.channel,
-        opened: s.opened + 1,
-      }),
-      'opened',
-    );
-    return null;
-  },
-  async dismissed({ id }) {
-    await repo.mutate(id, (s) => ({ ...s, dismissedAt: Date.now() }), 'dismissed');
-    return null;
-  },
-  suppressed: () => repo.suppressedIds(threshold),
-  query: (q) => repo.query(q, threshold),
-  summary: () => repo.summary(threshold),
-  async allow({ id, allowed }) {
-    await repo.mutate(id, (s) => ({ ...s, allowed }));
-    return null;
-  },
-  async clear() {
-    await repo.clear();
-    return null;
-  },
+  opened: (req) => repo.opened(req).then(() => null),
+  dismissed: ({ id }) => repo.dismissed(id).then(() => null),
+  suppressed: async () => [...(await repo.suppressedIds(threshold))],
+  query: (q) => read.query(q, threshold),
+  overview: () => read.overview(threshold),
+  channels: ({ sort, limit }) => read.channels(sort, limit),
+  allow: ({ id, allowed }) => repo.allow(id, allowed).then(() => null),
+  clear: () => repo.clear().then(() => null),
 };
 
 chrome.runtime.onMessage.addListener(

@@ -1,13 +1,23 @@
 // Typed request/response protocol between content/options pages and the background (stats owner).
-import type { Impression, Kind, StatsQuery, Summary, VideoStat } from './types.ts';
+import type {
+  ChannelSort,
+  ChannelStat,
+  Impression,
+  Kind,
+  Overview,
+  StatsPage,
+  StatsQuery,
+} from './types.ts';
 
 export type Api = {
-  record: { req: { items: readonly Impression[] }; res: { suppressed: string[] } };
+  /** `hidden`: over-exposed recommendations hidden since the last call. */
+  record: { req: { items: readonly Impression[]; hidden: number }; res: { suppressed: string[] } };
   opened: { req: { id: string; kind: Kind; title: string; channel: string }; res: null };
   dismissed: { req: { id: string }; res: null };
   suppressed: { req: null; res: string[] };
-  query: { req: StatsQuery; res: VideoStat[] };
-  summary: { req: null; res: Summary };
+  query: { req: StatsQuery; res: StatsPage };
+  overview: { req: null; res: Overview };
+  channels: { req: { sort: ChannelSort; limit: number }; res: ChannelStat[] };
   allow: { req: { id: string; allowed: boolean }; res: null };
   clear: { req: null; res: null };
 };

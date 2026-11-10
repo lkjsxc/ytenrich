@@ -18,7 +18,7 @@ const settings = createSignal<Settings>(DEFAULT_SETTINGS);
 void loadSettings().then(settings.set);
 onSettings(settings.set);
 const env: ViewEnv = { call, log: createLog(), settings };
-const tabs = VIEWS.filter((v) => v.mount && !v.needsScanner);
+const tabs = VIEWS.filter((v) => v.mount);
 const nav = h('nav');
 const main = h('div', { class: 'view' });
 let dispose: Disposer = () => undefined;

@@ -46,6 +46,7 @@ export function createProjector(log: Log): Projector {
       const el = resolveSlot(slot);
       const prev = tagged.get(slot);
       if (prev && prev.el !== el) release(prev.el), tagged.delete(slot);
+      body?.classList.toggle('empty', !el);
       if (!el) {
         if (body) missing.push(slot);
         continue;

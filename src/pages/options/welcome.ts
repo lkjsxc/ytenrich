@@ -1,4 +1,4 @@
-// First-run welcome (options.html#welcome, opened on install): what ytenrich does, then recording consent.
+// First-run welcome (options.html#welcome, opened on install): what ytenrich does, then stats consent.
 import { h } from '../../shared/h.ts';
 import type { Settings } from '../../shared/settings.ts';
 import type { Signal } from '../../shared/signal.ts';
@@ -10,12 +10,12 @@ export function welcome(settings: Signal<Settings>): HTMLElement {
   const render = (s: Settings): void => {
     answer.replaceChildren(
       s.statsEnabled
-        ? h('p', null, 'Recording is on. Your Stats fill up as you browse YouTube.')
+        ? h('p', null, 'Stats are on. They fill up as you browse YouTube.')
         : declined
           ? h(
               'p',
               { class: 'muted' },
-              'Recording stays off. You can turn it on later in Stats or Settings.',
+              'Stats stay off. You can enable them later in Stats or Settings.',
             )
           : consentCard(() => ((declined = true), render(settings.get()))),
     );
@@ -29,11 +29,7 @@ export function welcome(settings: Signal<Settings>): HTMLElement {
     h(
       'ul',
       null,
-      h(
-        'li',
-        null,
-        'Every YouTube page except Shorts becomes a tiling layout. Alt+W turns it off and on.',
-      ),
+      h('li', null, 'Every YouTube page becomes a tiling layout. Alt+W turns it off and on.'),
       h('li', null, 'Drag tabs to split, join or reorder panes. ☰ shows the Guide as a tile.'),
       h(
         'li',

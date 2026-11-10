@@ -1,4 +1,4 @@
-// Tiling WM on every page but Shorts (layout family per page kind). Alt+W toggles. Unmounts during fullscreen.
+// Tiling WM on every page (layout family per page kind). Alt+W toggles. Unmounts during fullscreen.
 import { patchSettings } from '../../shared/settings.ts';
 import { createDisposables } from '../../shared/signal.ts';
 import { createWmController, type Wm } from '../../wm/controller.ts';

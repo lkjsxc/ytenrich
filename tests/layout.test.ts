@@ -11,12 +11,15 @@ const shape = (n: L.LayoutNode): unknown =>
 describe('layout', () => {
   it('preset has player over details | comments, and recommendations', () => {
     expect(shape(watchPreset())).toEqual({
-      row: [{ col: ['player', { row: ['details', 'comments'] }] }, 'videos|stats|settings|log'],
+      row: [
+        { col: ['player', { row: ['details', 'comments|chat'] }] },
+        'videos|stats|history|settings|log',
+      ],
     });
   });
   it('browse preset: guide beside the page; every preset view exists in its family', () => {
     const b = browsePreset(1600) as L.SplitNode;
-    expect(shape(b)).toEqual({ row: ['guide', 'page|stats|settings|log'] });
+    expect(shape(b)).toEqual({ row: ['guide', 'page|stats|history|settings|log'] });
     expect(b.sizes[0]).toBeCloseTo(0.15);
     for (const [family, preset] of [
       ['browse', b],
@@ -27,19 +30,23 @@ describe('layout', () => {
     }
     expect(viewsOf('browse').some((v) => v.id === 'player')).toBe(false);
   });
-  it('page kinds map to layout families (Shorts keeps YouTube UI)', () => {
+  it('page kinds map to layout families (Shorts tiles as a page)', () => {
     expect(
       ['watch', 'home', 'search', 'channel', 'subs', 'other', 'shorts'].map((k) =>
         familyOf(k as never),
       ),
-    ).toEqual(['watch', 'browse', 'browse', 'browse', 'browse', 'browse', null]);
+    ).toEqual(['watch', 'browse', 'browse', 'browse', 'browse', 'browse', 'browse']);
   });
   it('moves a tab to a pane edge, splitting it, and flattens same-direction splits', () => {
     const root = watchPreset();
     const right = L.paneOfView(root, 'videos')!;
     const next = L.moveView(root, 'stats', right.id, 'right');
     expect(shape(next)).toEqual({
-      row: [{ col: ['player', { row: ['details', 'comments'] }] }, 'videos|settings|log', 'stats'],
+      row: [
+        { col: ['player', { row: ['details', 'comments|chat'] }] },
+        'videos|history|settings|log',
+        'stats',
+      ],
     });
     const s = next as L.SplitNode;
     expect(s.sizes.reduce((a, b) => a + b, 0)).toBeCloseTo(1);
@@ -53,7 +60,7 @@ describe('layout', () => {
   it('removing the last tab removes the pane and collapses the split', () => {
     const root = L.removeView(watchPreset(), 'player')!;
     expect(shape(root)).toEqual({
-      row: ['details', 'comments', 'videos|stats|settings|log'],
+      row: ['details', 'comments|chat', 'videos|stats|history|settings|log'],
     });
   });
   it('center drop joins and activates', () => {
@@ -66,7 +73,7 @@ describe('layout', () => {
     });
   });
   it('reorders tabs within a strip and inserts at an index across panes', () => {
-    const root = watchPreset();
+    const root = L.removeView(watchPreset(), 'history') as L.LayoutNode;
     const right = L.paneOfView(root, 'videos')!;
     const r1 = L.moveView(root, 'log', right.id, 'center', 0);
     expect(L.paneOfView(r1, 'log')?.tabs).toEqual(['log', 'videos', 'stats', 'settings']);
@@ -86,8 +93,8 @@ describe('layout', () => {
     expect(shape(next)).toEqual({
       row: [
         'guide',
-        { col: ['player', { row: ['details', 'comments'] }] },
-        'videos|stats|settings|log',
+        { col: ['player', { row: ['details', 'comments|chat'] }] },
+        'videos|stats|history|settings|log',
       ],
     });
     expect(next.sizes[0]).toBeCloseTo(0.15);

@@ -7,17 +7,17 @@ import type { Settings } from '../shared/settings.ts';
 import type { Disposer, Signal } from '../shared/signal.ts';
 import type { WmFamily } from '../shared/types.ts';
 import type { NativeSlot } from '../youtube/selectors.ts';
+import { mountHistory } from './history.ts';
 import { mountLog } from './log.ts';
 import { mountSettings } from './settings.ts';
-import { mountShorts } from './shorts.ts';
-import { mountStats } from './stats.ts';
+import { mountStats } from './stats/index.ts';
 
 export type ViewEnv = {
   readonly call: typeof call;
   readonly log: Log;
   readonly settings: Signal<Settings>;
+  /** Present inside YouTube only (the options page has no page items). */
   readonly scanner?: Scanner;
-  readonly suppressed?: ReadonlySet<string>;
 };
 export type ViewDef = {
   readonly id: string;
@@ -28,7 +28,6 @@ export type ViewDef = {
   readonly families?: readonly WmFamily[];
   /** Own view rendered by ytenrich into the pane body. */
   readonly mount?: (el: HTMLElement, env: ViewEnv) => Disposer;
-  readonly needsScanner?: boolean;
 };
 
 const W: readonly WmFamily[] = ['watch'];
@@ -41,8 +40,9 @@ export const VIEWS: readonly ViewDef[] = [
   { id: 'comments', title: 'Comments', slot: 'comments', families: W },
   { id: 'chat', title: 'Chat', slot: 'chat', families: W },
   { id: 'videos', title: 'Videos', slot: 'videos', families: W },
-  { id: 'shorts', title: 'Shorts', mount: mountShorts, needsScanner: true },
+  { id: 'shorts', title: 'Shorts', slot: 'shorts', families: W },
   { id: 'stats', title: 'Stats', mount: mountStats },
+  { id: 'history', title: 'History', mount: mountHistory },
   { id: 'settings', title: 'Settings', mount: mountSettings },
   { id: 'log', title: 'Log', mount: mountLog },
 ];

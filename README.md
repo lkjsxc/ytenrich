@@ -5,20 +5,21 @@ A browser extension that makes YouTube more personal and more comfortable to use
 ![Watch page as a tiling window manager](docs/images/watch-tiling-dark.webp)
 
 ## Features
-- **Tiling everywhere**: every page except Shorts is a tiling layout, and each pane scrolls on its own.
+- **Tiling everywhere**: every page, Shorts included, is a tiling layout, and each pane scrolls on its own.
   - Watch pages: the player sits above Details | Comments side by side, with recommendations on the right, all in resizable panes.
   - Home, search, channels, playlists and feeds: the guide sits on the left and the page itself is a tab next to Stats/Settings/Log.
   - Watch pages and the other pages each keep their own saved layout.
   - Drag a tab to a pane edge to split that pane, onto a pane to join its tabs, or between tabs of a strip to reorder.
   - The ☰ button toggles YouTube's guide (sidebar) as a tile on the left instead of an overlay drawer.
-  - Recommendations are split into Videos and a Shorts view; Shorts is off by default and can be added from a pane's `+` menu.
-  - Stats, Settings and Log open as tabs inside the panes. Settings can reset the layout.
+  - On watch pages, Chat sits next to Comments, and the Shorts shelf of the recommendations can become its own tile (pane `+` menu → Shorts).
+  - The Shorts player page is a tile too.
+  - Stats, History, Settings and Log open as tabs inside the panes. Settings can reset the layout.
   - `Alt+W` turns tiling off and on.
 - **Recommendation stats**: each recommendation counts as seen once it is at least half visible, at most once per page view. The Stats view updates live; clicking a video opens it in the same tab.
 - **Hide over-exposed videos**: videos recommended N times that you never opened are hidden or dimmed. You choose N.
 - **One-click "Not interested"**: an always-visible ⊘ button right next to every recommendation's ⋮ menu. On success the item collapses at once; on failure ⊘ turns red and its tooltip (and the Log) lists the menu entries YouTube offered.
 
-Recommendation recording starts only after you agree to it on the welcome page (or later in Stats or Settings). It stays on this device, never reaches the developer, and builds your stats and the repeated-recommendation filter. Thumbnail images in the Stats and Shorts views are a separate opt-in (Chromium only). See the [privacy policy](PRIVACY.md).
+Stats are enabled only after you agree on the welcome page (or later in Stats or Settings). It stays on this device, never reaches the developer, and builds your stats and the repeated-recommendation filter. Thumbnail images in the Stats and History views are a separate opt-in (Chromium only). See the [privacy policy](PRIVACY.md).
 
 ## Install (from source)
 ```sh

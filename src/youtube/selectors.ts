@@ -48,14 +48,19 @@ export const MENU_ITEM = [
 ].join(', ');
 export const MENU_ITEM_CLICK = 'button, tp-yt-paper-item';
 
-/** Native slots projected into WM panes. `page` is the current non-watch page (home/search/channel/feeds). */
+/** Shelf containers that can hold a row of Shorts inside a recommendation list. */
+const SHELVES = 'grid-shelf-view-model, ytd-reel-shelf-renderer, ytd-rich-shelf-renderer';
+
+/** Native slots projected into WM panes. `page` is the whole current non-watch page (home, search, channel, feeds, Shorts, anything new);
+ * `shorts` is the first Shorts shelf of the watch page's recommendations. */
 export const NATIVE_SLOTS = {
-  page: 'ytd-page-manager > :is(ytd-browse, ytd-search):not([hidden])',
+  page: 'ytd-page-manager > :not([hidden], ytd-watch-flexy)',
   player: 'ytd-watch-flexy #player-container',
   details: 'ytd-watch-flexy ytd-watch-metadata',
   comments: 'ytd-watch-flexy ytd-comments#comments',
   videos: 'ytd-watch-flexy #related',
   chat: 'ytd-watch-flexy #chat-container',
+  shorts: `ytd-watch-flexy #related :is(${SHELVES}):has(a[href^="/shorts/"])`,
   guide: 'tp-yt-app-drawer#guide #guide-inner-content',
 } as const;
 export type NativeSlot = keyof typeof NATIVE_SLOTS;

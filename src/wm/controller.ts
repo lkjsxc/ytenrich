@@ -33,7 +33,6 @@ export function createWmController(rt: Runtime, family: WmFamily): Wm {
     log: rt.log,
     settings: rt.settings,
     scanner: rt.scanner,
-    suppressed: rt.suppressed,
   };
   const known = new Set(VIEWS.map((v) => v.id));
   const mounts = new Map<string, { el: HTMLElement; dispose: Disposer }>(); // bound: one per own view

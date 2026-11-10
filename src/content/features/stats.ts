@@ -13,14 +13,17 @@ export const stats: Feature = {
     const d = createDisposables();
     let buffer: Impression[] = [];
     let timer: ReturnType<typeof setTimeout> | undefined;
+    let hides = 0; // over-exposed items hidden since the last flush
     const recent = new Map<string, { title: string; channel: string; kind: Kind }>();
 
     const flush = (): void => {
       timer = undefined;
       const items = buffer;
+      const hidden = hides;
       buffer = [];
-      if (!items.length || !rt.settings.get().statsEnabled) return;
-      rt.call('record', { items }).then(
+      hides = 0;
+      if ((!items.length && !hidden) || !rt.settings.get().statsEnabled) return;
+      rt.call('record', { items, hidden }).then(
         (r) => r.suppressed.forEach((id) => rt.suppressed.add(id)),
         (e: unknown) => rt.log.write('warn', 'stats', `record: ${String(e)}`),
       );
@@ -38,6 +41,13 @@ export const stats: Feature = {
           title: item.title,
           channel: item.channel,
         });
+        timer ??= setTimeout(flush, FLUSH_MS);
+      }),
+    );
+    d.add(
+      rt.hidden.subscribe(() => {
+        if (!rt.settings.get().statsEnabled) return;
+        hides++;
         timer ??= setTimeout(flush, FLUSH_MS);
       }),
     );
@@ -66,7 +76,7 @@ export const stats: Feature = {
     d.add(
       rt.settings.subscribe((settings) => {
         if (settings.statsEnabled) opened();
-        else buffer = [];
+        else (buffer = []), (hides = 0);
       }),
     );
 

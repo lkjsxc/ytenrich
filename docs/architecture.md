@@ -5,7 +5,9 @@
   - `createRuntime()` builds: settings signal (chrome.storage.local + onChanged), page signal (URL → PageKind; updated on `yt-navigate-finish`/popstate), scanner, log (ring buffer 200), and `suppressed` id set.
   - Features start from `FEATURES` and each returns a disposer.
 - **Background** (`background.js`, service worker / Firefox event page).
-  - Sole owner of IndexedDB `ytenrich` (`videos` keyed by id, with indexes `seen` and `lastSeen`; `days` keyed by `YYYY-MM-DD`).
+  - Sole owner of IndexedDB `ytenrich` (`db.ts`): `videos` by id (indexes `seen`, `opened`, `lastSeen`, `openedAt`, `channel`), `days` by `YYYY-MM-DD` (counters incl. `fresh`/`picked`/`hidden`/`shorts`, `surfaces`, 24 `hours`), `channels` by name (cumulative counters). Upgrades are additive; the v2 upgrade backfills `channels` and `openedAt`.
+  - Every write updates video + day + channel rows in one transaction (`stats-repo.ts`). The suppressed-id set is cached in memory per worker lifetime and kept current by each write.
+  - Reads (`stats-read.ts`) are bounded index walks: `query` (page of videos; History is `sort: openedAt`), `overview` (counts + ≤180 days), `channels` (top N).
   - Answers `Api` messages (`src/shared/protocol.ts`): `{ok}` | `{error}` replies.
   - Prunes unopened, unallowed, undismissed rows older than 90 days, and caps the store at 100k rows.
 - **Options page** (`options.html`): hosts own views (Stats/Settings/Log) outside YouTube. The toolbar action opens it.
@@ -22,11 +24,11 @@ page signal (watch/shorts videoId) ─► bg.opened (resets suppression for that
 - YouTube recycles renderer elements. The scanner keys state by element plus current id/anchor and re-emits on change, so consumers must be idempotent and set *and clear* attributes.
 
 ## Consent and settings
-- Recording (`statsEnabled`) defaults to off. The first install opens `options.html#welcome` (background `onInstalled`), which explains the record and asks. The Stats view shows the same card (`views/consent.ts`) while recording is off. Store policies require this in-UI disclosure and consent even for local-only data.
+- Stats (`statsEnabled`; UI wording is "Enable stats", never "recording") default to off. The first install opens `options.html#welcome` (background `onInstalled`), which explains the record and asks. The Stats view shows the same card (`views/consent.ts`) while recording is off. Store policies require this in-UI disclosure and consent even for local-only data.
 - `patchSettings` stores only values that differ from `DEFAULT_SETTINGS`, so later default changes reach settings the user never touched.
 
 ## Tiling WM
-- Active when `wmEnabled && !fullscreen` and the page kind has a layout family (`wm/presets.ts` `familyOf`): `watch` for watch pages, `browse` for every other kind except Shorts (YouTube's own full-screen player stays). Alt+W toggles it.
+- Active when `wmEnabled && !fullscreen`; every page kind has a layout family (`wm/presets.ts` `familyOf`): `watch` for watch pages, `browse` for every other kind, Shorts included (the Shorts player is projected whole as `page`). Alt+W toggles it.
 - One controller per family (`createWmController(rt, family)`). SPA navigation across families disposes it and creates the other; within a family it only refreshes (and resets the `page` scroll to the top).
 - Views declare `families` in the registry (`viewsOf(family)`); a family's layout, `+` menu and stored-layout filter only use its views.
 - `html[ytenrich-wm]` gates every WM CSS rule in `youtube/youtube.css`.
@@ -49,6 +51,12 @@ page signal (watch/shorts videoId) ─► bg.opened (resets suppression for that
 ## Stats freshness
 - After any mutating call (record/opened/dismissed/allow/clear) the background writes `statsRev` to `chrome.storage.local`, throttled to one write per 1.5s window. `onStatsChanged` (shared/protocol.ts) delivers this to every context.
 - The Stats view refreshes on it only while it is visible (IntersectionObserver + `visibilitychange`). Otherwise it marks itself dirty and refreshes when shown.
+
+## Stats view
+- `views/stats/index.ts` fetches `overview` + `channels` + `query` together and repaints a section only when its JSON signature changed. Live refreshes are throttled to one per 4s.
+- Periods (7/30/90 days) are computed client-side from `overview.days` (`period.ts`: zero-filled series, totals, change vs the previous period).
+- Colors: `--s1` (new) and `--s2` (repeats) in `ui/ui.css` are the only series colors; text never uses them.
+- Hidden counts: the hide feature bumps `rt.hidden` once per (navigation, id); the stats feature flushes it with `record`.
 
 ## Invariants
 - Disposal restores YouTube exactly: attributes and inline props are removed, the host is removed, and a resize is dispatched.
