@@ -15,9 +15,12 @@ import { insertAt, zoneAt } from '../src/wm/tab-drag.ts';
 const shape = (n: L.LayoutNode): unknown =>
   n.type === 'pane' ? n.tabs.join('|') : { [n.dir]: n.children.map(shape) };
 
-/** The watch preset as these tests were written: no optional Playlist tab, YouTube's Videos for Recommended. */
-const watch = (): L.LayoutNode =>
-  L.replaceView(L.removeView(watchPreset(), 'playlist') as L.LayoutNode, 'recommended', 'videos');
+/** The watch preset as these tests were written: no Playlist tab, Videos for Recommended, History beside it. */
+const watch = (): L.LayoutNode => {
+  const base = L.removeView(watchPreset(), 'playlist') as L.LayoutNode;
+  const old = L.replaceView(base, 'recommended', 'videos');
+  return L.moveView(old, 'history', L.paneOfView(old, 'videos')?.id ?? '', 'center', 2);
+};
 
 describe('layout', () => {
   it('preset has player over details | comments, and recommendations', () => {
@@ -171,6 +174,12 @@ describe('layout', () => {
     const tabs = L.paneOfView(watchPreset(), 'recommended')?.tabs;
     expect(tabs?.slice(0, 2)).toEqual(['playlist', 'recommended']);
     expect(L.paneOfView(watchPreset(), 'videos')).toBeUndefined();
+    expect(shape(watchPreset())).toEqual({
+      row: [
+        { col: ['player', { row: ['details', 'comments|chat', 'history'] }] },
+        'playlist|recommended|stats|settings|log',
+      ],
+    });
     expect(viewsOf('watch').find((v) => v.id === 'playlist')?.optional).toBe(true);
   });
 });

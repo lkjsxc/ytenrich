@@ -8,7 +8,7 @@ export function familyOf(kind: PageKind): WmFamily {
   return kind === 'watch' || kind === 'shorts' || kind === 'home' ? kind : 'browse';
 }
 
-/** Default watch-page workspace: player over details | comments+chat, ytenrich's Recommended on the right
+/** Default watch-page workspace: player over details | comments+chat | history, ytenrich's Recommended on the right
  * (YouTube's own list is the Videos view, via `+`),
  * with the playlist in front of them while one is playing (Shorts via `+`). */
 export function watchPreset(): LayoutNode {
@@ -17,10 +17,13 @@ export function watchPreset(): LayoutNode {
     [
       split(
         'col',
-        [pane(['player']), split('row', [pane(['details']), pane(['comments', 'chat'])])],
+        [
+          pane(['player']),
+          split('row', [pane(['details']), pane(['comments', 'chat']), pane(['history'])]),
+        ],
         [0.62, 0.38],
       ),
-      pane(['playlist', 'recommended', 'stats', 'history', 'settings', 'log']),
+      pane(['playlist', 'recommended', 'stats', 'settings', 'log']),
     ],
     [0.66, 0.34],
   );
