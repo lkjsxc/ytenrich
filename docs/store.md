@@ -49,8 +49,9 @@ The workflow requests a short-lived Chrome token. Enter the Edge and Firefox sec
    git push origin refs/tags/v0.1.1
    ```
 
-3. Check the three submission jobs under [Actions](https://github.com/lkjsxc/ytenrich/actions/workflows/store-release.yml) and the review status in each store dashboard. Firefox submits its source ZIP alongside the extension. The jobs finish when submissions are accepted for review.
-4. For a partial failure, check the affected dashboard first. If the version is still unsubmitted, correct the cause and use **Re-run failed jobs**. Chrome and Firefox check for an existing submission of the same version. For Edge, verify a timed-out upload or publish using the operation ID in the job log and the status in Partner Center before rerunning. Use the original ZIP to finish any confirmed draft in the dashboard if the store rejects a repeated upload. If a store rejects the version and the code needs a fix, release a new version.
+3. The same tag publishes a [GitHub release](https://github.com/lkjsxc/ytenrich/releases) with `ytenrich-chromium.zip`, `ytenrich-firefox.zip` (fixed names, so README's `releases/latest/download/…` links always give the newest) and the source ZIP. It does not wait for the stores.
+4. Check the three submission jobs under [Actions](https://github.com/lkjsxc/ytenrich/actions/workflows/store-release.yml) and the review status in each store dashboard. Firefox submits its source ZIP alongside the extension. The jobs finish when submissions are accepted for review.
+5. For a partial failure, check the affected dashboard first. If the version is still unsubmitted, correct the cause and use **Re-run failed jobs**. Chrome and Firefox check for an existing submission of the same version. For Edge, verify a timed-out upload or publish using the operation ID in the job log and the status in Partner Center before rerunning. Use the original ZIP to finish any confirmed draft in the dashboard if the store rejects a repeated upload. If a store rejects the version and the code needs a fix, release a new version.
 
 API references: [Chrome Web Store v2](https://developer.chrome.com/docs/webstore/using-api/), [Edge Add-ons v1.1](https://learn.microsoft.com/en-us/microsoft-edge/extensions/update/api/using-addons-api), [Firefox Add-ons](https://mozilla.github.io/addons-server/topics/api/addons.html#version-create).
 
