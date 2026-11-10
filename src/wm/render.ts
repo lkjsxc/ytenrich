@@ -8,7 +8,7 @@ export type RenderCtx = {
   onTabDown(view: ViewId, e: PointerEvent, tab: HTMLElement): void;
   onClose(view: ViewId): void;
   onPaneMenu(pane: PaneNode, button: HTMLElement): void;
-  onAddMenu(pane: PaneNode, button: HTMLElement): void;
+  onAdd(pane: PaneNode): void;
   onHandleDown(split: SplitNode, index: number, e: PointerEvent, cells: HTMLElement[]): void;
 };
 export type Rendered = {
@@ -41,7 +41,11 @@ function renderPane(p: PaneNode, ctx: RenderCtx, out: Rendered): HTMLElement {
     );
     const el: HTMLElement = h(
       'div',
-      { class: view === p.active ? 'tab active' : 'tab', 'data-view': view },
+      {
+        class: view === p.active ? 'tab active' : 'tab',
+        'data-view': view,
+        title: ctx.title(view),
+      },
       h('span', null, ctx.title(view)),
       close,
     );
@@ -55,7 +59,7 @@ function renderPane(p: PaneNode, ctx: RenderCtx, out: Rendered): HTMLElement {
   );
   const add: HTMLElement = h(
     'button',
-    { class: 'icon', title: 'Add view', onclick: () => ctx.onAddMenu(p, add) },
+    { class: 'icon', title: 'New tab', onclick: () => ctx.onAdd(p) },
     '+',
   );
   const body = h('div', {

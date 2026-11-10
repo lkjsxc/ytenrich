@@ -40,6 +40,10 @@ export function openMenu(
   );
   layer.querySelector('.menu')?.remove();
   layer.append(menu);
+  // The menu is zoomed by the UI scale, which also scales its own offsets: undo that.
+  const zoom = Number(getComputedStyle(menu).zoom) || 1;
+  menu.style.left = `${(a.left - origin.left) / zoom}px`;
+  menu.style.top = `${(a.bottom - origin.top + 2) / zoom}px`;
   window.addEventListener('pointerdown', outside, true);
   window.addEventListener('keydown', key, true);
 }

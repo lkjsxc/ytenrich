@@ -17,7 +17,10 @@
 button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
 .icon { width: 24px; height: 24px; border-radius: 4px; color: var(--muted); }
 .icon:hover, .tab:hover { background: var(--hover); color: var(--fg); }
-.tab { display: flex; align-items: center; gap: 4px; height: 24px; padding: 0 2px 0 10px; color: var(--muted); white-space: nowrap; user-select: none; cursor: pointer; touch-action: none; }
+.tab { display: flex; flex: none; align-items: center; gap: 4px; box-sizing: border-box; width: var(--tab-w, auto); height: 24px; padding: 0 2px 0 10px; color: var(--muted); white-space: nowrap; user-select: none; cursor: pointer; touch-action: none; }
+.tab > span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+/* Scale setting: only our own UI (strips, views, menus) zooms; pane geometry and native tiles do not. */
+.strip, .view, .menu, .page { zoom: var(--scale, 1); }
 .tab.active { color: var(--fg); box-shadow: inset 0 -2px var(--accent); }
 .x { width: 18px; height: 18px; border-radius: 3px; color: var(--muted); line-height: 18px; padding: 0; }
 .x:hover { background: var(--hover); color: var(--fg); }
@@ -137,3 +140,10 @@ td button.link:hover { background: none; text-decoration: underline; }
 .rcard b { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: 13px; font-weight: 500; overflow-wrap: anywhere; }
 .rcard:hover b { color: var(--accent); }
 .rgrid.text .rcard { padding: 6px 0; border-bottom: 1px solid var(--line); }
+/* New tab page */
+.ngrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 8px; margin-bottom: 14px; }
+.ncard { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 10px 12px; text-align: left; border: 1px solid var(--line); border-radius: 8px; background: var(--raised); }
+.ncard:hover, .ncard:focus-visible, .ncard.first { border-color: var(--accent); outline: none; }
+.ncard b { font-size: 14px; font-weight: 500; }
+.ncard .badge { margin: 4px 0 0; }
+.stats-head input.wide { flex: 0 1 300px; }

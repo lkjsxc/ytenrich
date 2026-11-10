@@ -8,7 +8,7 @@
 5. Put new YouTube selectors and CSS in `src/youtube/` only.
 
 ## Add a WM view (tab)
-- **Own view**: write `mountX(el, env) → dispose` in `src/views/x.ts`, then add `{ id, title, mount }` to `VIEWS`. Set `needsScanner` if it needs page items (the options page skips those).
+- **Own view**: write `mountX(el, env) → dispose` in `src/views/x.ts`, then add `{ id, title, hint, mount }` to `VIEWS` (`hint` is its line on the New tab page). Own views can be open several times, so keep per-tab choices in `shared/view-state.ts` under `env.instance` (a `title` field there, or `env.setTitle`, renames the tab). Lists use `views/more.ts`: `keyed` keeps row DOM across refreshes and `autoMore` loads the next page when its sentinel scrolls into view, up to `MAX_ROWS`.
 - **Native view**: add a selector to `NATIVE_SLOTS`, then add `{ id, title, slot, families }` to `VIEWS`. Add per-slot CSS in `youtube.css` under `[ytenrich-slot='<slot>']`. Several views may share one slot with different `part` values (`[ytenrich-part]` CSS filters the element, as home's Videos/Shorts tabs do); only one of them is shown at a time.
 - Optionally add it to `watchPreset()` / `browsePreset()` (`src/wm/presets.ts`). Users get it from the pane `+` menu either way.
 

@@ -19,10 +19,16 @@ export type ViewEnv = {
   readonly settings: Signal<Settings>;
   /** Present inside YouTube only (the options page has no page items). */
   readonly scanner?: Scanner;
+  /** Unique name of this tab (`<host>:<view id>`): the key of its saved state (`shared/view-state.ts`). */
+  readonly instance: string;
+  /** Renames this tab (the WM strip only). */
+  readonly setTitle?: (title: string) => void;
 };
 export type ViewDef = {
   readonly id: string;
   readonly title: string;
+  /** One line for the New tab page. */
+  readonly hint: string;
   /** Native YouTube element projected into the pane (content script only). */
   readonly slot?: NativeSlot;
   /** Shows only one part of the slot's element (CSS on `[ytenrich-part]`); views of one slot take turns. */
@@ -36,23 +42,85 @@ export type ViewDef = {
 const W: readonly WmFamily[] = ['watch'];
 
 export const VIEWS: readonly ViewDef[] = [
-  { id: 'guide', title: 'Guide', slot: 'guide' },
-  { id: 'page', title: 'Page', slot: 'page', families: ['browse', 'shorts'] },
-  { id: 'home-videos', title: 'Videos', slot: 'page', part: 'videos', families: ['home'] },
-  { id: 'home-shorts', title: 'Shorts', slot: 'page', part: 'shorts', families: ['home'] },
-  { id: 'player', title: 'Player', slot: 'player', families: W },
-  { id: 'details', title: 'Details', slot: 'details', families: W },
-  { id: 'comments', title: 'Comments', slot: 'comments', families: W },
-  { id: 'chat', title: 'Chat', slot: 'chat', families: W },
-  { id: 'videos', title: 'Videos', slot: 'videos', families: W },
-  { id: 'shorts', title: 'Shorts', slot: 'shorts', families: W },
-  { id: 'recommended', title: 'Recommended', mount: mountRecommended },
-  { id: 'stats', title: 'Stats', mount: mountStats },
-  { id: 'history', title: 'History', mount: mountHistory },
-  { id: 'settings', title: 'Settings', mount: mountSettings },
-  { id: 'log', title: 'Log', mount: mountLog },
+  { id: 'guide', title: 'Guide', hint: 'YouTube’s navigation menu', slot: 'guide' },
+  {
+    id: 'page',
+    title: 'Page',
+    hint: 'The YouTube page itself',
+    slot: 'page',
+    families: ['browse', 'shorts'],
+  },
+  {
+    id: 'home-videos',
+    title: 'Videos',
+    hint: 'The home feed without Shorts',
+    slot: 'page',
+    part: 'videos',
+    families: ['home'],
+  },
+  {
+    id: 'home-shorts',
+    title: 'Shorts',
+    hint: 'Only the Shorts of the home feed',
+    slot: 'page',
+    part: 'shorts',
+    families: ['home'],
+  },
+  { id: 'player', title: 'Player', hint: 'The video player', slot: 'player', families: W },
+  {
+    id: 'details',
+    title: 'Details',
+    hint: 'Title, channel, description',
+    slot: 'details',
+    families: W,
+  },
+  {
+    id: 'comments',
+    title: 'Comments',
+    hint: 'Comments on this video',
+    slot: 'comments',
+    families: W,
+  },
+  { id: 'chat', title: 'Chat', hint: 'Live chat or chat replay', slot: 'chat', families: W },
+  {
+    id: 'videos',
+    title: 'Videos',
+    hint: 'YouTube’s recommendations for this video',
+    slot: 'videos',
+    families: W,
+  },
+  {
+    id: 'shorts',
+    title: 'Shorts',
+    hint: 'The Shorts shelf of the recommendations',
+    slot: 'shorts',
+    families: W,
+  },
+  {
+    id: 'recommended',
+    title: 'Recommended',
+    hint: 'Recent recommendations you have not opened',
+    mount: mountRecommended,
+  },
+  {
+    id: 'stats',
+    title: 'Stats',
+    hint: 'What YouTube shows you and what you open',
+    mount: mountStats,
+  },
+  { id: 'history', title: 'History', hint: 'Videos you opened, by day', mount: mountHistory },
+  { id: 'settings', title: 'Settings', hint: 'ytenrich options', mount: mountSettings },
+  { id: 'log', title: 'Log', hint: 'ytenrich diagnostics', mount: mountLog },
 ];
 
-export const VIEW_BY_ID: ReadonlyMap<string, ViewDef> = new Map(VIEWS.map((v) => [v.id, v]));
+/** Tab ids are `<view id>` or `<view id>~<n>`: own views can be open several times, native ones once. */
+export const kindOf = (tab: string): string => tab.split('~')[0] ?? tab;
+const BY_ID: ReadonlyMap<string, ViewDef> = new Map(VIEWS.map((v) => [v.id, v]));
+export const viewOf = (tab: string): ViewDef | undefined => BY_ID.get(kindOf(tab));
+/** First free tab id for another instance of `kind`. */
+export function freshTab(kind: string, used: ReadonlySet<string>): string {
+  if (!used.has(kind)) return kind;
+  for (let n = 2; ; n++) if (!used.has(`${kind}~${n}`)) return `${kind}~${n}`;
+}
 export const viewsOf = (family: WmFamily): ViewDef[] =>
   VIEWS.filter((v) => !v.families || v.families.includes(family));

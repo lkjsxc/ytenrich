@@ -2,6 +2,7 @@
 import { h } from '../../shared/h.ts';
 import { isSuppressed } from '../../shared/stats-rules.ts';
 import type { StatsPage, StatsQuery, VideoStat } from '../../shared/types.ts';
+import { autoMore, grow, keyed } from '../more.ts';
 import { openVideo, videoUrl } from '../open.ts';
 import type { ViewEnv } from '../registry.ts';
 import { ago, num } from './format.ts';
@@ -31,7 +32,7 @@ export function createVideoTable(env: ViewEnv, q: StatsQuery, refresh: () => voi
   const chips = h('div');
   const headRow = h('tr');
   const body = h('tbody');
-  const foot = h('div', { class: 'actions more' });
+  const foot = h('div');
 
   const sync = (): void => {
     chips.replaceChildren(
@@ -162,27 +163,23 @@ export function createVideoTable(env: ViewEnv, q: StatsQuery, refresh: () => voi
     ),
     sync,
     show(page) {
-      body.replaceChildren(
-        ...(page.rows.length
-          ? page.rows.map(row)
-          : [h('tr', null, h('td', { colspan: 6, class: 'muted' }, 'No videos match.'))]),
+      const look = `${env.settings.get().thumbnailsEnabled}${env.settings.get().hideThreshold}`;
+      keyed(
+        body,
+        page.rows.length
+          ? page.rows.map((v) => [look + JSON.stringify(v), () => row(v)])
+          : [
+              [
+                'none',
+                () => h('tr', null, h('td', { colspan: 6, class: 'muted' }, 'No videos match.')),
+              ],
+            ],
       );
-      foot.replaceChildren(
-        ...(page.more
-          ? [
-              h(
-                'button',
-                {
-                  onclick: () => {
-                    q.limit += PAGE_STEP;
-                    refresh();
-                  },
-                },
-                'Show more',
-              ),
-            ]
-          : []),
-      );
+      const more = autoMore(page.more, q.limit, () => {
+        q.limit = grow(q.limit, PAGE_STEP);
+        refresh();
+      });
+      foot.replaceChildren(...(more ? [more] : []));
     },
   };
 }

@@ -2,15 +2,17 @@
 import type { Runtime } from '../content/runtime.ts';
 import { layoutKey } from '../shared/layout-store.ts';
 import { patchSettings } from '../shared/settings.ts';
-import type { Disposer } from '../shared/signal.ts';
 import type { WmFamily } from '../shared/types.ts';
-import { VIEW_BY_ID, type ViewEnv, viewsOf } from '../views/registry.ts';
+import { kindOf, viewOf, viewsOf } from '../views/registry.ts';
 import { onGuideButton } from '../youtube/guide.ts';
 import { mastheadHeight, resetPageScroll } from '../youtube/slots.ts';
 import { createHost } from './host.ts';
+import { NEW_TAB } from './launcher.ts';
 import * as L from './layout.ts';
+import { addEdge } from './layout-edge.ts';
 import { parseLayout } from './layout-parse.ts';
 import { openMenu } from './menus.ts';
+import { createOwnViews } from './own-views.ts';
 import { GUIDE_PX, presetOf } from './presets.ts';
 import { createProjector } from './projector.ts';
 import { type Rendered, renderLayout } from './render.ts';
@@ -28,14 +30,14 @@ export function createWmController(rt: Runtime, family: WmFamily): Wm {
   const host = createHost();
   host.setTop(mastheadHeight());
   const projector = createProjector(rt.log);
-  const env: ViewEnv = {
-    call: rt.call,
-    log: rt.log,
-    settings: rt.settings,
-    scanner: rt.scanner,
+  const env = { call: rt.call, log: rt.log, settings: rt.settings, scanner: rt.scanner };
+  const kinds = new Set(VIEWS.map((v) => v.id));
+  /** Tabs this family can show: its views (own ones in any number) and New tab pages. */
+  const known = {
+    has: (tab: string): boolean =>
+      kindOf(tab) === NEW_TAB ||
+      (kinds.has(kindOf(tab)) && (tab === kindOf(tab) || Boolean(viewOf(tab)?.mount))),
   };
-  const known = new Set(VIEWS.map((v) => v.id));
-  const mounts = new Map<string, { el: HTMLElement; dispose: Disposer }>(); // bound: one per own view
   let root: L.LayoutNode = preset();
   let rendered: Rendered | undefined;
   let saveTimer: ReturnType<typeof setTimeout> | undefined;
@@ -49,22 +51,34 @@ export function createWmController(rt: Runtime, family: WmFamily): Wm {
     saveTimer = setTimeout(() => void chrome.storage.local.set({ [KEY]: root }), SAVE_MS);
   };
 
-  const mountOwn = (view: string): HTMLElement | undefined => {
-    const def = VIEW_BY_ID.get(view);
-    if (!def?.mount) return undefined;
-    let m = mounts.get(view);
-    if (!m) {
-      const el = document.createElement('div');
-      el.className = 'view';
-      m = { el, dispose: def.mount(el, env) };
-      mounts.set(view, m);
-    }
-    return m.el;
-  };
+  /** The New tab page `tab` becomes `kind`: a native view moves here, an own view opens (again). */
+  const launcher = (tab: string) => ({
+    choices: () => {
+      const open = new Set(L.views(root).map(kindOf));
+      return VIEWS.map((v) => ({
+        kind: v.id,
+        title: v.title,
+        hint: v.hint,
+        native: !v.mount,
+        open: open.has(v.id),
+      }));
+    },
+    pick(kind: string) {
+      const native = !viewOf(kind)?.mount;
+      const base = native ? (L.removeView(root, kind) ?? root) : root;
+      set(L.replaceView(base, tab, native ? kind : own.fresh(kind, new Set(L.views(root)))));
+    },
+    close: () => set(L.removeView(root, tab)),
+  });
+  const own = createOwnViews(env, family, launcher, (tab, title) => {
+    const span = rendered?.el.querySelector(`.tab[data-view="${tab}"] > span`);
+    if (span) span.textContent = title;
+    span?.parentElement?.setAttribute('title', title);
+  });
 
   const ctx = {
-    title: (v: string) => VIEW_BY_ID.get(v)?.title ?? v,
-    isNative: (v: string) => Boolean(VIEW_BY_ID.get(v)?.slot),
+    title: own.title,
+    isNative: (v: string) => Boolean(viewOf(v)?.slot),
     onTabDown(view: string, e: PointerEvent, tab: HTMLElement) {
       startTabDrag(e, tab, ctx.title(view), {
         panes: rendered?.panes ?? new Map(),
@@ -84,13 +98,11 @@ export function createWmController(rt: Runtime, family: WmFamily): Wm {
         { label: 'Turn off tiling (Alt+W)', run: () => void patchSettings({ wmEnabled: false }) },
       ]);
     },
-    onAddMenu(p: L.PaneNode, button: HTMLElement) {
-      const open = new Set(L.views(root));
-      const items = VIEWS.filter((v) => !open.has(v.id)).map((v) => ({
-        label: v.title,
-        run: () => set(L.addView(root, p.id, v.id, 'center')),
-      }));
-      openMenu(host.layer, button, items);
+    onAdd(p: L.PaneNode) {
+      const tab =
+        p.tabs.find((t) => kindOf(t) === NEW_TAB) ?? own.fresh(NEW_TAB, new Set(L.views(root)));
+      set(p.tabs.includes(tab) ? L.activate(root, tab) : L.addView(root, p.id, tab, 'center'));
+      own.focus(tab);
     },
     onHandleDown(s: L.SplitNode, index: number, e: PointerEvent, cells: HTMLElement[]) {
       startResize(e, s.dir, index, cells, (sizes) => set(L.resize(root, s.id, sizes)));
@@ -102,11 +114,11 @@ export function createWmController(rt: Runtime, family: WmFamily): Wm {
     rendered = renderLayout(root, ctx);
     host.root.replaceChildren(rendered.el);
     for (const [view, body] of rendered.bodies) {
-      const el = mountOwn(view);
+      const el = own.el(view);
       if (el) body.append(el);
     }
     const open = new Set(L.views(root));
-    for (const [view, m] of mounts) if (!open.has(view)) m.dispose(), mounts.delete(view);
+    own.sync(open);
     const entries = VIEWS.flatMap((v) =>
       v.slot && open.has(v.id)
         ? [{ slot: v.slot, part: v.part, body: rendered?.bodies.get(v.id) ?? null }]
@@ -131,11 +143,13 @@ export function createWmController(rt: Runtime, family: WmFamily): Wm {
   // Hamburger toggles the Guide tile: add it on the far left, focus it, or close it.
   const offGuide = onGuideButton(() => {
     const p = L.paneOfView(root, 'guide');
-    if (!p) set(L.addEdge(root, 'guide', 'left', GUIDE_PX / Math.max(innerWidth, 1)));
+    if (!p) set(addEdge(root, 'guide', 'left', GUIDE_PX / Math.max(innerWidth, 1)));
     else if (p.active !== 'guide') set(L.activate(root, 'guide'));
     else set(L.removeView(root, 'guide'));
   });
 
+  const offLook = rt.settings.subscribe(host.look);
+  host.look(rt.settings.get());
   render();
   projector.refresh();
   void chrome.storage.local.get(KEY).then((s) => s[KEY] !== undefined && adopt(s[KEY]));
@@ -157,10 +171,10 @@ export function createWmController(rt: Runtime, family: WmFamily): Wm {
       clearTimeout(saveTimer);
       chrome.storage.onChanged.removeListener(onStorage);
       offGuide();
+      offLook();
       offPage();
       projector.dispose();
-      for (const m of mounts.values()) m.dispose();
-      mounts.clear();
+      own.dispose();
       host.dispose();
     },
   };

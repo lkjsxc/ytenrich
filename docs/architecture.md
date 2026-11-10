@@ -36,6 +36,9 @@ page signal (watch/shorts videoId) ─► bg.opened (resets suppression for that
   - It contains `.wm` (layout) and `.layer` (menus, drag preview).
   - The root has pointer-events none. Strips, handles, own bodies and menus are auto.
 - **Layout** is a pure tree (`wm/layout.ts`): panes hold `tabs: viewId[]`, and each view appears at most once.
+  - Tab ids are `<view id>` or `<view id>~<n>` (`views/registry.ts` `kindOf`, `freshTab`): native views exist once, own views any number of times. `wm/own-views.ts` mounts own tabs lazily per id and gives each `env.instance` (`<family>:<tab id>`), the key of its saved state (`shared/view-state.ts`, `chrome.storage.local['view:<instance>']`).
+  - `+` adds a New tab page (`wm/launcher.ts`, tab kind `new`): a filterable card list of the family's views. Picking one replaces that tab in place (`L.replaceView`); a native view that is open elsewhere moves there.
+  - Look: `uiScale` zooms only `.strip`, `.view` and `.menu` (CSS `zoom`, so pane geometry and projection stay in real pixels; the menu divides its own offsets by the zoom). `tabWidth` fixes the tab width (0 = fit the title). Key events from fields in the shadow root are stopped at the root, or YouTube's hotkeys would fire while typing.
   - Persisted at `chrome.storage.local['layout:<family>']` (`shared/layout-store.ts`). Invalid or unknown entries are dropped (`wm/layout-parse.ts`); an empty tree falls back to the preset.
   - Controllers follow `storage.onChanged` for their key: Settings → "Reset tiling layout" deletes the keys, and edits sync across tabs. Our own saves compare equal and are ignored.
   - Tab drags: a pane edge splits, the body joins, and the strip inserts at the caret (`insertAt` → `moveView(..., index)`).

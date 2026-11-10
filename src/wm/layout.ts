@@ -87,7 +87,7 @@ export function normalize(node: LayoutNode | null): LayoutNode | null {
 }
 
 /** Keep only known views, each at most once (first occurrence wins). */
-export function retainViews(root: LayoutNode, known: ReadonlySet<ViewId>): LayoutNode | null {
+export function retainViews(root: LayoutNode, known: Pick<Set<ViewId>, 'has'>): LayoutNode | null {
   const used = new Set<ViewId>();
   return normalize(
     mapPanes(root, (p) => {
@@ -95,6 +95,16 @@ export function retainViews(root: LayoutNode, known: ReadonlySet<ViewId>): Layou
       return { ...p, tabs };
     }),
   );
+}
+
+/** Swaps one tab for another in place (the New tab page becoming the chosen view). */
+export function replaceView(root: LayoutNode, old: ViewId, next: ViewId): LayoutNode {
+  const swap = (p: PaneNode): PaneNode => ({
+    ...p,
+    tabs: p.tabs.map((t) => (t === old ? next : t)),
+    active: p.active === old ? next : p.active,
+  });
+  return normalize(mapPanes(root, swap)) ?? root;
 }
 
 export function activate(root: LayoutNode, view: ViewId): LayoutNode {
@@ -161,25 +171,6 @@ export function moveView(
   const removed = src ? removeView(root, view) : root;
   if (!removed || !panes(removed).some((p) => p.id === paneId)) return root;
   return addView(removed, paneId, view, zone);
-}
-
-/** Puts `view` in a new pane along an edge of the whole layout (e.g. the guide on the far left). */
-export function addEdge(
-  root: LayoutNode,
-  view: ViewId,
-  zone: Exclude<Zone, 'center'>,
-  size: number,
-): LayoutNode {
-  const base = removeView(root, view);
-  const fresh = pane([view]);
-  if (!base) return fresh;
-  const f = Math.min(0.9, Math.max(0.05, size));
-  const before = zone === 'left' || zone === 'top';
-  const dir = zone === 'left' || zone === 'right' ? 'row' : 'col';
-  const node = before
-    ? split(dir, [fresh, base], [f, 1 - f])
-    : split(dir, [base, fresh], [1 - f, f]);
-  return normalize(node) ?? root;
 }
 
 export function resize(root: LayoutNode, splitId: string, sizes: readonly number[]): LayoutNode {

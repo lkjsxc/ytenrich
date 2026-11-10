@@ -16,7 +16,7 @@ ytenrich is a browser extension for `www.youtube.com`. It runs entirely in your 
 
 ytenrich uses this record only to show your statistics and to hide or dim recommendations that keep reappearing without being opened. It does not record search queries, comments, or your YouTube account details.
 
-ytenrich also stores your **settings** and **pane layouts**.
+ytenrich also stores your **settings**, **pane layouts** and each tab's small display choices (for example, whether a Recommended tab lists videos or Shorts).
 
 Everything is stored in your browser profile, in the extension's local storage and database. Browser sync is not used. ytenrich does not run in private windows, so nothing is recorded there.
 

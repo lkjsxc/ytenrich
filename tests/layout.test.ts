@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { viewsOf } from '../src/views/registry.ts';
+import { freshTab, kindOf, viewOf, viewsOf } from '../src/views/registry.ts';
 import * as L from '../src/wm/layout.ts';
+import { addEdge } from '../src/wm/layout-edge.ts';
 import { parseLayout } from '../src/wm/layout-parse.ts';
 import {
   browsePreset,
@@ -100,7 +101,7 @@ describe('layout', () => {
     });
   });
   it('addEdge wraps the layout with a sized edge pane and moves an existing view there', () => {
-    const next = L.addEdge(watchPreset(), 'guide', 'left', 0.15) as L.SplitNode;
+    const next = addEdge(watchPreset(), 'guide', 'left', 0.15) as L.SplitNode;
     expect(shape(next)).toEqual({
       row: [
         'guide',
@@ -110,7 +111,7 @@ describe('layout', () => {
     });
     expect(next.sizes[0]).toBeCloseTo(0.15);
     expect(next.sizes[1]).toBeCloseTo(0.85 * 0.66);
-    const moved = L.addEdge(watchPreset(), 'log', 'left', 0.2);
+    const moved = addEdge(watchPreset(), 'log', 'left', 0.2);
     expect(L.paneOfView(moved, 'log')?.tabs).toEqual(['log']);
     expect(L.views(moved).filter((v) => v === 'log')).toHaveLength(1);
   });
@@ -148,5 +149,18 @@ describe('layout', () => {
     expect(guide.sizes[1]).toBeCloseTo(1 / 3);
     const down = L.addView(L.split('row', [a, b]), b.id, 'c', 'bottom') as L.SplitNode;
     expect(shape(down)).toEqual({ row: ['a', { col: ['b', 'c'] }] });
+  });
+  it('own views open several times: tab ids carry an instance suffix; a tab is replaced in place', () => {
+    expect(freshTab('stats', new Set(['log']))).toBe('stats');
+    expect(freshTab('stats', new Set(['stats', 'stats~2']))).toBe('stats~3');
+    expect(kindOf('recommended~2')).toBe('recommended');
+    expect(viewOf('recommended~2')?.title).toBe('Recommended');
+    const next = L.replaceView(
+      L.split('row', [L.pane(['a', 'new'], 'new'), L.pane(['b'])]),
+      'new',
+      'c',
+    );
+    expect(shape(next)).toEqual({ row: ['a|c', 'b'] });
+    expect((next as L.SplitNode).children[0]).toMatchObject({ active: 'c' });
   });
 });

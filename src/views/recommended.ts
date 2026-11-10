@@ -4,17 +4,25 @@ import { h, replaceChildren } from '../shared/h.ts';
 import { onStatsChanged } from '../shared/protocol.ts';
 import { patchSettings } from '../shared/settings.ts';
 import type { StatsPage, StatsQuery, VideoStat } from '../shared/types.ts';
+import { loadViewState, saveViewState } from '../shared/view-state.ts';
+import { autoMore, grow, keyed } from './more.ts';
 import { openVideo, videoUrl } from './open.ts';
 import type { ViewEnv } from './registry.ts';
 import { ago } from './stats/format.ts';
 import { choice } from './stats/parts.ts';
 
 const STEP = 40;
-const KINDS: readonly (readonly [StatsQuery['kind'], string])[] = [
+type Kind = StatsQuery['kind'];
+const KINDS: readonly (readonly [Kind, string])[] = [
   ['video', 'Videos'],
   ['short', 'Shorts'],
   ['all', 'Both'],
 ];
+const TITLES: Record<Kind, string> = {
+  video: 'Recommended',
+  short: 'Recommended Shorts',
+  all: 'Recommended (all)',
+};
 
 export function mountRecommended(el: HTMLElement, env: ViewEnv): () => void {
   const q: StatsQuery = {
@@ -29,9 +37,10 @@ export function mountRecommended(el: HTMLElement, env: ViewEnv): () => void {
   let sig = '';
   let visible = false;
   let dirty = false;
-  let shown = 0; // cards currently painted
   const head = h('div');
   const grid = h('div');
+  const cards = h('div');
+  const foot = h('div');
 
   const images = (): boolean => !__FIREFOX__ && env.settings.get().thumbnailsEnabled;
   const card = (v: VideoStat): HTMLElement =>
@@ -65,9 +74,8 @@ export function mountRecommended(el: HTMLElement, env: ViewEnv): () => void {
         { class: 'stats-head' },
         h('h2', null, 'Recommended'),
         choice('seg-ctl', KINDS, q.kind, (kind) => {
-          Object.assign(q, { kind, limit: STEP });
-          paintHead();
-          refresh();
+          saveViewState(env.instance, { kind, title: TITLES[kind] });
+          setKind(kind);
         }),
       ),
       !__FIREFOX__ && !env.settings.get().thumbnailsEnabled
@@ -87,15 +95,25 @@ export function mountRecommended(el: HTMLElement, env: ViewEnv): () => void {
         : null,
     );
 
+  const setKind = (kind: Kind): void => {
+    Object.assign(q, { kind, limit: STEP });
+    env.setTitle?.(TITLES[kind]);
+    paintHead();
+    refresh();
+  };
+
   const paint = (page: StatsPage): void => {
-    const more = (): void => {
-      q.limit += STEP;
-      refresh();
-    };
+    const img = images();
+    cards.className = img ? 'rgrid' : 'rgrid text';
+    cards.hidden = !page.rows.length;
+    keyed(
+      cards,
+      page.rows.map((v) => [`${img}${v.id}${v.seen}${v.title}`, () => card(v)]),
+    );
     replaceChildren(
-      grid,
+      foot,
       page.rows.length
-        ? h('div', { class: images() ? 'rgrid' : 'rgrid text' }, page.rows.map(card))
+        ? null
         : h(
             'p',
             { class: 'muted' },
@@ -103,9 +121,10 @@ export function mountRecommended(el: HTMLElement, env: ViewEnv): () => void {
               ? 'Nothing yet. Recommendations you are shown on YouTube collect here until you open them.'
               : 'This list is built from stats, which are off (see the Stats tab).',
           ),
-      page.more
-        ? h('div', { class: 'actions more' }, h('button', { onclick: more }, 'Show more'))
-        : null,
+      autoMore(page.more, q.limit, () => {
+        q.limit = grow(q.limit, STEP);
+        refresh();
+      }),
     );
   };
 
@@ -118,10 +137,9 @@ export function mountRecommended(el: HTMLElement, env: ViewEnv): () => void {
         const next = JSON.stringify([page.rows.map((r) => r.id), page.more, s.thumbnailsEnabled]);
         if (my !== token || next === sig) return;
         sig = next;
-        shown = page.rows.length;
         paint(page);
       },
-      (e: unknown) => grid.replaceChildren(h('p', { class: 'error' }, String(e))),
+      (e: unknown) => foot.replaceChildren(h('p', { class: 'error' }, String(e))),
     );
   }
 
@@ -140,9 +158,14 @@ export function mountRecommended(el: HTMLElement, env: ViewEnv): () => void {
     paintHead();
     refresh();
   });
+  grid.append(cards, foot);
   el.replaceChildren(head, grid);
   paintHead();
   refresh();
+  void loadViewState<{ kind: Kind }>(env.instance).then((state) => {
+    if (token >= 0 && state.kind && state.kind !== q.kind && state.kind in TITLES)
+      setKind(state.kind);
+  });
   return () => {
     io.disconnect();
     offStats();

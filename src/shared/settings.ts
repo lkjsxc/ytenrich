@@ -9,6 +9,8 @@ export const DEFAULT_SETTINGS = {
   dismissLabel: '',
   statsEnabled: false, // on only after consent (views/consent.ts)
   thumbnailsEnabled: false,
+  tabWidth: 0, // px; 0 fits each tab to its title
+  uiScale: 100, // percent, ytenrich's own UI only
 };
 export type Settings = typeof DEFAULT_SETTINGS;
 export type SettingKey = keyof Settings;
@@ -45,6 +47,14 @@ const SCHEMA: readonly SettingField[] = [
     min: 2,
     max: 100,
   },
+  {
+    key: 'tabWidth',
+    label: 'Tab width in px (0 = fit the title)',
+    type: 'number',
+    min: 0,
+    max: 400,
+  },
+  { key: 'uiScale', label: 'Scale of ytenrich’s own UI, in %', type: 'number', min: 50, max: 200 },
   { key: 'dismissEnabled', label: 'One-click "Not interested" button', type: 'bool' },
   {
     key: 'dismissLabel',

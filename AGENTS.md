@@ -34,7 +34,8 @@ AI-first repo: no human ergonomics, no backward compatibility, no migrations. Mo
   - `layout.ts`: the pure tree. `layout-parse.ts`: validation of stored JSON.
   - `controller.ts`: state, render, persistence.
   - `projector.ts`: native slot positioning.
-  - `render`, `resize`, `tab-drag`, `menus`, `host`, `presets`.
+  - `own-views.ts`: own-view tabs (any number per view). `launcher.ts`: the New tab page behind `+`.
+  - `render`, `resize`, `tab-drag`, `menus`, `host`, `presets`, `layout-edge`.
 - `src/views/`: `registry.ts` lists every tab view. Native views set `slot`; own views set `mount(el, env)`. Own views run in both the WM and the options page. `views/stats/` is the Stats view (pure period math in `period.ts`; charts are plain flex DOM in `parts.ts`).
 - `src/shared/`: h, signal, settings (schema-driven UI), stats-rules, types, log.
 - `docs/architecture.md`: data flow and invariants. `docs/youtube-dom.md`: DOM knowledge and quirks. `docs/features.md`: recipes. `docs/roadmap.md`: next work. `docs/store.md`: store dashboard answers (keep in sync with `PRIVACY.md`).

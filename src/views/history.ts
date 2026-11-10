@@ -3,6 +3,7 @@
 import { h } from '../shared/h.ts';
 import { onStatsChanged } from '../shared/protocol.ts';
 import { dayKey, type StatsPage, type StatsQuery, type VideoStat } from '../shared/types.ts';
+import { autoMore, grow, type Keyed, keyed } from './more.ts';
 import { openVideo, videoUrl } from './open.ts';
 import type { ViewEnv } from './registry.ts';
 import { dayLong } from './stats/format.ts';
@@ -23,6 +24,7 @@ export function mountHistory(el: HTMLElement, env: ViewEnv): () => void {
   let sig = '';
   let timer: ReturnType<typeof setTimeout> | undefined;
   const list = h('div', { class: 'history' });
+  const foot = h('div');
   const search = h('input', {
     type: 'search',
     placeholder: 'Search history',
@@ -74,35 +76,39 @@ export function mountHistory(el: HTMLElement, env: ViewEnv): () => void {
     );
 
   const paint = (page: StatsPage): void => {
-    const out: HTMLElement[] = [];
+    const out: Keyed[] = [];
     let day = '';
     const today = dayKey(Date.now());
+    const img = env.settings.get().thumbnailsEnabled;
     for (const v of page.rows) {
       const key = dayKey(v.openedAt);
-      if (key !== day) out.push(h('h3', null, key === today ? 'Today' : dayLong(key)));
+      if (key !== day)
+        out.push([`day${key}`, () => h('h3', null, key === today ? 'Today' : dayLong(key))]);
       day = key;
-      out.push(row(v));
+      out.push([`${img}${v.id}${v.openedAt}${v.opened}${v.title}`, () => row(v)]);
     }
-    if (!page.rows.length)
-      out.push(
-        h(
-          'p',
-          { class: 'muted' },
-          q.search
-            ? 'No opened videos match.'
-            : env.settings.get().statsEnabled
-              ? 'Nothing here yet. Videos you open appear here.'
-              : 'History is kept while stats are enabled (see the Stats tab).',
-        ),
-      );
-    if (page.more) {
-      const more = (): void => {
-        q.limit += STEP;
-        refresh();
-      };
-      out.push(h('div', { class: 'actions more' }, h('button', { onclick: more }, 'Show more')));
-    }
-    list.replaceChildren(...out);
+    keyed(list, out);
+    foot.replaceChildren(
+      ...(page.rows.length
+        ? []
+        : [
+            h(
+              'p',
+              { class: 'muted' },
+              q.search
+                ? 'No opened videos match.'
+                : env.settings.get().statsEnabled
+                  ? 'Nothing here yet. Videos you open appear here.'
+                  : 'History is kept while stats are enabled (see the Stats tab).',
+            ),
+          ]),
+      ...[
+        autoMore(page.more, q.limit, () => {
+          q.limit = grow(q.limit, STEP);
+          refresh();
+        }),
+      ].filter((n) => n !== null),
+    );
   };
 
   function refresh(): void {
@@ -114,11 +120,15 @@ export function mountHistory(el: HTMLElement, env: ViewEnv): () => void {
         sig = next;
         paint(page);
       },
-      (e: unknown) => list.replaceChildren(h('p', { class: 'error' }, String(e))),
+      (e: unknown) => foot.replaceChildren(h('p', { class: 'error' }, String(e))),
     );
   }
 
-  el.replaceChildren(h('div', { class: 'stats-head' }, h('h2', null, 'History'), search), list);
+  el.replaceChildren(
+    h('div', { class: 'stats-head' }, h('h2', null, 'History'), search),
+    list,
+    foot,
+  );
   refresh();
   const offStats = onStatsChanged(refresh);
   const offSettings = env.settings.subscribe(refresh);

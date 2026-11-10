@@ -17,7 +17,10 @@ import { welcome } from './welcome.ts';
 const settings = createSignal<Settings>(DEFAULT_SETTINGS);
 void loadSettings().then(settings.set);
 onSettings(settings.set);
-const env: ViewEnv = { call, log: createLog(), settings };
+const base = { call, log: createLog(), settings };
+const scale = (s: Settings): void =>
+  void document.documentElement.style.setProperty('--scale', String(s.uiScale / 100));
+settings.subscribe(scale);
 const tabs = VIEWS.filter((v) => v.mount);
 const nav = h('nav');
 const main = h('div', { class: 'view' });
@@ -28,6 +31,7 @@ const show = (id: string): void => {
   const def = tabs.find((t) => t.id === id) ?? tabs[0];
   if (!def?.mount) return;
   main.replaceChildren();
+  const env: ViewEnv = { ...base, instance: `options:${def.id}` };
   dispose = def.mount(main, env);
   for (const b of nav.children)
     b.classList.toggle('active', (b as HTMLElement).dataset.id === def.id);
