@@ -13,6 +13,8 @@ export type Api = {
   /** `hidden`: over-exposed recommendations hidden since the last call. */
   record: { req: { items: readonly Impression[]; hidden: number }; res: { suppressed: string[] } };
   opened: { req: { id: string; kind: Kind; title: string; channel: string }; res: null };
+  /** Fills a missing title (a video opened without ever being recommended). */
+  describe: { req: { id: string; title: string }; res: null };
   dismissed: { req: { id: string }; res: null };
   suppressed: { req: null; res: string[] };
   query: { req: StatsQuery; res: StatsPage };

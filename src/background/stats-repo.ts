@@ -128,6 +128,10 @@ export function opened(req: Pick<VideoStat, 'id' | 'kind' | 'title' | 'channel'>
   );
 }
 
+export function describe(id: string, title: string): Promise<void> {
+  return edit(id, (s) => (s.title ? s : { ...s, title }));
+}
+
 export function dismissed(id: string): Promise<void> {
   return edit(
     id,

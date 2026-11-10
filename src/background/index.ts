@@ -32,7 +32,14 @@ const bumpRev = (): void => {
     void chrome.storage.local.set({ [STATS_REV_KEY]: Date.now() });
   }, REV_MS);
 };
-const MUTATING: ReadonlySet<Method> = new Set(['record', 'opened', 'dismissed', 'allow', 'clear']);
+const MUTATING: ReadonlySet<Method> = new Set([
+  'record',
+  'opened',
+  'describe',
+  'dismissed',
+  'allow',
+  'clear',
+]);
 
 type Handlers = { [K in Method]: (req: Api[K]['req']) => Promise<Api[K]['res']> };
 const handlers: Handlers = {
@@ -45,6 +52,7 @@ const handlers: Handlers = {
     return { suppressed: await repo.record(items, hidden, threshold) };
   },
   opened: (req) => repo.opened(req).then(() => null),
+  describe: ({ id, title }) => repo.describe(id, title).then(() => null),
   dismissed: ({ id }) => repo.dismissed(id).then(() => null),
   suppressed: async () => [...(await repo.suppressedIds(threshold))],
   query: (q) => read.query(q, threshold),

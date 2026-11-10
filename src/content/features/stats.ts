@@ -54,6 +54,24 @@ export const stats: Feature = {
     window.addEventListener('pagehide', flush);
     d.add(() => window.removeEventListener('pagehide', flush));
 
+    // A video opened without a prior recommendation has no known title: take it from the document title,
+    // which YouTube sets shortly after navigation ("(3) Title - YouTube").
+    let titleMo: MutationObserver | undefined;
+    const describeLater = (id: string): void => {
+      titleMo?.disconnect();
+      const read = (): boolean => {
+        const title = document.title.replace(/^\(\d+\)\s*/, '').replace(/\s*-\s*YouTube$/, '');
+        if (!title || title === 'YouTube' || rt.page.get().videoId !== id) return false;
+        void rt.call('describe', { id, title: title.slice(0, 200) }).catch(() => undefined);
+        return true;
+      };
+      titleMo = new MutationObserver(() => {
+        if (rt.page.get().videoId !== id || read()) titleMo?.disconnect();
+      });
+      titleMo.observe(document.head, { childList: true, subtree: true, characterData: true });
+    };
+    d.add(() => titleMo?.disconnect());
+
     let lastOpenedNav = 0;
     const opened = (): void => {
       const { videoId, kind, nav } = rt.page.get();
@@ -67,6 +85,7 @@ export const stats: Feature = {
         channel: meta?.channel ?? '',
       } as const;
       rt.suppressed.delete(videoId);
+      if (!req.title) describeLater(videoId);
       rt.call('opened', req).catch((e: unknown) =>
         rt.log.write('warn', 'stats', `opened: ${String(e)}`),
       );

@@ -47,7 +47,11 @@ export function mountHistory(el: HTMLElement, env: ViewEnv): () => void {
       h(
         'span',
         { class: 'muted num' },
-        new Date(v.openedAt).toLocaleTimeString('en', { hour: '2-digit', minute: '2-digit' }),
+        new Date(v.openedAt).toLocaleTimeString('en', {
+          hour: '2-digit',
+          minute: '2-digit',
+          hourCycle: 'h23',
+        }),
       ),
       !__FIREFOX__ && env.settings.get().thumbnailsEnabled
         ? h('img', {
@@ -61,7 +65,7 @@ export function mountHistory(el: HTMLElement, env: ViewEnv): () => void {
         : null,
       h(
         'span',
-        null,
+        { class: 'htext' },
         v.title || v.id,
         v.kind === 'short' ? h('span', { class: 'badge' }, 'Short') : null,
         v.opened > 1 ? h('span', { class: 'badge' }, `opened ${v.opened}×`) : null,
