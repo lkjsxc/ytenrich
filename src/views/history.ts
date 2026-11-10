@@ -6,7 +6,7 @@ import { dayKey, type StatsPage, type StatsQuery, type VideoStat } from '../shar
 import { autoMore, grow, type Keyed, keyed } from './more.ts';
 import { openVideo, videoUrl } from './open.ts';
 import type { ViewEnv } from './registry.ts';
-import { dayLong } from './stats/format.ts';
+import { dayFull } from './stats/format.ts';
 
 const STEP = 50;
 const SEARCH_MS = 200;
@@ -78,12 +78,10 @@ export function mountHistory(el: HTMLElement, env: ViewEnv): () => void {
   const paint = (page: StatsPage): void => {
     const out: Keyed[] = [];
     let day = '';
-    const today = dayKey(Date.now());
     const img = env.settings.get().thumbnailsEnabled;
     for (const v of page.rows) {
       const key = dayKey(v.openedAt);
-      if (key !== day)
-        out.push([`day${key}`, () => h('h3', null, key === today ? 'Today' : dayLong(key))]);
+      if (key !== day) out.push([`day${key}`, () => h('h3', null, dayFull(key))]);
       day = key;
       out.push([`${img}${v.id}${v.openedAt}${v.opened}${v.title}`, () => row(v)]);
     }

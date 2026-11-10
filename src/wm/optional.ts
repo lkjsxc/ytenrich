@@ -6,7 +6,10 @@ import * as L from './layout.ts';
 
 const INTRODUCED_KEY = 'introduced';
 /** Views added to the presets after layouts could already be saved: [view, the view whose pane it joins]. */
-const LATE: readonly (readonly [string, string])[] = [['playlist', 'videos']];
+const LATE: readonly (readonly [string, string])[] = [
+  ['recommended', 'videos'],
+  ['playlist', 'recommended'],
+];
 
 export type Optional = {
   /** The layout as it should be drawn now: without the optional tabs that have nothing to show. */

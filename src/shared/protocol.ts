@@ -5,6 +5,8 @@ import type {
   Impression,
   Kind,
   Overview,
+  RecoMode,
+  RecoPage,
   StatsPage,
   StatsQuery,
   StoreName,
@@ -19,6 +21,7 @@ export type Api = {
   dismissed: { req: { id: string }; res: null };
   suppressed: { req: null; res: string[] };
   query: { req: StatsQuery; res: StatsPage };
+  recommend: { req: { mode: RecoMode; limit: number }; res: RecoPage };
   overview: { req: null; res: Overview };
   channels: { req: { sort: ChannelSort; limit: number }; res: ChannelStat[] };
   allow: { req: { id: string; allowed: boolean }; res: null };

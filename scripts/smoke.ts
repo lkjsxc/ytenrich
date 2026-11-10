@@ -1,9 +1,16 @@
 // Live smoke: Chromium + unpacked dist/ on a real watch page. Prints JSON facts + screenshots in tmp/.
 // Not a canonical gate (network/YouTube dependent). Usage: node scripts/smoke.ts [videoId]
+import * as L from '../src/wm/layout.ts';
+import { watchPreset } from '../src/wm/presets.ts';
 import { launch } from './smoke-lib.ts';
 
 const video = process.argv[2] ?? 'dQw4w9WgXcQ';
 const { ctx, page, sw, errors } = await launch({ statsEnabled: true });
+// This smoke exercises YouTube's own list, so it runs with the Videos view where the default has Recommended.
+await sw.evaluate((layout) => chrome.storage.local.set(layout), {
+  'layout:watch': L.replaceView(watchPreset(), 'recommended', 'videos'),
+  introduced: ['recommended', 'playlist'],
+});
 
 await page.goto(`https://www.youtube.com/watch?v=${video}`, { waitUntil: 'domcontentloaded' });
 await page.waitForTimeout(8000);

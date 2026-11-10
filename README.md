@@ -29,6 +29,8 @@ The newest release is always at these links:
 - Chromium browsers: [ytenrich-chromium.zip](https://github.com/lkjsxc/ytenrich/releases/latest/download/ytenrich-chromium.zip)
 - Firefox: [ytenrich-firefox.zip](https://github.com/lkjsxc/ytenrich/releases/latest/download/ytenrich-firefox.zip)
 
+To try the very newest code instead (rebuilt on every change, ahead of the stores and less tested), use the [latest build](https://github.com/lkjsxc/ytenrich/releases/tag/latest-build): [Chromium zip](https://github.com/lkjsxc/ytenrich/releases/download/latest-build/ytenrich-chromium.zip), [Firefox zip](https://github.com/lkjsxc/ytenrich/releases/download/latest-build/ytenrich-firefox.zip).
+
 Chrome, Edge, Brave, Vivaldi:
 1. Download the Chromium zip and unzip it into a folder you will keep (for example `Documents/ytenrich`).
 2. Open `chrome://extensions` and turn on **Developer mode** (top right).

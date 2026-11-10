@@ -55,6 +55,9 @@ The workflow requests a short-lived Chrome token. Enter the Edge and Firefox sec
 
 API references: [Chrome Web Store v2](https://developer.chrome.com/docs/webstore/using-api/), [Edge Add-ons v1.1](https://learn.microsoft.com/en-us/microsoft-edge/extensions/update/api/using-addons-api), [Firefox Add-ons](https://mozilla.github.io/addons-server/topics/api/addons.html#version-create).
 
+## Latest build
+`.github/workflows/latest-build.yml` runs on every push to `main`: `pnpm check`, `pnpm package`, then it moves the `latest-build` tag to that commit and replaces the two zips of the `latest-build` pre-release. It never touches the stores, and being a pre-release it never becomes GitHub's "latest release", so README's `releases/latest/download/…` links keep pointing at the last store version.
+
 ## Listing text
 **Name:** ytenrich
 

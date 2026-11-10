@@ -15,4 +15,6 @@ const date = (key: string, opts: Intl.DateTimeFormatOptions): string =>
   new Date(`${key}T12:00`).toLocaleDateString('en', opts);
 export const dayLong = (key: string): string =>
   date(key, { weekday: 'short', month: 'short', day: 'numeric' });
+export const dayFull = (key: string): string =>
+  date(key, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
 export const dayShort = (key: string): string => date(key, { month: 'short', day: 'numeric' });

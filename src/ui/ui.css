@@ -138,7 +138,7 @@ td button.link:hover { background: none; text-decoration: underline; }
 /* Recommended */
 .rgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 14px 10px; margin-top: 10px; }
 .rgrid.text { grid-template-columns: 1fr; gap: 0; }
-.rcard { display: flex; flex-direction: column; gap: 2px; min-width: 0; color: var(--fg); text-decoration: none; font-size: 12px; }
+.rcard { position: relative; display: flex; flex-direction: column; gap: 2px; min-width: 0; color: var(--fg); text-decoration: none; font-size: 12px; }
 .rcard img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; margin-bottom: 4px; border-radius: 8px; background: var(--raised); }
 .rcard.tall img { aspect-ratio: 9 / 16; }
 .rcard b { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: 13px; font-weight: 500; overflow-wrap: anywhere; }
@@ -151,3 +151,12 @@ td button.link:hover { background: none; text-decoration: underline; }
 .ncard b { font-size: 14px; font-weight: 500; }
 .ncard .badge { margin: 4px 0 0; }
 .stats-head input.wide { flex: 0 1 300px; }
+.rno { position: absolute; top: 4px; right: 4px; width: 26px; height: 26px; border-radius: 50%; background: rgba(0, 0, 0, 0.7); color: #fff; font-size: 15px; line-height: 26px; padding: 0; opacity: 0; }
+.rcard:hover .rno, .rno:focus-visible { opacity: 1; }
+.rno:hover { background: #c00; }
+.rgrid.text .rno { top: 6px; right: 0; background: none; color: var(--muted); opacity: 1; }
+.rgrid.text .rcard { padding-right: 30px; }
+.rchan { grid-column: 1 / -1; margin: 10px 0 0; font-size: 14px; font-weight: 600; }
+.rchan a { color: var(--fg); text-decoration: none; }
+.rchan a:hover { color: var(--accent); }
+.rchan .muted { font-size: 12px; font-weight: 400; }

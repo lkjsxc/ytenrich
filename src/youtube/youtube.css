@@ -41,9 +41,11 @@ html[ytenrich-guide-wake] tp-yt-app-drawer#guide { visibility: hidden !important
 html[ytenrich-wm] tp-yt-app-drawer#guide:not(:has([ytenrich-slot])), html[ytenrich-wm] ytd-mini-guide-renderer { visibility: hidden !important; }
 html[ytenrich-wm] ytd-page-manager > :not(ytd-watch-flexy, [ytenrich-slot]) { visibility: hidden !important; }
 html[ytenrich-wm] [ytenrich-slot="page"] { padding: 0 !important; }
+/* Videos tile: no Shorts. Their shelves and single Shorts leave the list (the Shorts tab still projects its shelf). */
+html[ytenrich-wm] [ytenrich-slot="videos"] :is(grid-shelf-view-model, ytd-reel-shelf-renderer, ytd-rich-shelf-renderer, yt-lockup-view-model, ytd-compact-video-renderer):has(a[href^="/shorts/"]):not([ytenrich-slot]) { display: none !important; }
 /* Home parts: the Videos tab drops the feed's Shorts shelves; the Shorts tab keeps only them (and the loader), every item shown. */
-html[ytenrich-wm] [ytenrich-part="videos"] ytd-rich-grid-renderer > #contents > ytd-rich-section-renderer:has(a[href^="/shorts/"]) { display: none !important; }
-html[ytenrich-wm] [ytenrich-part="shorts"] ytd-rich-grid-renderer > #contents > :not(ytd-rich-section-renderer:has(a[href^="/shorts/"]), ytd-continuation-item-renderer) { display: none !important; }
+html[ytenrich-wm] [ytenrich-part="videos"] ytd-rich-grid-renderer > #contents > :is(:has(a[href^="/shorts/"]), :has(ytd-rich-shelf-renderer[is-shorts])), html[ytenrich-wm] [ytenrich-part="videos"] ytd-rich-grid-row ytd-rich-item-renderer:has(a[href^="/shorts/"]) { display: none !important; }
+html[ytenrich-wm] [ytenrich-part="shorts"] ytd-rich-grid-renderer > #contents > :not(:has(a[href^="/shorts/"]), :has(ytd-rich-shelf-renderer[is-shorts]), ytd-continuation-item-renderer) { display: none !important; }
 html[ytenrich-wm] [ytenrich-part="shorts"] ytd-rich-shelf-renderer ytd-rich-item-renderer[hidden] { display: block !important; }
 html[ytenrich-wm] [ytenrich-part="shorts"] .ytGridShelfViewModelGridShelfRow { flex-wrap: wrap !important; gap: 12px 8px !important; }
 html[ytenrich-wm] [ytenrich-part="shorts"] .ytGridShelfViewModelGridShelfItem { display: flex !important; }

@@ -1,50 +1,50 @@
-// Recommended: videos YouTube recommended recently that you have not opened, dismissed or seen too often.
-// Built from ytenrich's own record, so pages without a recommendation list (the Shorts player) get one too.
+// Recommended: unopened videos YouTube showed you, ordered by your own record (`shared/recommend.ts`).
 import { h, replaceChildren } from '../shared/h.ts';
 import { onStatsChanged } from '../shared/protocol.ts';
 import { patchSettings } from '../shared/settings.ts';
-import type { StatsPage, StatsQuery, VideoStat } from '../shared/types.ts';
+import type { ChannelStat, RecoMode, RecoPage, VideoStat } from '../shared/types.ts';
 import { loadViewState, saveViewState } from '../shared/view-state.ts';
-import { autoMore, grow, keyed } from './more.ts';
+import { autoMore, grow, type Keyed, keyed } from './more.ts';
 import { openVideo, videoUrl } from './open.ts';
 import type { ViewEnv } from './registry.ts';
 import { ago } from './stats/format.ts';
 import { choice } from './stats/parts.ts';
 
 const STEP = 40;
-type Kind = StatsQuery['kind'];
-const KINDS: readonly (readonly [Kind, string])[] = [
+const MODES: readonly (readonly [RecoMode, string])[] = [
   ['video', 'Videos'],
   ['short', 'Shorts'],
-  ['all', 'Both'],
+  ['channel', 'Channels'],
 ];
-const TITLES: Record<Kind, string> = {
+const TITLES: Record<RecoMode, string> = {
   video: 'Recommended',
   short: 'Recommended Shorts',
-  all: 'Recommended (all)',
+  channel: 'Recommended channels',
 };
+/** Channel names are all the record has, so a channel opens as a channel search for its name. */
+const channelUrl = (name: string): string =>
+  `https://www.youtube.com/results?search_query=${encodeURIComponent(name)}&sp=EgIQAg%253D%253D`;
 
 export function mountRecommended(el: HTMLElement, env: ViewEnv): () => void {
-  const q: StatsQuery = {
-    sort: 'lastSeen',
-    filter: 'pending',
-    kind: 'video',
-    channel: '',
-    limit: STEP,
-    search: '',
-  };
+  let mode: RecoMode = 'video';
+  let limit = STEP;
   let token = 0;
   let sig = '';
   let visible = false;
   let dirty = false;
   const head = h('div');
-  const grid = h('div');
   const cards = h('div');
   const foot = h('div');
-
   const images = (): boolean => !__FIREFOX__ && env.settings.get().thumbnailsEnabled;
-  const card = (v: VideoStat): HTMLElement =>
-    h(
+
+  const card = (v: VideoStat): HTMLElement => {
+    const dismiss = (e: Event): void => {
+      e.preventDefault();
+      e.stopPropagation();
+      node.remove();
+      void env.call('dismissed', { id: v.id });
+    };
+    const node = h(
       'a',
       {
         class: v.kind === 'short' ? 'rcard tall' : 'rcard',
@@ -62,8 +62,27 @@ export function mountRecommended(el: HTMLElement, env: ViewEnv): () => void {
           })
         : null,
       h('b', null, v.title || v.id),
-      h('span', { class: 'muted' }, v.channel),
+      mode === 'channel' ? null : h('span', { class: 'muted' }, v.channel),
       h('span', { class: 'muted' }, `shown ${v.seen}× · ${ago(v.lastSeen)} ago`),
+      h(
+        'button',
+        {
+          class: 'rno',
+          title:
+            'Not interested: removes it from this list and ranks its channel lower. YouTube is not told.',
+          onclick: dismiss,
+        },
+        '⊘',
+      ),
+    );
+    return node;
+  };
+  const channelHead = (name: string, c: ChannelStat | undefined): HTMLElement =>
+    h(
+      'h3',
+      { class: 'rchan' },
+      h('a', { href: channelUrl(name), title: 'Find this channel on YouTube' }, name),
+      h('span', { class: 'muted' }, c ? ` opened ${c.opened} · shown ${c.seen}×` : ''),
     );
 
   const paintHead = (): void =>
@@ -73,9 +92,9 @@ export function mountRecommended(el: HTMLElement, env: ViewEnv): () => void {
         'div',
         { class: 'stats-head' },
         h('h2', null, 'Recommended'),
-        choice('seg-ctl', KINDS, q.kind, (kind) => {
-          saveViewState(env.instance, { kind, title: TITLES[kind] });
-          setKind(kind);
+        choice('seg-ctl', MODES, mode, (next) => {
+          saveViewState(env.instance, { kind: next, title: TITLES[next] });
+          setMode(next);
         }),
       ),
       !__FIREFOX__ && !env.settings.get().thumbnailsEnabled
@@ -94,22 +113,30 @@ export function mountRecommended(el: HTMLElement, env: ViewEnv): () => void {
           )
         : null,
     );
-
-  const setKind = (kind: Kind): void => {
-    Object.assign(q, { kind, limit: STEP });
-    env.setTitle?.(TITLES[kind]);
+  const setMode = (next: RecoMode): void => {
+    mode = next;
+    limit = STEP;
+    env.setTitle?.(TITLES[next]);
     paintHead();
     refresh();
   };
 
-  const paint = (page: StatsPage): void => {
+  const paint = (page: RecoPage): void => {
     const img = images();
+    const stats = new Map(page.channels.map((c) => [c.name, c])); // bound: the channels of one page
     cards.className = img ? 'rgrid' : 'rgrid text';
     cards.hidden = !page.rows.length;
-    keyed(
-      cards,
-      page.rows.map((v) => [`${img}${v.id}${v.seen}${v.title}`, () => card(v)]),
-    );
+    const items: Keyed[] = [];
+    let channel = '';
+    for (const v of page.rows) {
+      if (mode === 'channel' && v.channel !== channel) {
+        const c = stats.get(v.channel);
+        items.push([`ch${v.channel}${c?.opened}${c?.seen}`, () => channelHead(v.channel, c)]);
+      }
+      channel = v.channel;
+      items.push([`${mode}${img}${v.id}${v.seen}${v.title}`, () => card(v)]);
+    }
+    keyed(cards, items);
     replaceChildren(
       foot,
       page.rows.length
@@ -121,8 +148,8 @@ export function mountRecommended(el: HTMLElement, env: ViewEnv): () => void {
               ? 'Nothing yet. Recommendations you are shown on YouTube collect here until you open them.'
               : 'This list is built from stats, which are off (see the Stats tab).',
           ),
-      autoMore(page.more, q.limit, () => {
-        q.limit = grow(q.limit, STEP);
+      autoMore(page.more, limit, () => {
+        limit = grow(limit, STEP);
         refresh();
       }),
     );
@@ -131,10 +158,9 @@ export function mountRecommended(el: HTMLElement, env: ViewEnv): () => void {
   function refresh(): void {
     dirty = false;
     const my = ++token;
-    env.call('query', q).then(
+    env.call('recommend', { mode, limit }).then(
       (page) => {
-        const s = env.settings.get();
-        const next = JSON.stringify([page.rows.map((r) => r.id), page.more, s.thumbnailsEnabled]);
+        const next = JSON.stringify([mode, page, env.settings.get().thumbnailsEnabled]);
         if (my !== token || next === sig) return;
         sig = next;
         paint(page);
@@ -143,28 +169,26 @@ export function mountRecommended(el: HTMLElement, env: ViewEnv): () => void {
     );
   }
 
-  // The list reorders as recommendations arrive, so it only refreshes when the tile is (re)shown.
+  // The order shifts as recommendations arrive, so a visible, filled list waits until it is shown again.
   const io = new IntersectionObserver((entries) => {
     visible = entries.some((e) => e.isIntersecting);
     if (visible && dirty) refresh();
   });
   io.observe(el);
   const offStats = onStatsChanged(() => {
-    if (visible && sig !== '' && sig !== '[[],false,false]' && sig !== '[[],false,true]')
-      dirty = true;
+    if (visible && cards.childElementCount) dirty = true;
     else refresh();
   });
   const offSettings = env.settings.subscribe(() => {
     paintHead();
     refresh();
   });
-  grid.append(cards, foot);
-  el.replaceChildren(head, grid);
+  el.replaceChildren(head, cards, foot);
   paintHead();
   refresh();
-  void loadViewState<{ kind: Kind }>(env.instance).then((state) => {
-    if (token >= 0 && state.kind && state.kind !== q.kind && state.kind in TITLES)
-      setKind(state.kind);
+  void loadViewState<{ kind: RecoMode }>(env.instance).then((state) => {
+    if (token >= 0 && state.kind && state.kind !== mode && state.kind in TITLES)
+      setMode(state.kind);
   });
   return () => {
     io.disconnect();

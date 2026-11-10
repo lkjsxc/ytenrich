@@ -81,6 +81,10 @@ export type StatsQuery = {
   search: string;
 };
 export type StatsPage = { rows: VideoStat[]; more: boolean };
+/** Recommended view: videos, Shorts, or both grouped under the channels the user likes most. */
+export type RecoMode = 'video' | 'short' | 'channel';
+/** `channels`: stats of the channels in `rows` (channel mode only). */
+export type RecoPage = StatsPage & { channels: ChannelStat[] };
 /** `days` is newest first and sparse (days without activity are absent), at most OVERVIEW_DAYS long. */
 export type Overview = { videos: number; channels: number; suppressed: number; days: DayStat[] };
 export const OVERVIEW_DAYS = 180;

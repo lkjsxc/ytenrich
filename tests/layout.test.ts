@@ -15,8 +15,9 @@ import { insertAt, zoneAt } from '../src/wm/tab-drag.ts';
 const shape = (n: L.LayoutNode): unknown =>
   n.type === 'pane' ? n.tabs.join('|') : { [n.dir]: n.children.map(shape) };
 
-/** The watch preset without its optional Playlist tab (shown only while a playlist plays). */
-const watch = (): L.LayoutNode => L.removeView(watchPreset(), 'playlist') as L.LayoutNode;
+/** The watch preset as these tests were written: no optional Playlist tab, YouTube's Videos for Recommended. */
+const watch = (): L.LayoutNode =>
+  L.replaceView(L.removeView(watchPreset(), 'playlist') as L.LayoutNode, 'recommended', 'videos');
 
 describe('layout', () => {
   it('preset has player over details | comments, and recommendations', () => {
@@ -166,8 +167,10 @@ describe('layout', () => {
     expect(shape(next)).toEqual({ row: ['a|c', 'b'] });
     expect((next as L.SplitNode).children[0]).toMatchObject({ active: 'c' });
   });
-  it('the watch preset puts the optional Playlist tab in front of Videos', () => {
-    expect(L.paneOfView(watchPreset(), 'videos')?.tabs.slice(0, 2)).toEqual(['playlist', 'videos']);
+  it('the watch preset has the optional Playlist tab in front of Recommended, and no Videos', () => {
+    const tabs = L.paneOfView(watchPreset(), 'recommended')?.tabs;
+    expect(tabs?.slice(0, 2)).toEqual(['playlist', 'recommended']);
+    expect(L.paneOfView(watchPreset(), 'videos')).toBeUndefined();
     expect(viewsOf('watch').find((v) => v.id === 'playlist')?.optional).toBe(true);
   });
 });
