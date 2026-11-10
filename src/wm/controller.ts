@@ -12,6 +12,7 @@ import * as L from './layout.ts';
 import { addEdge } from './layout-edge.ts';
 import { parseLayout } from './layout-parse.ts';
 import { openMenu } from './menus.ts';
+import { createOptional, INTRODUCED_KEY } from './optional.ts';
 import { createOwnViews } from './own-views.ts';
 import { GUIDE_PX, presetOf } from './presets.ts';
 import { createProjector } from './projector.ts';
@@ -111,7 +112,8 @@ export function createWmController(rt: Runtime, family: WmFamily): Wm {
 
   function render(): void {
     if (disposed) return;
-    rendered = renderLayout(root, ctx);
+    const shown = optional.visible(root);
+    rendered = renderLayout(shown, ctx);
     host.root.replaceChildren(rendered.el);
     for (const [view, body] of rendered.bodies) {
       const el = own.el(view);
@@ -119,13 +121,16 @@ export function createWmController(rt: Runtime, family: WmFamily): Wm {
     }
     const open = new Set(L.views(root));
     own.sync(open);
+    const drawn = new Set(L.views(shown));
     const entries = VIEWS.flatMap((v) =>
-      v.slot && open.has(v.id)
+      v.slot && drawn.has(v.id)
         ? [{ slot: v.slot, part: v.part, body: rendered?.bodies.get(v.id) ?? null }]
         : [],
     );
     projector.sync(entries);
   }
+
+  const optional = createOptional(VIEWS, () => render());
 
   // Follow stored layout changes (reset from Settings, edits in other tabs); our own saves are no-ops.
   const adopt = (value: unknown): void => {
@@ -152,7 +157,11 @@ export function createWmController(rt: Runtime, family: WmFamily): Wm {
   host.look(rt.settings.get());
   render();
   projector.refresh();
-  void chrome.storage.local.get(KEY).then((s) => s[KEY] !== undefined && adopt(s[KEY]));
+  void chrome.storage.local.get([KEY, INTRODUCED_KEY]).then((s) => {
+    if (s[KEY] !== undefined) adopt(s[KEY]);
+    const next = optional.introduce(root, s[INTRODUCED_KEY]);
+    if (next !== root) set(next);
+  });
 
   // Same-element navigations (search → search) would otherwise keep the old scroll offset.
   let nav = rt.page.get().nav;
@@ -171,6 +180,7 @@ export function createWmController(rt: Runtime, family: WmFamily): Wm {
       clearTimeout(saveTimer);
       chrome.storage.onChanged.removeListener(onStorage);
       offGuide();
+      optional.dispose();
       offLook();
       offPage();
       projector.dispose();

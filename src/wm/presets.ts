@@ -8,7 +8,8 @@ export function familyOf(kind: PageKind): WmFamily {
   return kind === 'watch' || kind === 'shorts' || kind === 'home' ? kind : 'browse';
 }
 
-/** Default watch-page workspace: player over details | comments+chat, recommendations on the right (Shorts via `+`). */
+/** Default watch-page workspace: player over details | comments+chat, recommendations on the right,
+ * with the playlist in front of them while one is playing (Shorts via `+`). */
 export function watchPreset(): LayoutNode {
   return split(
     'row',
@@ -18,7 +19,7 @@ export function watchPreset(): LayoutNode {
         [pane(['player']), split('row', [pane(['details']), pane(['comments', 'chat'])])],
         [0.62, 0.38],
       ),
-      pane(['videos', 'stats', 'history', 'settings', 'log']),
+      pane(['playlist', 'videos', 'stats', 'history', 'settings', 'log']),
     ],
     [0.66, 0.34],
   );

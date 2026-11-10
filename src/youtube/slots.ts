@@ -1,4 +1,11 @@
-import { GUIDE_RENDERER, MASTHEAD, NATIVE_SLOTS, type NativeSlot } from './selectors.ts';
+import {
+  GUIDE_RENDERER,
+  MASTHEAD,
+  NATIVE_SLOTS,
+  type NativeSlot,
+  PLAYLIST_PANEL,
+} from './selectors.ts';
+import { waitFor } from './wait.ts';
 
 /** The guide's scroller exists before its content: below ~1312px YouTube shows the mini guide and stamps
  * `ytd-guide-renderer` only on first drawer open. Report it missing until then so the projector wakes it. */
@@ -17,4 +24,19 @@ export function mastheadHeight(): number {
 
 export function isFullscreen(): boolean {
   return document.fullscreenElement !== null;
+}
+
+/** Calls `cb` whenever the playlist panel appears or goes away (YouTube toggles its `hidden` attribute). */
+export function onPlaylistToggle(cb: () => void): () => void {
+  const mo = new MutationObserver(cb);
+  let off = false;
+  void waitFor(() => document.querySelector(PLAYLIST_PANEL) ?? undefined, 10_000).then((el) => {
+    if (!el || off) return;
+    mo.observe(el, { attributes: true, attributeFilter: ['hidden'] });
+    cb();
+  });
+  return () => {
+    off = true;
+    mo.disconnect();
+  };
 }

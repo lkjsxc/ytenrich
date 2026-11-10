@@ -51,6 +51,9 @@ export const MENU_ITEM_CLICK = 'button, tp-yt-paper-item';
 /** Shelf containers that can hold a row of Shorts inside a recommendation list. */
 const SHELVES = 'grid-shelf-view-model, ytd-reel-shelf-renderer, ytd-rich-shelf-renderer';
 
+/** The watch page's playlist / mix / queue panel: always in the DOM, `[hidden]` while there is none. */
+export const PLAYLIST_PANEL = 'ytd-watch-flexy ytd-playlist-panel-renderer#playlist';
+
 /** Native slots projected into WM panes. `page` is the whole current non-watch page (home, search, channel, feeds, Shorts, anything new);
  * `shorts` is the first Shorts shelf of the watch page's recommendations. */
 export const NATIVE_SLOTS = {
@@ -59,6 +62,7 @@ export const NATIVE_SLOTS = {
   details: 'ytd-watch-flexy ytd-watch-metadata',
   comments: 'ytd-watch-flexy ytd-comments#comments',
   videos: 'ytd-watch-flexy #related',
+  playlist: `${PLAYLIST_PANEL}:not([hidden])`,
   chat: 'ytd-watch-flexy #chat-container',
   shorts: `ytd-watch-flexy #related :is(${SHELVES}):has(a[href^="/shorts/"])`,
   guide: 'tp-yt-app-drawer#guide #guide-inner-content',

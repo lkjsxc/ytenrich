@@ -12,6 +12,9 @@ All names live in `src/youtube/selectors.ts` and `src/youtube/youtube.css`. Fixt
 - Lockup title is `h3[title]`. Channel is the first `.ytContentMetadataViewModelMetadataRow` text. The thumbnail box is `yt-thumbnail-view-model` .
 - `#movie_player` contains end-screen `/watch` anchors, which are excluded via `NOT_RECO`.
 
+## Playlist panel (watch page)
+- `ytd-watch-flexy ytd-playlist-panel-renderer#playlist` (in `#secondary-inner`) holds the playlist, mix or queue. It is always in the DOM and carries `[hidden]` while there is none, so the `playlist` slot is that element `:not([hidden])` and `onPlaylistToggle` observes the attribute. Its `#items` list scrolls inside the projected panel. Verified signed out with a mix (`list=RD…`) on 2026-11-10.
+
 ## Shorts shelf (watch page)
 - The `shorts` slot is the first shelf in `#related` that contains `/shorts/` anchors. Projected, it leaves the Videos list (fixed position) and wraps its items to the pane; without the Shorts tab, shelves stay inline in Videos.
 - Signed out, watch pages showed no Shorts shelf on 2026-11-10, so the projected shelf CSS (`.ytGridShelfViewModelGridShelf*`) is verified only for the empty state. Check it signed in.

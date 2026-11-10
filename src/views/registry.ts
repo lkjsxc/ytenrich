@@ -33,6 +33,8 @@ export type ViewDef = {
   readonly slot?: NativeSlot;
   /** Shows only one part of the slot's element (CSS on `[ytenrich-part]`); views of one slot take turns. */
   readonly part?: string;
+  /** The tab exists only while the slot's element does (the playlist panel). */
+  readonly optional?: boolean;
   /** Layout families the view exists in (default: all). */
   readonly families?: readonly WmFamily[];
   /** Own view rendered by ytenrich into the pane body. */
@@ -87,6 +89,14 @@ export const VIEWS: readonly ViewDef[] = [
     title: 'Videos',
     hint: 'YouTube’s recommendations for this video',
     slot: 'videos',
+    families: W,
+  },
+  {
+    id: 'playlist',
+    title: 'Playlist',
+    hint: 'The playlist, mix or queue being played (shown only when there is one)',
+    slot: 'playlist',
+    optional: true,
     families: W,
   },
   {

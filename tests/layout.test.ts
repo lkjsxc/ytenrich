@@ -15,9 +15,12 @@ import { insertAt, zoneAt } from '../src/wm/tab-drag.ts';
 const shape = (n: L.LayoutNode): unknown =>
   n.type === 'pane' ? n.tabs.join('|') : { [n.dir]: n.children.map(shape) };
 
+/** The watch preset without its optional Playlist tab (shown only while a playlist plays). */
+const watch = (): L.LayoutNode => L.removeView(watchPreset(), 'playlist') as L.LayoutNode;
+
 describe('layout', () => {
   it('preset has player over details | comments, and recommendations', () => {
-    expect(shape(watchPreset())).toEqual({
+    expect(shape(watch())).toEqual({
       row: [
         { col: ['player', { row: ['details', 'comments|chat'] }] },
         'videos|stats|history|settings|log',
@@ -32,7 +35,7 @@ describe('layout', () => {
       ['browse', b],
       ['shorts', shortsPreset()],
       ['home', homePreset(1600)],
-      ['watch', watchPreset()],
+      ['watch', watch()],
     ] as const) {
       const known = new Set(viewsOf(family).map((v) => v.id));
       expect(L.views(preset).filter((v) => !known.has(v))).toEqual([]);
@@ -50,7 +53,7 @@ describe('layout', () => {
     ).toEqual(['watch', 'home', 'browse', 'browse', 'browse', 'browse', 'shorts']);
   });
   it('moves a tab to a pane edge, splitting it, and flattens same-direction splits', () => {
-    const root = watchPreset();
+    const root = watch();
     const right = L.paneOfView(root, 'videos')!;
     const next = L.moveView(root, 'stats', right.id, 'right');
     expect(shape(next)).toEqual({
@@ -65,18 +68,18 @@ describe('layout', () => {
     expect(s.sizes[0]).toBeCloseTo(0.44);
   });
   it('moving the only tab of a pane to its own edge is a no-op', () => {
-    const root = watchPreset();
+    const root = watch();
     const p = L.paneOfView(root, 'player')!;
     expect(shape(L.moveView(root, 'player', p.id, 'left'))).toEqual(shape(root));
   });
   it('removing the last tab removes the pane and collapses the split', () => {
-    const root = L.removeView(watchPreset(), 'player')!;
+    const root = L.removeView(watch(), 'player')!;
     expect(shape(root)).toEqual({
       row: ['details', 'comments|chat', 'videos|stats|history|settings|log'],
     });
   });
   it('center drop joins and activates', () => {
-    const root = watchPreset();
+    const root = watch();
     const p = L.paneOfView(root, 'player')!;
     const next = L.moveView(root, 'comments', p.id, 'center');
     expect(L.paneOfView(next, 'comments')).toMatchObject({
@@ -85,7 +88,7 @@ describe('layout', () => {
     });
   });
   it('reorders tabs within a strip and inserts at an index across panes', () => {
-    const root = L.removeView(watchPreset(), 'history') as L.LayoutNode;
+    const root = L.removeView(watch(), 'history') as L.LayoutNode;
     const right = L.paneOfView(root, 'videos')!;
     const r1 = L.moveView(root, 'log', right.id, 'center', 0);
     expect(L.paneOfView(r1, 'log')?.tabs).toEqual(['log', 'videos', 'stats', 'settings']);
@@ -101,7 +104,7 @@ describe('layout', () => {
     });
   });
   it('addEdge wraps the layout with a sized edge pane and moves an existing view there', () => {
-    const next = addEdge(watchPreset(), 'guide', 'left', 0.15) as L.SplitNode;
+    const next = addEdge(watch(), 'guide', 'left', 0.15) as L.SplitNode;
     expect(shape(next)).toEqual({
       row: [
         'guide',
@@ -111,14 +114,14 @@ describe('layout', () => {
     });
     expect(next.sizes[0]).toBeCloseTo(0.15);
     expect(next.sizes[1]).toBeCloseTo(0.85 * 0.66);
-    const moved = addEdge(watchPreset(), 'log', 'left', 0.2);
+    const moved = addEdge(watch(), 'log', 'left', 0.2);
     expect(L.paneOfView(moved, 'log')?.tabs).toEqual(['log']);
     expect(L.views(moved).filter((v) => v === 'log')).toHaveLength(1);
   });
   it('retainViews drops unknown and duplicate views; parse round-trips', () => {
     const root = L.split('row', [L.pane(['a', 'x']), L.pane(['a', 'b'])]);
     expect(shape(L.retainViews(root, new Set(['a', 'b']))!)).toEqual({ row: ['a', 'b'] });
-    const preset = watchPreset();
+    const preset = watch();
     expect(parseLayout(JSON.parse(JSON.stringify(preset)))).toEqual(preset);
     expect(parseLayout({ type: 'split', id: 'x', dir: 'diag', children: [] })).toBeNull();
   });
@@ -162,5 +165,9 @@ describe('layout', () => {
     );
     expect(shape(next)).toEqual({ row: ['a|c', 'b'] });
     expect((next as L.SplitNode).children[0]).toMatchObject({ active: 'c' });
+  });
+  it('the watch preset puts the optional Playlist tab in front of Videos', () => {
+    expect(L.paneOfView(watchPreset(), 'videos')?.tabs.slice(0, 2)).toEqual(['playlist', 'videos']);
+    expect(viewsOf('watch').find((v) => v.id === 'playlist')?.optional).toBe(true);
   });
 });
