@@ -1,6 +1,8 @@
 export type Kind = 'video' | 'short';
 export type Surface = 'home' | 'watch' | 'search' | 'channel' | 'subs' | 'shorts' | 'other';
 export type PageKind = Surface;
+/** Tiling layout family: watch pages, or every other page (projected whole as the `page` view). */
+export type WmFamily = 'watch' | 'browse';
 
 export type Impression = {
   readonly id: string;

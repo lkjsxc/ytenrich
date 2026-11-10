@@ -3,26 +3,28 @@ import type { Runtime } from '../content/runtime.ts';
 import { layoutKey } from '../shared/layout-store.ts';
 import { patchSettings } from '../shared/settings.ts';
 import type { Disposer } from '../shared/signal.ts';
-import { VIEW_BY_ID, VIEWS, type ViewEnv } from '../views/registry.ts';
+import type { WmFamily } from '../shared/types.ts';
+import { VIEW_BY_ID, type ViewEnv, viewsOf } from '../views/registry.ts';
 import { onGuideButton } from '../youtube/guide.ts';
-import { mastheadHeight } from '../youtube/slots.ts';
+import { mastheadHeight, resetPageScroll } from '../youtube/slots.ts';
 import { createHost } from './host.ts';
 import * as L from './layout.ts';
 import { parseLayout } from './layout-parse.ts';
 import { openMenu } from './menus.ts';
-import { watchPreset } from './presets.ts';
+import { GUIDE_PX, presetOf } from './presets.ts';
 import { createProjector } from './projector.ts';
 import { type Rendered, renderLayout } from './render.ts';
 import { startResize } from './resize.ts';
 import { startTabDrag } from './tab-drag.ts';
 
-const KEY = layoutKey('watch');
 const SAVE_MS = 400;
-const GUIDE_PX = 240;
 
-export type Wm = { refresh(): void; dispose(): void };
+export type Wm = { readonly family: WmFamily; refresh(): void; dispose(): void };
 
-export function createWmController(rt: Runtime): Wm {
+export function createWmController(rt: Runtime, family: WmFamily): Wm {
+  const KEY = layoutKey(family);
+  const preset = (): L.LayoutNode => presetOf(family);
+  const VIEWS = viewsOf(family);
   const host = createHost();
   host.setTop(mastheadHeight());
   const projector = createProjector(rt.log);
@@ -35,13 +37,13 @@ export function createWmController(rt: Runtime): Wm {
   };
   const known = new Set(VIEWS.map((v) => v.id));
   const mounts = new Map<string, { el: HTMLElement; dispose: Disposer }>(); // bound: one per own view
-  let root: L.LayoutNode = watchPreset();
+  let root: L.LayoutNode = preset();
   let rendered: Rendered | undefined;
   let saveTimer: ReturnType<typeof setTimeout> | undefined;
   let disposed = false;
 
   const set = (next: L.LayoutNode | null, save = true): void => {
-    root = next ?? watchPreset();
+    root = next ?? preset();
     render();
     if (!save) return;
     clearTimeout(saveTimer);
@@ -79,7 +81,7 @@ export function createWmController(rt: Runtime): Wm {
         { label: 'Split right', run: splitTo('right'), disabled: p.tabs.length < 2 },
         { label: 'Split down', run: splitTo('bottom'), disabled: p.tabs.length < 2 },
         { label: 'Close pane', run: () => set(L.closePane(root, p.id)) },
-        { label: 'Reset layout', run: () => set(watchPreset()) },
+        { label: 'Reset layout', run: () => set(preset()) },
         { label: 'Turn off tiling (Alt+W)', run: () => void patchSettings({ wmEnabled: false }) },
       ]);
     },
@@ -116,7 +118,7 @@ export function createWmController(rt: Runtime): Wm {
 
   // Follow stored layout changes (reset from Settings, edits in other tabs); our own saves are no-ops.
   const adopt = (value: unknown): void => {
-    const saved = value === undefined ? watchPreset() : parseLayout(value);
+    const saved = value === undefined ? preset() : parseLayout(value);
     const next = saved && L.retainViews(saved, known);
     if (!next || disposed || JSON.stringify(next) === JSON.stringify(root)) return;
     clearTimeout(saveTimer);
@@ -139,7 +141,14 @@ export function createWmController(rt: Runtime): Wm {
   projector.refresh();
   void chrome.storage.local.get(KEY).then((s) => s[KEY] !== undefined && adopt(s[KEY]));
 
+  // Same-element navigations (search → search) would otherwise keep the old scroll offset.
+  let nav = rt.page.get().nav;
+  const offPage = rt.page.subscribe((p) => {
+    if (p.nav !== nav) (nav = p.nav), resetPageScroll();
+  });
+
   return {
+    family,
     refresh() {
       host.setTop(mastheadHeight());
       projector.refresh();
@@ -149,6 +158,7 @@ export function createWmController(rt: Runtime): Wm {
       clearTimeout(saveTimer);
       chrome.storage.onChanged.removeListener(onStorage);
       offGuide();
+      offPage();
       projector.dispose();
       for (const m of mounts.values()) m.dispose();
       mounts.clear();

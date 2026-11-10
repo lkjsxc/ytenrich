@@ -48,8 +48,9 @@ export const MENU_ITEM = [
 ].join(', ');
 export const MENU_ITEM_CLICK = 'button, tp-yt-paper-item';
 
-/** Watch-page native slots projected into WM panes. */
-export const WATCH_SLOTS = {
+/** Native slots projected into WM panes. `page` is the current non-watch page (home/search/channel/feeds). */
+export const NATIVE_SLOTS = {
+  page: 'ytd-page-manager > :is(ytd-browse, ytd-search):not([hidden])',
   player: 'ytd-watch-flexy #player-container',
   details: 'ytd-watch-flexy ytd-watch-metadata',
   comments: 'ytd-watch-flexy ytd-comments#comments',
@@ -57,7 +58,7 @@ export const WATCH_SLOTS = {
   chat: 'ytd-watch-flexy #chat-container',
   guide: 'tp-yt-app-drawer#guide #guide-inner-content',
 } as const;
-export type WatchSlot = keyof typeof WATCH_SLOTS;
+export type NativeSlot = keyof typeof NATIVE_SLOTS;
 
 export const MASTHEAD = '#masthead-container';
 export const GUIDE_BUTTON = 'ytd-masthead #guide-button';

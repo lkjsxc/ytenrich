@@ -33,7 +33,13 @@ All names live in `src/youtube/selectors.ts` and `src/youtube/youtube.css`. Fixt
 - The theme is `html[dark]` (absent means light).
 - Opening the guide drawer (or a modal) adds `body.lock-scrollbar` → body `position:fixed` → body becomes a stacking context. Anything of ours that must stack *between* YouTube layers has to live inside body.
 
-## Guide (hamburger sidebar) on watch pages
+## Browse pages (home/search/channel/playlist/feeds)
+- `ytd-page-manager` keeps one element per visited page type; inactive ones carry `[hidden]`. The `page` slot is the visible `ytd-browse` (all feeds, channels, playlists) or `ytd-search`.
+- Projected whole, it becomes its own scroller. Infinite scroll keeps working (continuations use IntersectionObserver), verified on search and channel videos.
+- Parts that are `position:fixed` against window scroll must be unfixed: the channel/playlist `tp-yt-app-header[fixed]` (absolute at the top of its `tp-yt-app-header-layout`, which already reserves its height as padding; it also has `margin-top: masthead`), and the home `#chips-wrapper` (made relative; not verifiable signed out).
+- On wide windows the guide drawer is *persistent* there; while tiling it and `ytd-mini-guide-renderer` are hidden unless the guide is projected.
+
+## Guide (hamburger sidebar)
 - `tp-yt-app-drawer#guide` (fixed, z 2030, full-viewport box incl. `#scrim`) > `#contentContainer` (absolute, **transform**: translateX(-100%) closed / identity open) > `#guide-wrapper` > `#guide-content` > `#guide-inner-content` (scroller) > `ytd-guide-renderer`.
 - `ytd-guide-renderer` does not exist until the drawer is first opened. `youtube/guide.ts` `wakeGuide()` clicks `ytd-masthead #guide-button` (synthetic, so our interceptor ignores it) while `html[ytenrich-guide-wake]` hides the drawer, waits for the renderer, then closes it.
 - While projected (`#guide-inner-content` is the slot), CSS drops the drawer to z 1 and removes `#contentContainer`'s transform (a transform would make it the containing block of our fixed slot).

@@ -1,11 +1,14 @@
 # ytenrich
 
-A browser extension that makes YouTube more personal and more comfortable to use: recommendation statistics, hiding of recommendations that keep reappearing without being opened, one-click "Not interested", and a tiling window manager layout on watch pages.
+A browser extension that makes YouTube more personal and more comfortable to use: recommendation statistics, hiding of recommendations that keep reappearing without being opened, one-click "Not interested", and a tiling window manager layout on every YouTube page.
 
 ![Watch page as a tiling window manager](docs/images/watch-tiling-dark.webp)
 
 ## Features
-- **Tiling watch page**: player, details, comments and recommendations sit in resizable panes, and each pane scrolls on its own.
+- **Tiling everywhere**: every page except Shorts is a tiling layout, and each pane scrolls on its own.
+  - Watch pages: player, details, comments and recommendations sit in resizable panes.
+  - Home, search, channels, playlists and feeds: the guide sits on the left and the page itself is a tab next to Stats/Settings/Log.
+  - Watch pages and the other pages each keep their own saved layout.
   - Drag a tab to a pane edge to split that pane, onto a pane to join its tabs, or between tabs of a strip to reorder.
   - The ☰ button toggles YouTube's guide (sidebar) as a tile on the left instead of an overlay drawer.
   - Recommendations are split into separate Videos and Shorts tabs.

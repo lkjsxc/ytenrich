@@ -1,39 +1,9 @@
 // Live smoke: Chromium + unpacked dist/ on a real watch page. Prints JSON facts + screenshots in tmp/.
 // Not a canonical gate (network/YouTube dependent). Usage: node scripts/smoke.ts [videoId]
-import { existsSync, mkdirSync, mkdtempSync, readdirSync } from 'node:fs';
-import { homedir, tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
-import { chromium } from 'playwright';
+import { launch } from './smoke-lib.ts';
 
-const ext = resolve('dist');
 const video = process.argv[2] ?? 'dQw4w9WgXcQ';
-// Prefer Playwright's pinned browser; otherwise fall back to the newest cached Chromium (or YTE_CHROME).
-const cached = (): string | undefined => {
-  const root = join(homedir(), '.cache/ms-playwright');
-  const dirs = existsSync(root)
-    ? readdirSync(root)
-        .filter((d) => /^chromium-\d+$/.test(d))
-        .sort()
-        .reverse()
-    : [];
-  return dirs.map((d) => join(root, d, 'chrome-linux64/chrome')).find(existsSync);
-};
-const exe =
-  process.env.YTE_CHROME ?? (existsSync(chromium.executablePath()) ? undefined : cached());
-mkdirSync('tmp', { recursive: true });
-const ctx = await chromium.launchPersistentContext(mkdtempSync(join(tmpdir(), 'yte-')), {
-  headless: true,
-  ...(exe ? { executablePath: exe } : {}),
-  viewport: { width: 1600, height: 1000 },
-  locale: 'en-US',
-  args: [`--disable-extensions-except=${ext}`, `--load-extension=${ext}`],
-});
-const errors: string[] = [];
-const page = ctx.pages()[0] ?? (await ctx.newPage());
-page.on('console', (m) => m.text().includes('ytenrich') && errors.push(`${m.type()}: ${m.text()}`));
-page.on('pageerror', (e) => String(e.stack).includes('chrome-extension') && errors.push(String(e)));
-const sw = ctx.serviceWorkers()[0] ?? (await ctx.waitForEvent('serviceworker'));
-await sw.evaluate(() => chrome.storage.local.set({ settings: { statsEnabled: true } }));
+const { ctx, page, sw, errors } = await launch({ statsEnabled: true });
 
 await page.goto(`https://www.youtube.com/watch?v=${video}`, { waitUntil: 'domcontentloaded' });
 await page.waitForTimeout(8000);

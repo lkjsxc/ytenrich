@@ -1,7 +1,8 @@
-// Tiling WM on watch pages. Alt+W toggles. Unmounts during fullscreen so YouTube owns the player.
+// Tiling WM on every page but Shorts (layout family per page kind). Alt+W toggles. Unmounts during fullscreen.
 import { patchSettings } from '../../shared/settings.ts';
 import { createDisposables } from '../../shared/signal.ts';
 import { createWmController, type Wm } from '../../wm/controller.ts';
+import { familyOf } from '../../wm/presets.ts';
 import { isFullscreen } from '../../youtube/slots.ts';
 import type { Feature } from '../features.ts';
 
@@ -11,10 +12,11 @@ export const wm: Feature = {
     const d = createDisposables();
     let ctl: Wm | undefined;
     const update = (): void => {
-      const want = rt.settings.get().wmEnabled && rt.page.get().kind === 'watch' && !isFullscreen();
-      document.documentElement.toggleAttribute('ytenrich-wm', want);
-      if (want && !ctl) ctl = createWmController(rt);
-      else if (!want && ctl) ctl.dispose(), (ctl = undefined);
+      const on = rt.settings.get().wmEnabled && !isFullscreen();
+      const family = on ? familyOf(rt.page.get().kind) : null;
+      document.documentElement.toggleAttribute('ytenrich-wm', family !== null);
+      if (ctl && ctl.family !== family) ctl.dispose(), (ctl = undefined);
+      if (family && !ctl) ctl = createWmController(rt, family);
       else ctl?.refresh();
     };
     const onKey = (e: KeyboardEvent): void => {

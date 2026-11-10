@@ -3,7 +3,7 @@
 ## North star: YouTube *is* the tiling WM
 Every part of youtube.com becomes a view in one tiling layout. Native parts are projected; parts that are
 awkward natively are rebuilt as own views. Steps, in order:
-1. **WM on every page kind.** One `page` native view projects the current `ytd-page-manager` page (home/search/channel/subscriptions/…). Watch-specific views stay as they are. Each page kind keeps its own layout (`layout:<kind>`) with a preset. The Guide tile then works everywhere.
+1. ~~**WM on every page kind.**~~ Done (2026-11): `page` native view, layout families `watch`/`browse`. Open: Shorts pages still use YouTube's UI; per-kind layouts only if a real need shows up.
 2. **Absorb the masthead.** Add own views: `search` (input + suggestions, navigating via native SPA links where possible), `account`, `notifications` and `create`. Then hide `#masthead-container` and start the host at top 0. Keep a slim fallback (Alt+W restores everything).
 3. **Session-wide layout.** A single layout across navigations (player keeps playing in its tile while you browse home/search in another tile, like a miniplayer).
 4. i3-style keyboard control (focus/move/split/resize keys, numbered tabs).

@@ -5,10 +5,15 @@ import { waitFor } from './wait.ts';
 
 export type DismissResult =
   | { readonly ok: true }
-  | { readonly ok: false; readonly reason: 'no-menu' | 'no-item'; readonly labels: string[] };
+  | {
+      readonly ok: false;
+      readonly reason: 'no-button' | 'no-menu' | 'no-item';
+      readonly labels: string[];
+    };
 const SILENT = 'ytenrich-silent-menu';
 const OPEN_MS = 3000; // some menus fetch their items over the network on open
 const CLOSE_MS = 600;
+const SETTLE_MS = 400; // items shown this long without a match: the label is not in this menu
 
 const shown = (): HTMLElement[] =>
   [...document.querySelectorAll<HTMLElement>(MENU_ITEM)].filter((el) => el.offsetParent !== null);
@@ -24,7 +29,7 @@ export async function clickNotInterested(
   extraLabel: string,
 ): Promise<DismissResult> {
   const button = root.querySelector<HTMLElement>(MENU_BUTTON);
-  if (!button) return { ok: false, reason: 'no-menu', labels: [] };
+  if (!button) return { ok: false, reason: 'no-button', labels: [] };
   const labels = new Set(
     [...NOT_INTERESTED_LABELS, extraLabel].filter(Boolean).map(normalizeLabel),
   );
@@ -37,10 +42,14 @@ export async function clickNotInterested(
       await waitFor(() => (shown().length ? undefined : true), CLOSE_MS);
     }
     button.click();
-    const item = await waitFor(
-      () => shown().find((el) => labels.has(normalizeLabel(text(el)))),
-      OPEN_MS,
-    );
+    let since = 0;
+    const item = await waitFor(() => {
+      const items = shown();
+      const hit = items.find((el) => labels.has(normalizeLabel(text(el))));
+      if (hit || !items.length) return hit;
+      since ||= performance.now();
+      return performance.now() - since > SETTLE_MS ? null : undefined;
+    }, OPEN_MS);
     if (item) {
       (item.querySelector<HTMLElement>(MENU_ITEM_CLICK) ?? item).click();
       return { ok: true };

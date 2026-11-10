@@ -1,12 +1,12 @@
 // Native projection: YouTube elements stay in place but are fixed-positioned over WM pane bodies.
 import type { Log } from '../shared/log.ts';
 import { wakeGuide } from '../youtube/guide.ts';
-import type { WatchSlot } from '../youtube/selectors.ts';
-import { resolveWatchSlot } from '../youtube/slots.ts';
+import type { NativeSlot } from '../youtube/selectors.ts';
+import { resolveSlot } from '../youtube/slots.ts';
 
 export type ProjEntry = {
   readonly view: string;
-  readonly slot: WatchSlot;
+  readonly slot: NativeSlot;
   readonly body: HTMLElement | null;
 };
 export type Projector = {
@@ -18,7 +18,8 @@ export type Projector = {
 const SLOT = 'ytenrich-slot';
 const INACTIVE = 'ytenrich-slot-inactive';
 const PROPS = ['left', 'top', 'width', 'height'] as const;
-const REQUIRED: readonly WatchSlot[] = ['player', 'videos'];
+const REQUIRED: readonly NativeSlot[] = ['player', 'videos', 'page'];
+const REFIT: readonly NativeSlot[] = ['player', 'page']; // YouTube re-measures these on window resize
 const RETRY_MS = 250;
 const RETRIES = 40;
 
@@ -30,7 +31,7 @@ function release(el: HTMLElement): void {
 
 export function createProjector(log: Log): Projector {
   let entries: readonly ProjEntry[] = [];
-  const tagged = new Map<WatchSlot, { el: HTMLElement; rect: string }>(); // bound: one per slot kind
+  const tagged = new Map<NativeSlot, { el: HTMLElement; rect: string }>(); // bound: one per slot kind
   let frame = 0;
   let retryTimer: ReturnType<typeof setTimeout> | undefined;
   let retries = 0;
@@ -39,10 +40,10 @@ export function createProjector(log: Log): Projector {
 
   const apply = (): void => {
     frame = 0;
-    let missing: WatchSlot[] = [];
-    const live = new Set<WatchSlot>();
+    let missing: NativeSlot[] = [];
+    const live = new Set<NativeSlot>();
     for (const { view, slot, body } of entries) {
-      const el = resolveWatchSlot(slot);
+      const el = resolveSlot(slot);
       const prev = tagged.get(slot);
       if (prev && prev.el !== el) release(prev.el), tagged.delete(slot);
       if (!el) {
@@ -61,7 +62,7 @@ export function createProjector(log: Log): Projector {
       t.rect = rect;
       const values = [r.left, r.top, r.width, r.height];
       PROPS.forEach((p, i) => el.style.setProperty(p, `${values[i]}px`, 'important'));
-      if (slot === 'player') {
+      if (REFIT.includes(slot)) {
         clearTimeout(resizeTimer);
         resizeTimer = setTimeout(() => window.dispatchEvent(new Event('resize')), 120);
       }

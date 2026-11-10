@@ -4,14 +4,14 @@ MV3 browser extension (Chromium + Firefox ≥140) that enriches youtube.com:
 - recommendation impression stats
 - hiding over-exposed unopened videos
 - a one-click "Not interested" button
-- a tiling window manager (WM) on watch pages, with ytenrich's own views (Stats/Settings/Log/Shorts) as WM tabs
+- a tiling window manager (WM) on every page but Shorts (layout families `watch` and `browse`), with ytenrich's own views (Stats/Settings/Log/Shorts) as WM tabs
 
 AI-first repo: no human ergonomics, no backward compatibility, no migrations. Move fast.
 
 ## Commands
 - `pnpm build`: writes Chromium to `dist/`. `pnpm build --firefox`: writes Firefox to `dist-firefox/`. `pnpm dev`: watch build.
 - `pnpm check`: the canonical gate (repo rules + tsc + biome + vitest). Prints `ok check`. `pnpm fix` auto-formats.
-- `pnpm smoke [videoId]`: live Chromium + extension run on youtube.com. Prints JSON facts and writes `tmp/smoke-*.png`. Read the PNGs to judge layout. It is not canonical (depends on the network and on YouTube). It auto-falls back to the newest cached Chromium; `YTE_CHROME=<path>` overrides.
+- `pnpm smoke`: live Chromium + extension runs on youtube.com (`scripts/smoke.ts` watch page, `scripts/smoke-browse.ts` search/channel and family switches; launcher in `smoke-lib.ts`). Prints JSON facts and writes `tmp/smoke-*.png`. Read the PNGs to judge layout. It is not canonical (depends on the network and on YouTube). It auto-falls back to the newest cached Chromium; `YTE_CHROME=<path>` overrides.
 
 ## Rules (enforced by scripts/check.ts)
 - **YouTube DOM names only in `src/youtube/`** (selectors.ts, youtube.css, slots, menu, extract, guide, wait). When YouTube changes, fix only there, and refresh `tests/fixtures/` from live DOM.

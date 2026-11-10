@@ -1,7 +1,11 @@
-import { MASTHEAD, WATCH_SLOTS, type WatchSlot } from './selectors.ts';
+import { MASTHEAD, NATIVE_SLOTS, type NativeSlot } from './selectors.ts';
 
-export function resolveWatchSlot(slot: WatchSlot): HTMLElement | null {
-  return document.querySelector<HTMLElement>(WATCH_SLOTS[slot]);
+export function resolveSlot(slot: NativeSlot): HTMLElement | null {
+  return document.querySelector<HTMLElement>(NATIVE_SLOTS[slot]);
+}
+
+export function resetPageScroll(): void {
+  resolveSlot('page')?.scrollTo(0, 0);
 }
 
 export function mastheadHeight(): number {

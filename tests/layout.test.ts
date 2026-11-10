@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
+import { viewsOf } from '../src/views/registry.ts';
 import * as L from '../src/wm/layout.ts';
 import { parseLayout } from '../src/wm/layout-parse.ts';
-import { watchPreset } from '../src/wm/presets.ts';
+import { browsePreset, familyOf, watchPreset } from '../src/wm/presets.ts';
 import { insertAt, zoneAt } from '../src/wm/tab-drag.ts';
 
 const shape = (n: L.LayoutNode): unknown =>
@@ -12,6 +13,26 @@ describe('layout', () => {
     expect(shape(watchPreset())).toEqual({
       row: [{ col: ['player', 'details|comments'] }, 'videos|shorts|stats|settings|log'],
     });
+  });
+  it('browse preset: guide beside the page; every preset view exists in its family', () => {
+    const b = browsePreset(1600) as L.SplitNode;
+    expect(shape(b)).toEqual({ row: ['guide', 'page|shorts|stats|settings|log'] });
+    expect(b.sizes[0]).toBeCloseTo(0.15);
+    for (const [family, preset] of [
+      ['browse', b],
+      ['watch', watchPreset()],
+    ] as const) {
+      const known = new Set(viewsOf(family).map((v) => v.id));
+      expect(L.views(preset).filter((v) => !known.has(v))).toEqual([]);
+    }
+    expect(viewsOf('browse').some((v) => v.id === 'player')).toBe(false);
+  });
+  it('page kinds map to layout families (Shorts keeps YouTube UI)', () => {
+    expect(
+      ['watch', 'home', 'search', 'channel', 'subs', 'other', 'shorts'].map((k) =>
+        familyOf(k as never),
+      ),
+    ).toEqual(['watch', 'browse', 'browse', 'browse', 'browse', 'browse', null]);
   });
   it('moves a tab to a pane edge, splitting it, and flattens same-direction splits', () => {
     const root = watchPreset();

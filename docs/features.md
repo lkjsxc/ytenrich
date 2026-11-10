@@ -9,8 +9,8 @@
 
 ## Add a WM view (tab)
 - **Own view**: write `mountX(el, env) → dispose` in `src/views/x.ts`, then add `{ id, title, mount }` to `VIEWS`. Set `needsScanner` if it needs page items (the options page skips those).
-- **Native view**: add a selector to `WATCH_SLOTS`, then add `{ id, title, slot }` to `VIEWS`. Add per-slot CSS in `youtube.css` under `[ytenrich-slot='id']`.
-- Optionally add it to `watchPreset()` (`src/wm/presets.ts`). Users get it from the pane `+` menu either way.
+- **Native view**: add a selector to `NATIVE_SLOTS`, then add `{ id, title, slot, families }` to `VIEWS`. Add per-slot CSS in `youtube.css` under `[ytenrich-slot='id']`.
+- Optionally add it to `watchPreset()` / `browsePreset()` (`src/wm/presets.ts`). Users get it from the pane `+` menu either way.
 
 ## Add a background method
 - Add it to `Api` in `src/shared/protocol.ts`, add a handler in `src/background/index.ts`, and put the DB logic in `stats-repo.ts`.

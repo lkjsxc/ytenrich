@@ -35,3 +35,10 @@ html[ytenrich-wm] tp-yt-app-drawer#guide:has([ytenrich-slot]) { z-index: 1 !impo
 html[ytenrich-wm] tp-yt-app-drawer#guide:has([ytenrich-slot]) #contentContainer { transform: none !important; will-change: auto !important; contain: none !important; filter: none !important; }
 html[ytenrich-wm] [ytenrich-slot="guide"] { padding: 4px 0 !important; pointer-events: auto; }
 html[ytenrich-guide-wake] tp-yt-app-drawer#guide { visibility: hidden !important; }
+/* ☰ toggles the Guide tile while tiling, so the drawer (persistent on browse pages) and mini guide stay hidden. */
+html[ytenrich-wm] tp-yt-app-drawer#guide:not(:has([ytenrich-slot])), html[ytenrich-wm] ytd-mini-guide-renderer { visibility: hidden !important; }
+html[ytenrich-wm] ytd-page-manager > :is(ytd-browse, ytd-search):not([ytenrich-slot]) { visibility: hidden !important; }
+html[ytenrich-wm] [ytenrich-slot="page"] { padding: 0 !important; }
+/* Page parts that are position:fixed against window scroll (channel/playlist header, home chips) scroll with the tile. */
+html[ytenrich-wm] [ytenrich-slot="page"] tp-yt-app-header[fixed] { position: absolute !important; top: 0 !important; margin-top: 0 !important; left: 0 !important; right: 0 !important; transform: none !important; }
+html[ytenrich-wm] [ytenrich-slot="page"] #chips-wrapper { position: relative !important; top: 0 !important; left: 0 !important; width: auto !important; transform: none !important; }

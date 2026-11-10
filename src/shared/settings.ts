@@ -20,7 +20,7 @@ export type SettingField =
   | { key: SettingKey; label: string; type: 'text'; placeholder: string };
 
 export const SETTINGS_SCHEMA: readonly SettingField[] = [
-  { key: 'wmEnabled', label: 'Tiling layout on watch pages (Alt+W)', type: 'bool' },
+  { key: 'wmEnabled', label: 'Tiling layout (Alt+W)', type: 'bool' },
   {
     key: 'statsEnabled',
     label: 'Record YouTube recommendations and opens on this device for stats and filtering',

@@ -6,7 +6,7 @@
     "build": "node scripts/build.ts",
     "dev": "node scripts/build.ts --watch",
     "check": "node scripts/check.ts",
-    "smoke": "node scripts/build.ts && node scripts/smoke.ts",
+    "smoke": "node scripts/build.ts && node scripts/smoke.ts && node scripts/smoke-browse.ts",
     "test": "vitest run",
     "fix": "biome check --write .",
     "image": "node scripts/image.ts"

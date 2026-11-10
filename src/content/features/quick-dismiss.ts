@@ -42,7 +42,11 @@ export const quickDismiss: Feature = {
         const info = extractItem(root);
         const r = await clickNotInterested(root, rt.settings.get().dismissLabel);
         if (!r.ok) {
-          const menu = r.labels.length ? `menu: ${r.labels.join(' | ')}` : 'menu did not open';
+          const menu = r.labels.length
+            ? `menu: ${r.labels.join(' | ')}`
+            : r.reason === 'no-button'
+              ? '3-dot button not found'
+              : 'menu did not open';
           const why = `${r.reason} (${menu}). Signed out, or set the exact label in Settings.`;
           rt.log.write('warn', 'dismiss', `${info?.id ?? '?'}: ${why}`);
           state(btn, 'fail', `Failed: ${why}`);
