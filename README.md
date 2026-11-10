@@ -18,7 +18,7 @@ A browser extension that makes YouTube more personal and more comfortable to use
 - **Hide over-exposed videos**: videos recommended N times that you never opened are hidden or dimmed. You choose N.
 - **One-click "Not interested"**: an always-visible ⊘ button right next to every recommendation's ⋮ menu. On success the item collapses at once; on failure ⊘ turns red and its tooltip (and the Log) lists the menu entries YouTube offered.
 
-Enable recommendation recording in **Settings** to build your stats and filter repeated recommendations. Images in the extension's Stats and Shorts views are a separate opt-in. See the [privacy policy](PRIVACY.md).
+Recommendation recording is on by default (stored only on this device) and builds your stats and the repeated-recommendation filter; turn it off in **Settings**. Images in the extension's Stats and Shorts views are a separate opt-in. See the [privacy policy](PRIVACY.md).
 
 ## Install (from source)
 ```sh

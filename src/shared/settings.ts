@@ -7,7 +7,7 @@ export const DEFAULT_SETTINGS = {
   hideThreshold: 5,
   dismissEnabled: true,
   dismissLabel: '',
-  statsEnabled: false,
+  statsEnabled: true,
   thumbnailsEnabled: false,
 };
 export type Settings = typeof DEFAULT_SETTINGS;
@@ -71,9 +71,11 @@ export async function loadSettings(): Promise<Settings> {
   return parseSettings(stored[SETTINGS_KEY]);
 }
 
+/** Stores only values that differ from the defaults, so changed defaults reach untouched settings. */
 export async function patchSettings(patch: Partial<Settings>): Promise<void> {
-  const current = await loadSettings();
-  await chrome.storage.local.set({ [SETTINGS_KEY]: { ...current, ...patch } });
+  const next = { ...(await loadSettings()), ...patch };
+  const diff = Object.entries(next).filter(([k, v]) => v !== DEFAULT_SETTINGS[k as SettingKey]);
+  await chrome.storage.local.set({ [SETTINGS_KEY]: Object.fromEntries(diff) });
 }
 
 export function onSettings(fn: (s: Settings) => void): () => void {

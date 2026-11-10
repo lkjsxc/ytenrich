@@ -6,7 +6,7 @@ ytenrich is a browser extension that changes the layout and recommendations on `
 
 ## Data stored in your browser
 
-When you enable recommendation recording in Settings, the extension reads YouTube video and Shorts IDs, titles, channel names, and where recommendations appeared. It records impressions, opens, dismissal timestamps, and daily totals in the extension's local database. It uses this information to show statistics and hide or dim repeated recommendations. Video exceptions, settings, and pane layouts are also stored in your browser profile. The extension uses no browser sync and does not send its database or aggregate statistics to the developer.
+Recommendation recording is on by default and can be turned off in Settings. While it is on, the extension reads YouTube video and Shorts IDs, titles, channel names, and where recommendations appeared. It records impressions, opens, dismissal timestamps, and daily totals in the extension's local database. It uses this information to show statistics and hide or dim repeated recommendations. Video exceptions, settings, and pane layouts are also stored in your browser profile. The extension uses no browser sync and does not send its database or aggregate statistics to the developer.
 
 You can turn off recommendation recording in **Settings** and erase the stored statistics and video exceptions with **Settings → Clear statistics**. Uninstalling the extension removes its local settings and data. The extension is unavailable in private windows.
 
