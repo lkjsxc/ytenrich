@@ -7,7 +7,7 @@ Keep this file in sync with `PRIVACY.md` and the code. Re-check it whenever a fe
   - `ytenrich-<v>-chromium.zip`: Chrome Web Store, Microsoft Edge Add-ons and Opera add-ons all take the same package.
   - `ytenrich-<v>-firefox.zip`: addons.mozilla.org.
   - `ytenrich-<v>-source.zip`: `git archive` of the commit, for reviewers. AMO and Opera require source for bundled or minified code.
-- Versions are `a.b.cd`: a single counter that goes up by one per release (`0.2.05` → `0.2.06`, `0.2.99` → `0.3.00`). No digit is a "major" or "minor"; never skip ahead for a big change. `pnpm bump` writes the next one. Manifests cannot hold leading zeros, so `package.json`, the manifests and the tag use `0.2.5` (`v0.2.5`), and the Chromium build also sets `version_name` to the written form `0.2.05`. Stores reject a version they have already seen, so bump for every upload.
+- Versions are a single counter that goes up by one per release, written with dots: `0.2.1` → `0.2.2` → … → `0.2.99` → `0.3.0`. No part is a "major" or "minor"; never skip ahead for a big change. `pnpm bump` writes the next one. The same spelling is used in `package.json`, both manifests, the tag (`v0.2.1`) and every store. Stores reject a version they have already seen, so bump for every upload.
 - `pnpm store-assets` writes to `release/store/` (it uses live YouTube, signed out, English, without autoplay, ads or promo popups):
   - screenshots at 1280×800, light and dark: `1-watch`, `2-search`, `3-stats` and `4-welcome-consent`;
   - `promo-440x280.png` (Chrome Web Store small promo tile);
