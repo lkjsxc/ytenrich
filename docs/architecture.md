@@ -28,7 +28,7 @@ page signal (watch/shorts videoId) ─► bg.opened (resets suppression for that
 - `patchSettings` stores only values that differ from `DEFAULT_SETTINGS`, so later default changes reach settings the user never touched.
 
 ## Tiling WM
-- Active when `wmEnabled && !fullscreen`; every page kind has a layout family (`wm/presets.ts` `familyOf`): `watch` for watch pages, `shorts` for the Shorts player (projected whole as `page`, with the own `recommended` view beside it by default), `browse` for every other kind. Alt+W toggles it.
+- Active when `wmEnabled && !fullscreen`; every page kind has a layout family (`wm/presets.ts` `familyOf`): `watch` for watch pages, `shorts` for the Shorts player (projected whole as `page`, with the own `recommended` view beside it by default), `home` for the home feed (the `page` element shown as two part views, `home-videos` and `home-shorts`, that take turns), `browse` for every other kind. Alt+W toggles it.
 - One controller per family (`createWmController(rt, family)`). SPA navigation across families disposes it and creates the other; within a family it only refreshes (and resets the `page` scroll to the top).
 - Views declare `families` in the registry (`viewsOf(family)`); a family's layout, `+` menu and stored-layout filter only use its views.
 - `html[ytenrich-wm]` gates every WM CSS rule in `youtube/youtube.css`.

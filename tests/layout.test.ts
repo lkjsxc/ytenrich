@@ -2,7 +2,13 @@ import { describe, expect, it } from 'vitest';
 import { viewsOf } from '../src/views/registry.ts';
 import * as L from '../src/wm/layout.ts';
 import { parseLayout } from '../src/wm/layout-parse.ts';
-import { browsePreset, familyOf, shortsPreset, watchPreset } from '../src/wm/presets.ts';
+import {
+  browsePreset,
+  familyOf,
+  homePreset,
+  shortsPreset,
+  watchPreset,
+} from '../src/wm/presets.ts';
 import { insertAt, zoneAt } from '../src/wm/tab-drag.ts';
 
 const shape = (n: L.LayoutNode): unknown =>
@@ -24,19 +30,23 @@ describe('layout', () => {
     for (const [family, preset] of [
       ['browse', b],
       ['shorts', shortsPreset()],
+      ['home', homePreset(1600)],
       ['watch', watchPreset()],
     ] as const) {
       const known = new Set(viewsOf(family).map((v) => v.id));
       expect(L.views(preset).filter((v) => !known.has(v))).toEqual([]);
     }
     expect(viewsOf('browse').some((v) => v.id === 'player')).toBe(false);
+    expect(shape(homePreset(1600))).toEqual({
+      row: ['guide', 'home-videos|home-shorts|stats|history|settings|log'],
+    });
   });
   it('page kinds map to layout families (Shorts tiles as a page)', () => {
     expect(
       ['watch', 'home', 'search', 'channel', 'subs', 'other', 'shorts'].map((k) =>
         familyOf(k as never),
       ),
-    ).toEqual(['watch', 'browse', 'browse', 'browse', 'browse', 'browse', 'shorts']);
+    ).toEqual(['watch', 'home', 'browse', 'browse', 'browse', 'browse', 'shorts']);
   });
   it('moves a tab to a pane edge, splitting it, and flattens same-direction splits', () => {
     const root = watchPreset();

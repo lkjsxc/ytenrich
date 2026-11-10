@@ -25,6 +25,8 @@ export type ViewDef = {
   readonly title: string;
   /** Native YouTube element projected into the pane (content script only). */
   readonly slot?: NativeSlot;
+  /** Shows only one part of the slot's element (CSS on `[ytenrich-part]`); views of one slot take turns. */
+  readonly part?: string;
   /** Layout families the view exists in (default: all). */
   readonly families?: readonly WmFamily[];
   /** Own view rendered by ytenrich into the pane body. */
@@ -36,6 +38,8 @@ const W: readonly WmFamily[] = ['watch'];
 export const VIEWS: readonly ViewDef[] = [
   { id: 'guide', title: 'Guide', slot: 'guide' },
   { id: 'page', title: 'Page', slot: 'page', families: ['browse', 'shorts'] },
+  { id: 'home-videos', title: 'Videos', slot: 'page', part: 'videos', families: ['home'] },
+  { id: 'home-shorts', title: 'Shorts', slot: 'page', part: 'shorts', families: ['home'] },
   { id: 'player', title: 'Player', slot: 'player', families: W },
   { id: 'details', title: 'Details', slot: 'details', families: W },
   { id: 'comments', title: 'Comments', slot: 'comments', families: W },

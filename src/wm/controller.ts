@@ -109,7 +109,7 @@ export function createWmController(rt: Runtime, family: WmFamily): Wm {
     for (const [view, m] of mounts) if (!open.has(view)) m.dispose(), mounts.delete(view);
     const entries = VIEWS.flatMap((v) =>
       v.slot && open.has(v.id)
-        ? [{ view: v.id, slot: v.slot, body: rendered?.bodies.get(v.id) ?? null }]
+        ? [{ slot: v.slot, part: v.part, body: rendered?.bodies.get(v.id) ?? null }]
         : [],
     );
     projector.sync(entries);

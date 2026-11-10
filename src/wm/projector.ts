@@ -5,8 +5,9 @@ import type { NativeSlot } from '../youtube/selectors.ts';
 import { resolveSlot } from '../youtube/slots.ts';
 
 export type ProjEntry = {
-  readonly view: string;
   readonly slot: NativeSlot;
+  /** Views that share a slot differ by part; the first one with a body gets the element. */
+  readonly part?: string;
   readonly body: HTMLElement | null;
 };
 export type Projector = {
@@ -16,6 +17,7 @@ export type Projector = {
 };
 
 const SLOT = 'ytenrich-slot';
+const PART = 'ytenrich-part';
 const INACTIVE = 'ytenrich-slot-inactive';
 const PROPS = ['left', 'top', 'width', 'height'] as const;
 const REQUIRED: readonly NativeSlot[] = ['player', 'videos', 'page', 'guide']; // retried ~10s (guide: re-woken)
@@ -25,6 +27,7 @@ const RETRIES = 40;
 
 function release(el: HTMLElement): void {
   el.removeAttribute(SLOT);
+  el.removeAttribute(PART);
   el.removeAttribute(INACTIVE);
   for (const p of PROPS) el.style.removeProperty(p);
 }
@@ -42,7 +45,10 @@ export function createProjector(log: Log): Projector {
     frame = 0;
     let missing: NativeSlot[] = [];
     const live = new Set<NativeSlot>();
-    for (const { view, slot, body } of entries) {
+    const shown = new Map<NativeSlot, ProjEntry>(); // bound: one per slot kind
+    for (const e of entries) if (!shown.get(e.slot)?.body) shown.set(e.slot, e);
+    for (const e of entries) if (shown.get(e.slot) !== e) e.body?.classList.add('empty');
+    for (const { slot, part, body } of shown.values()) {
       const el = resolveSlot(slot);
       const prev = tagged.get(slot);
       if (prev && prev.el !== el) release(prev.el), tagged.delete(slot);
@@ -54,7 +60,12 @@ export function createProjector(log: Log): Projector {
       live.add(slot);
       const t = tagged.get(slot) ?? { el, rect: '' };
       tagged.set(slot, t);
-      if (el.getAttribute(SLOT) !== view) el.setAttribute(SLOT, view);
+      if (el.getAttribute(SLOT) !== slot) el.setAttribute(SLOT, slot);
+      if ((el.getAttribute(PART) ?? undefined) !== part) {
+        if (part) el.setAttribute(PART, part);
+        else el.removeAttribute(PART);
+        el.scrollTo(0, 0);
+      }
       el.toggleAttribute(INACTIVE, !body);
       if (!body) continue;
       const r = body.getBoundingClientRect();

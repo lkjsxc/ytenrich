@@ -3,7 +3,7 @@ export type Surface = 'home' | 'watch' | 'search' | 'channel' | 'subs' | 'shorts
 export type PageKind = Surface;
 /** Tiling layout family: watch pages, the Shorts player, or every other page (the last two are projected
  * whole as the `page` view). Each family keeps its own saved layout. */
-export type WmFamily = 'watch' | 'browse' | 'shorts';
+export type WmFamily = 'watch' | 'browse' | 'home' | 'shorts';
 
 export type Impression = {
   readonly id: string;
