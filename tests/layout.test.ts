@@ -9,14 +9,14 @@ const shape = (n: L.LayoutNode): unknown =>
   n.type === 'pane' ? n.tabs.join('|') : { [n.dir]: n.children.map(shape) };
 
 describe('layout', () => {
-  it('preset has player, details stack and recommendations', () => {
+  it('preset has player over details | comments, and recommendations', () => {
     expect(shape(watchPreset())).toEqual({
-      row: [{ col: ['player', 'details|comments'] }, 'videos|shorts|stats|settings|log'],
+      row: [{ col: ['player', { row: ['details', 'comments'] }] }, 'videos|stats|settings|log'],
     });
   });
   it('browse preset: guide beside the page; every preset view exists in its family', () => {
     const b = browsePreset(1600) as L.SplitNode;
-    expect(shape(b)).toEqual({ row: ['guide', 'page|shorts|stats|settings|log'] });
+    expect(shape(b)).toEqual({ row: ['guide', 'page|stats|settings|log'] });
     expect(b.sizes[0]).toBeCloseTo(0.15);
     for (const [family, preset] of [
       ['browse', b],
@@ -39,7 +39,7 @@ describe('layout', () => {
     const right = L.paneOfView(root, 'videos')!;
     const next = L.moveView(root, 'stats', right.id, 'right');
     expect(shape(next)).toEqual({
-      row: [{ col: ['player', 'details|comments'] }, 'videos|shorts|settings|log', 'stats'],
+      row: [{ col: ['player', { row: ['details', 'comments'] }] }, 'videos|settings|log', 'stats'],
     });
     const s = next as L.SplitNode;
     expect(s.sizes.reduce((a, b) => a + b, 0)).toBeCloseTo(1);
@@ -53,7 +53,7 @@ describe('layout', () => {
   it('removing the last tab removes the pane and collapses the split', () => {
     const root = L.removeView(watchPreset(), 'player')!;
     expect(shape(root)).toEqual({
-      row: ['details|comments', 'videos|shorts|stats|settings|log'],
+      row: ['details', 'comments', 'videos|stats|settings|log'],
     });
   });
   it('center drop joins and activates', () => {
@@ -69,28 +69,26 @@ describe('layout', () => {
     const root = watchPreset();
     const right = L.paneOfView(root, 'videos')!;
     const r1 = L.moveView(root, 'log', right.id, 'center', 0);
-    expect(L.paneOfView(r1, 'log')?.tabs).toEqual(['log', 'videos', 'shorts', 'stats', 'settings']);
+    expect(L.paneOfView(r1, 'log')?.tabs).toEqual(['log', 'videos', 'stats', 'settings']);
     const r2 = L.moveView(root, 'videos', right.id, 'center', 3);
-    expect(L.paneOfView(r2, 'videos')?.tabs).toEqual([
-      'shorts',
-      'stats',
-      'videos',
-      'settings',
-      'log',
-    ]);
-    const r3 = L.moveView(root, 'shorts', right.id, 'center', 2);
+    expect(L.paneOfView(r2, 'videos')?.tabs).toEqual(['stats', 'settings', 'videos', 'log']);
+    const r3 = L.moveView(root, 'stats', right.id, 'center', 2);
     expect(shape(r3)).toEqual(shape(root));
     const det = L.paneOfView(root, 'details')!;
     const r4 = L.moveView(root, 'stats', det.id, 'center', 1);
     expect(L.paneOfView(r4, 'stats')).toMatchObject({
-      tabs: ['details', 'stats', 'comments'],
+      tabs: ['details', 'stats'],
       active: 'stats',
     });
   });
   it('addEdge wraps the layout with a sized edge pane and moves an existing view there', () => {
     const next = L.addEdge(watchPreset(), 'guide', 'left', 0.15) as L.SplitNode;
     expect(shape(next)).toEqual({
-      row: ['guide', { col: ['player', 'details|comments'] }, 'videos|shorts|stats|settings|log'],
+      row: [
+        'guide',
+        { col: ['player', { row: ['details', 'comments'] }] },
+        'videos|stats|settings|log',
+      ],
     });
     expect(next.sizes[0]).toBeCloseTo(0.15);
     expect(next.sizes[1]).toBeCloseTo(0.85 * 0.66);

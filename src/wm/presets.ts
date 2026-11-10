@@ -9,13 +9,17 @@ export function familyOf(kind: PageKind): WmFamily | null {
   return kind === 'watch' ? 'watch' : 'browse';
 }
 
-/** Default watch-page workspace: player over details/comments, recommendations on the right. */
+/** Default watch-page workspace: player over details | comments, recommendations on the right (Shorts via `+`). */
 export function watchPreset(): LayoutNode {
   return split(
     'row',
     [
-      split('col', [pane(['player']), pane(['details', 'comments'])], [0.62, 0.38]),
-      pane(['videos', 'shorts', 'stats', 'settings', 'log']),
+      split(
+        'col',
+        [pane(['player']), split('row', [pane(['details']), pane(['comments'])])],
+        [0.62, 0.38],
+      ),
+      pane(['videos', 'stats', 'settings', 'log']),
     ],
     [0.66, 0.34],
   );
@@ -24,11 +28,7 @@ export function watchPreset(): LayoutNode {
 /** Default for home/search/channel/feeds: guide on the left, the page itself with own views as tabs. */
 export function browsePreset(width = globalThis.innerWidth || 1600): LayoutNode {
   const f = Math.min(0.3, GUIDE_PX / Math.max(width, 800));
-  return split(
-    'row',
-    [pane(['guide']), pane(['page', 'shorts', 'stats', 'settings', 'log'])],
-    [f, 1 - f],
-  );
+  return split('row', [pane(['guide']), pane(['page', 'stats', 'settings', 'log'])], [f, 1 - f]);
 }
 
 export const presetOf = (family: WmFamily): LayoutNode =>

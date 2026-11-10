@@ -6,12 +6,12 @@ A browser extension that makes YouTube more personal and more comfortable to use
 
 ## Features
 - **Tiling everywhere**: every page except Shorts is a tiling layout, and each pane scrolls on its own.
-  - Watch pages: player, details, comments and recommendations sit in resizable panes.
+  - Watch pages: the player sits above Details | Comments side by side, with recommendations on the right, all in resizable panes.
   - Home, search, channels, playlists and feeds: the guide sits on the left and the page itself is a tab next to Stats/Settings/Log.
   - Watch pages and the other pages each keep their own saved layout.
   - Drag a tab to a pane edge to split that pane, onto a pane to join its tabs, or between tabs of a strip to reorder.
   - The ☰ button toggles YouTube's guide (sidebar) as a tile on the left instead of an overlay drawer.
-  - Recommendations are split into separate Videos and Shorts tabs.
+  - Recommendations are split into Videos and a Shorts view; Shorts is off by default and can be added from a pane's `+` menu.
   - Stats, Settings and Log open as tabs inside the panes. Settings can reset the layout.
   - `Alt+W` turns tiling off and on.
 - **Recommendation stats**: each recommendation counts as seen once it is at least half visible, at most once per page view. The Stats view updates live; clicking a video opens it in the same tab.

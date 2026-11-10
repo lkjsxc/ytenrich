@@ -29,7 +29,7 @@ const facts = await page.evaluate(() => {
   };
 });
 await page.screenshot({ path: 'tmp/smoke-watch.png' });
-for (const tab of ['Comments', 'Shorts', 'Stats']) {
+for (const tab of ['Comments', 'Stats']) {
   await page.locator(`ytenrich-root .tab:has-text("${tab}")`).first().click();
   await page.waitForTimeout(1200);
   await page.screenshot({ path: `tmp/smoke-${tab.toLowerCase()}.png` });
