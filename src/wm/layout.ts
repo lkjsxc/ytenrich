@@ -105,18 +105,33 @@ export function removeView(root: LayoutNode, view: ViewId): LayoutNode | null {
   return normalize(mapPanes(root, (p) => ({ ...p, tabs: p.tabs.filter((t) => t !== view) })));
 }
 
+/** A joining pane takes 1/n, given up by the siblings at least that large: 1:1 → 1:1:1, the guide keeps its size. */
+function insertEqual(s: SplitNode, at: number, fresh: PaneNode): SplitNode {
+  const share = 1 / (s.children.length + 1);
+  const donors = s.sizes.reduce((sum, z) => sum + (z >= share ? z : 0), 0);
+  const sizes = s.sizes.map((z) => (z >= share ? z - (share * z) / donors : z));
+  return {
+    ...s,
+    children: [...s.children.slice(0, at), fresh, ...s.children.slice(at)],
+    sizes: [...sizes.slice(0, at), share, ...sizes.slice(at)],
+  };
+}
+
+function splitPane(node: LayoutNode, paneId: string, fresh: PaneNode, zone: Zone): LayoutNode {
+  const dir: Dir = zone === 'left' || zone === 'right' ? 'row' : 'col';
+  const after = zone === 'right' || zone === 'bottom' ? 1 : 0;
+  if (node.type === 'pane')
+    return node.id !== paneId ? node : split(dir, after ? [node, fresh] : [fresh, node]);
+  const i = node.children.findIndex((c) => c.type === 'pane' && c.id === paneId);
+  if (i >= 0 && node.dir === dir) return insertEqual(node, i + after, fresh);
+  return { ...node, children: node.children.map((c) => splitPane(c, paneId, fresh, zone)) };
+}
+
 export function addView(root: LayoutNode, paneId: string, view: ViewId, zone: Zone): LayoutNode {
-  const next = mapPanes(root, (p) => {
-    if (p.id !== paneId) return p;
-    if (zone === 'center') return { ...p, tabs: [...p.tabs, view], active: view };
-    const fresh = pane([view]);
-    const before = zone === 'left' || zone === 'top';
-    return split(
-      zone === 'left' || zone === 'right' ? 'row' : 'col',
-      before ? [fresh, p] : [p, fresh],
-    );
-  });
-  return normalize(next) ?? root;
+  if (zone !== 'center') return normalize(splitPane(root, paneId, pane([view]), zone)) ?? root;
+  const add = (p: PaneNode): PaneNode =>
+    p.id === paneId ? { ...p, tabs: [...p.tabs, view], active: view } : p;
+  return normalize(mapPanes(root, add)) ?? root;
 }
 
 /** Moves a tab. `index` (center only) inserts at that position of the target strip, enabling reorder. */

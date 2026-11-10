@@ -61,7 +61,7 @@ describe('layout', () => {
     });
     const s = next as L.SplitNode;
     expect(s.sizes.reduce((a, b) => a + b, 0)).toBeCloseTo(1);
-    expect(s.sizes[0]).toBeCloseTo(0.66);
+    expect(s.sizes[0]).toBeCloseTo(0.44);
   });
   it('moving the only tab of a pane to its own edge is a no-op', () => {
     const root = watchPreset();
@@ -136,5 +136,17 @@ describe('layout', () => {
     expect(zoneAt(r, 390, 200)).toBe('right');
     expect(zoneAt(r, 200, 380)).toBe('bottom');
     expect(zoneAt(r, 200, 200)).toBe('center');
+  });
+  it('a pane added beside siblings takes an equal share; small siblings keep their size', () => {
+    const [a, b] = [L.pane(['a']), L.pane(['b'])];
+    const even = L.addView(L.split('row', [a, b]), b.id, 'c', 'right') as L.SplitNode;
+    expect(shape(even)).toEqual({ row: ['a', 'b', 'c'] });
+    for (const z of even.sizes) expect(z).toBeCloseTo(1 / 3);
+    const guide = L.addView(L.split('row', [a, b], [0.15, 0.85]), b.id, 'c', 'left') as L.SplitNode;
+    expect(shape(guide)).toEqual({ row: ['a', 'c', 'b'] });
+    expect(guide.sizes[0]).toBeCloseTo(0.15);
+    expect(guide.sizes[1]).toBeCloseTo(1 / 3);
+    const down = L.addView(L.split('row', [a, b]), b.id, 'c', 'bottom') as L.SplitNode;
+    expect(shape(down)).toEqual({ row: ['a', { col: ['b', 'c'] }] });
   });
 });
