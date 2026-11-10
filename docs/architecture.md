@@ -10,6 +10,7 @@
   - Reads (`stats-read.ts`) are bounded index walks: `query` (page of videos; History is `sort: openedAt`; Recommended is `filter: pending, sort: lastSeen`), `overview` (counts + ≤180 days), `channels` (top N).
   - Answers `Api` messages (`src/shared/protocol.ts`): `{ok}` | `{error}` replies.
   - Prunes unopened, unallowed, undismissed rows older than 90 days, and caps the store at 100k rows.
+- **Backup** (`shared/backup.ts`, Settings → Export / Import data): one JSON file `{ app, format, exportedAt, storage, stats }`. `storage` is the `settings`, `layout:*` and `view:*` keys; `stats` is the three DB stores, read and written in pages through the `dump` / `restore` messages (`background/backup.ts`, which repairs rows to the current shape and prunes afterwards). Import validates the file, then replaces everything.
 - **Options page** (`options.html`): hosts own views (Stats/Settings/Log) outside YouTube. The toolbar action opens it.
 
 ## Data flow

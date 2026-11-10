@@ -57,6 +57,8 @@ export type ChannelStat = {
   lastSeen: number;
 };
 export type ChannelDelta = Partial<Omit<ChannelStat, 'name' | 'lastSeen'>>;
+/** Stats stores a backup carries, each paged by its primary key. */
+export type StoreName = 'videos' | 'days' | 'channels';
 export type ChannelSort = 'seen' | 'opened';
 
 /** `pending`: recommended but never opened, dismissed or over-exposed (the Recommended view). */

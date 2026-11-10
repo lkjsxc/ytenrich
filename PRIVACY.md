@@ -26,6 +26,7 @@ Everything is stored in your browser profile, in the extension's local storage a
 - The record holds at most 100,000 videos. Beyond that, the least recently shown videos are deleted first.
 - Other entries and the daily totals stay until you delete them.
 - **Settings → Clear statistics** deletes the whole record, including exemptions.
+- **Settings → Export data** saves your settings, layouts and the whole record as one JSON file on your device. ytenrich sends it nowhere; the file contains your viewing record, so keep it as private as the record itself. **Import data** replaces everything in this browser with such a file.
 - Turning stats off stops new recording. It does not delete what is already stored.
 - Uninstalling the extension deletes all of its stored data.
 

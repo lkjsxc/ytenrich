@@ -7,6 +7,7 @@ import type {
   Overview,
   StatsPage,
   StatsQuery,
+  StoreName,
 } from './types.ts';
 
 export type Api = {
@@ -22,6 +23,13 @@ export type Api = {
   channels: { req: { sort: ChannelSort; limit: number }; res: ChannelStat[] };
   allow: { req: { id: string; allowed: boolean }; res: null };
   clear: { req: null; res: null };
+  /** Backup: one page of a store's rows after primary key `after`; `next` is null at the end. */
+  dump: {
+    req: { store: StoreName; after: string | null; limit: number };
+    res: { rows: unknown[]; next: string | null };
+  };
+  /** Backup: writes rows (repaired to the current shape) over any with the same key. */
+  restore: { req: { store: StoreName; rows: readonly unknown[] }; res: null };
 };
 export type Method = keyof Api;
 export type Message = { [K in Method]: { type: K; req: Api[K]['req'] } }[Method];

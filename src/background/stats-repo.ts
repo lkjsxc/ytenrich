@@ -147,6 +147,9 @@ export function allow(id: string, allowed: boolean): Promise<void> {
   return edit(id, (s) => ({ ...s, allowed }));
 }
 
+/** After rows were written behind this module's back (a restored backup). */
+export const forget = (): void => void (cache = undefined);
+
 export async function clear(): Promise<void> {
   const tx = (await openDb()).transaction(ALL, 'readwrite');
   for (const name of ALL) tx.objectStore(name).clear();

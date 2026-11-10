@@ -7,6 +7,7 @@ import {
   STATS_REV_KEY,
 } from '../shared/protocol.ts';
 import { DEFAULT_SETTINGS, loadSettings, onSettings } from '../shared/settings.ts';
+import * as backup from './backup.ts';
 import * as read from './stats-read.ts';
 import * as repo from './stats-repo.ts';
 
@@ -39,6 +40,7 @@ const MUTATING: ReadonlySet<Method> = new Set([
   'dismissed',
   'allow',
   'clear',
+  'restore',
 ]);
 
 type Handlers = { [K in Method]: (req: Api[K]['req']) => Promise<Api[K]['res']> };
@@ -60,6 +62,8 @@ const handlers: Handlers = {
   channels: ({ sort, limit }) => read.channels(sort, limit),
   allow: ({ id, allowed }) => repo.allow(id, allowed).then(() => null),
   clear: () => repo.clear().then(() => null),
+  dump: ({ store, after, limit }) => backup.dump(store, after, limit),
+  restore: ({ store, rows }) => backup.restore(store, rows).then(() => null),
 };
 
 chrome.runtime.onMessage.addListener(
