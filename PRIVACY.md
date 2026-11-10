@@ -6,7 +6,7 @@ ytenrich is a browser extension for `www.youtube.com`. It runs entirely in your 
 
 ## What ytenrich stores, and why
 
-**Recommendation recording** is on by default. You can turn it off in **Settings**. While it is on, ytenrich keeps a local record of:
+**Recommendation recording** is off until you agree to it. After installation, ytenrich opens a welcome page that explains the record and asks whether to start. You can also turn it on later from the Stats view or **Settings**, and turn it off again in **Settings**. While it is on, ytenrich keeps a local record of:
 - each video or Short that YouTube shows you as a recommendation and that is at least half visible: its video ID, type (video or Short), title, channel name, the kind of page it appeared on (home, watch, search, channel, subscriptions, Shorts or other), how many times it was shown, and when it was first and last shown;
 - how many times you opened each video, which amounts to a list of the videos you watched;
 - when you used ytenrich's **Not interested** button on a video;
@@ -51,3 +51,5 @@ Changes to this policy are published in this file, and its history is kept in th
 ## Contact
 
 For questions or support, use the [ytenrich issue tracker](https://github.com/lkjsxc/ytenrich/issues).
+
+ytenrich is not affiliated with, endorsed by or sponsored by YouTube or Google.

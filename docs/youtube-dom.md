@@ -43,6 +43,7 @@ All names live in `src/youtube/selectors.ts` and `src/youtube/youtube.css`. Fixt
 
 ## Guide (hamburger sidebar)
 - `tp-yt-app-drawer#guide` (fixed, z 2030, full-viewport box incl. `#scrim`) > `#contentContainer` (absolute, **transform**: translateX(-100%) closed / identity open) > `#guide-wrapper` > `#guide-content` > `#guide-inner-content` (scroller) > `ytd-guide-renderer`.
+- Below ~1312px wide YouTube shows `ytd-mini-guide-renderer` and the drawer's `#guide-inner-content` exists *empty*. `resolveSlot('guide')` therefore requires `ytd-guide-renderer`, and the guide is retried with the other required slots. A wake that runs before the masthead exists answers false without memoizing.
 - `ytd-guide-renderer` does not exist until the drawer is first opened. `youtube/guide.ts` `wakeGuide()` clicks `ytd-masthead #guide-button` (synthetic, so our interceptor ignores it) while `html[ytenrich-guide-wake]` hides the drawer, waits for the renderer, then closes it.
 - While projected (`#guide-inner-content` is the slot), CSS drops the drawer to z 1 and removes `#contentContainer`'s transform (a transform would make it the containing block of our fixed slot).
 - The drawer's own close/open toggles the transform and `visibility`. Our slot forces `visibility: visible`, so it survives the closed state.

@@ -1,5 +1,5 @@
 // Build: node scripts/build.ts [--firefox] [--watch].
-import { copyFileSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { copyFileSync, cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import * as esbuild from 'esbuild';
 import sharp from 'sharp';
 import { chromiumManifest, firefoxManifest } from '../src/manifest.ts';
@@ -42,8 +42,10 @@ const builds: esbuild.BuildOptions[] = [
 ];
 
 const statics = async (): Promise<void> => {
-  const manifest = firefox ? firefoxManifest : chromiumManifest;
+  const { version } = JSON.parse(readFileSync('package.json', 'utf8')) as { version: string };
+  const manifest = { ...(firefox ? firefoxManifest : chromiumManifest), version };
   writeFileSync(`${out}/manifest.json`, JSON.stringify(manifest, null, 1));
+  cpSync('src/_locales', `${out}/_locales`, { recursive: true });
   copyFileSync('src/youtube/youtube.css', `${out}/youtube.css`);
   copyFileSync('src/pages/options/options.html', `${out}/options.html`);
   copyFileSync('LICENSE', `${out}/LICENSE`);

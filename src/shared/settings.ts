@@ -7,7 +7,7 @@ export const DEFAULT_SETTINGS = {
   hideThreshold: 5,
   dismissEnabled: true,
   dismissLabel: '',
-  statsEnabled: true,
+  statsEnabled: false, // on only after consent (views/consent.ts)
   thumbnailsEnabled: false,
 };
 export type Settings = typeof DEFAULT_SETTINGS;

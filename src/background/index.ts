@@ -9,6 +9,12 @@ import {
 import { DEFAULT_SETTINGS, loadSettings, onSettings } from '../shared/settings.ts';
 import * as repo from './stats-repo.ts';
 
+// First install: the welcome page explains the extension and asks for recording consent.
+chrome.runtime.onInstalled.addListener(({ reason }) => {
+  if (reason === 'install')
+    void chrome.tabs.create({ url: chrome.runtime.getURL('options.html#welcome') });
+});
+
 let threshold = DEFAULT_SETTINGS.hideThreshold;
 void loadSettings().then((s) => (threshold = s.hideThreshold));
 onSettings((s) => (threshold = s.hideThreshold));

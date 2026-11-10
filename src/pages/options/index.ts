@@ -12,6 +12,7 @@ import {
 import { createSignal, type Disposer } from '../../shared/signal.ts';
 import css from '../../ui/ui.css';
 import { VIEWS, type ViewEnv } from '../../views/registry.ts';
+import { welcome } from './welcome.ts';
 
 const settings = createSignal<Settings>(DEFAULT_SETTINGS);
 void loadSettings().then(settings.set);
@@ -36,5 +37,10 @@ nav.append(
   ...tabs.map((t) => h('button', { 'data-id': t.id, onclick: () => show(t.id) }, t.title)),
 );
 document.head.append(h('style', null, css));
-document.body.append(h('div', { class: 'page' }, nav, main));
-show(location.hash.slice(1) || 'stats');
+const first = location.hash === '#welcome';
+const intro = first ? [welcome(settings)] : [];
+// The welcome page waits for stored settings so an earlier "yes" is not offered again.
+void loadSettings().then(() => {
+  document.body.append(h('div', { class: 'page' }, ...intro, nav, main));
+  show(first ? 'settings' : location.hash.slice(1) || 'stats');
+});

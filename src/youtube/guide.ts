@@ -15,10 +15,11 @@ const button = (): HTMLElement | null => {
 
 export function wakeGuide(): Promise<boolean> {
   if (document.querySelector(GUIDE_RENDERER)) return Promise.resolve(true);
+  const btn = button();
+  const drawer = document.querySelector(GUIDE_DRAWER);
+  // Too early in page load: answer now (not memoized) so the projector's retry can wake it later.
+  if (!btn || !drawer) return Promise.resolve(false);
   waking ??= (async () => {
-    const btn = button();
-    const drawer = document.querySelector(GUIDE_DRAWER);
-    if (!btn || !drawer) return false;
     const html = document.documentElement;
     html.setAttribute(WAKE, '');
     try {

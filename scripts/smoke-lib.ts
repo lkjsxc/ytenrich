@@ -15,7 +15,9 @@ const cached = (): string | undefined => {
   return dirs.map((d) => join(root, d, 'chrome-linux64/chrome')).find(existsSync);
 };
 
-export async function launch(settings: Record<string, unknown> = {}) {
+export type LaunchOpts = { width?: number; height?: number; dark?: boolean; args?: string[] };
+
+export async function launch(settings: Record<string, unknown> = {}, opts: LaunchOpts = {}) {
   const ext = resolve('dist');
   const exe =
     process.env.YTE_CHROME ?? (existsSync(chromium.executablePath()) ? undefined : cached());
@@ -23,12 +25,13 @@ export async function launch(settings: Record<string, unknown> = {}) {
   const ctx = await chromium.launchPersistentContext(mkdtempSync(join(tmpdir(), 'yte-')), {
     headless: true,
     ...(exe ? { executablePath: exe } : {}),
-    viewport: { width: 1600, height: 1000 },
+    viewport: { width: opts.width ?? 1600, height: opts.height ?? 1000 },
+    colorScheme: opts.dark ? 'dark' : 'light',
     locale: 'en-US',
-    args: [`--disable-extensions-except=${ext}`, `--load-extension=${ext}`],
+    args: [`--disable-extensions-except=${ext}`, `--load-extension=${ext}`, ...(opts.args ?? [])],
   });
   const errors: string[] = [];
-  const page = ctx.pages()[0] ?? (await ctx.newPage());
+  const page = ctx.pages().find((p) => p.url() === 'about:blank') ?? (await ctx.newPage());
   page.on(
     'console',
     (m) => m.text().includes('ytenrich') && errors.push(`${m.type()}: ${m.text()}`),
@@ -39,7 +42,15 @@ export async function launch(settings: Record<string, unknown> = {}) {
   );
   const sw = ctx.serviceWorkers()[0] ?? (await ctx.waitForEvent('serviceworker'));
   await sw.evaluate((s) => chrome.storage.local.set({ settings: s }), settings);
-  return { ctx, page, sw, errors };
+  // First install opens the welcome (consent) page in its own tab.
+  const isWelcome = (p: Page): boolean => p.url().includes('options.html#welcome');
+  const welcome =
+    ctx.pages().find(isWelcome) ??
+    (await ctx
+      .waitForEvent('page', { predicate: isWelcome, timeout: 5000 })
+      .catch(() => undefined));
+  await page.bringToFront(); // background tabs pause rAF, and the projector schedules with it
+  return { ctx, page, sw, errors, welcome };
 }
 
 /** "left,top,width,height" of an element (light DOM selector, or `shadow:` prefix for the WM shadow root). */

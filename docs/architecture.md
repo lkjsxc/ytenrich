@@ -21,6 +21,10 @@ page signal (watch/shorts videoId) ─► bg.opened (resets suppression for that
 - The hide decision is synchronous at item discovery: the MO callback runs before paint, so there is no flicker. Items already on screen are never hidden mid-view.
 - YouTube recycles renderer elements. The scanner keys state by element plus current id/anchor and re-emits on change, so consumers must be idempotent and set *and clear* attributes.
 
+## Consent and settings
+- Recording (`statsEnabled`) defaults to off. The first install opens `options.html#welcome` (background `onInstalled`), which explains the record and asks. The Stats view shows the same card (`views/consent.ts`) while recording is off. Store policies require this in-UI disclosure and consent even for local-only data.
+- `patchSettings` stores only values that differ from `DEFAULT_SETTINGS`, so later default changes reach settings the user never touched.
+
 ## Tiling WM
 - Active when `wmEnabled && !fullscreen` and the page kind has a layout family (`wm/presets.ts` `familyOf`): `watch` for watch pages, `browse` for every other kind except Shorts (YouTube's own full-screen player stays). Alt+W toggles it.
 - One controller per family (`createWmController(rt, family)`). SPA navigation across families disposes it and creates the other; within a family it only refreshes (and resets the `page` scroll to the top).

@@ -3,6 +3,7 @@
 import { h } from '../shared/h.ts';
 import { onStatsChanged } from '../shared/protocol.ts';
 import type { StatsFilter, StatsQuery, StatsSort, Summary, VideoStat } from '../shared/types.ts';
+import { consentCard } from './consent.ts';
 import { openVideo, videoUrl } from './open.ts';
 import type { ViewEnv } from './registry.ts';
 
@@ -106,16 +107,21 @@ export function mountStats(el: HTMLElement, env: ViewEnv): () => void {
       },
       opts.map((o) => h('option', { value: o, selected: q[key] === o }, o)),
     );
-  const note = h('p', { class: 'muted' });
+  const note = h('div');
+  let declined = false; // "Not now" in this view: keep a one-line hint instead of the card
   let token = 0;
   let visible = false;
   let dirty = false;
   const refresh = (): void => {
     dirty = false;
     const my = ++token;
-    note.textContent = env.settings.get().statsEnabled
-      ? ''
-      : 'Recording is off: enable it in Settings to build your stats.';
+    note.replaceChildren(
+      ...(env.settings.get().statsEnabled
+        ? []
+        : declined
+          ? [h('p', { class: 'muted' }, 'Recording is off. Turn it on in Settings.')]
+          : [consentCard(() => ((declined = true), refresh()))]),
+    );
     void Promise.all([env.call('summary', null), env.call('query', q)]).then(
       ([s, rows]) => {
         if (my !== token) return;

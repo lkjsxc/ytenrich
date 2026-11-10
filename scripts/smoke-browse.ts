@@ -1,7 +1,25 @@
 // Live smoke for tiling on non-watch pages (search, channel) and switching layout families via SPA navigation.
 import { launch, rect, tabs } from './smoke-lib.ts';
 
-const { ctx, page, errors } = await launch();
+const { ctx, page, sw, errors, welcome } = await launch();
+// Consent: the welcome tab opens on install; recording stays off until "Start recording".
+const consent = { welcome: Boolean(welcome), before: false, after: false };
+if (welcome) {
+  await welcome.waitForLoadState();
+  const on = () =>
+    sw.evaluate(async () =>
+      Boolean(
+        ((await chrome.storage.local.get('settings')).settings as { statsEnabled?: boolean })
+          ?.statsEnabled,
+      ),
+    );
+  consent.before = await on();
+  await welcome.screenshot({ path: 'tmp/smoke-welcome.png' });
+  await welcome.locator('button:has-text("Start recording")').click();
+  await welcome.waitForTimeout(500);
+  consent.after = await on();
+  await welcome.close();
+}
 const pageFacts = async () => ({
   tabs: await tabs(page),
   tag: await page.evaluate(() =>
@@ -66,7 +84,18 @@ const frostedCovered = await page.evaluate(() => {
 await page.screenshot({ path: 'tmp/smoke-browse-channel.png' });
 console.log(
   JSON.stringify(
-    { search, infinite, guideClosed, guideBack, watch, back, channel, frostedCovered, errors },
+    {
+      consent,
+      search,
+      infinite,
+      guideClosed,
+      guideBack,
+      watch,
+      back,
+      channel,
+      frostedCovered,
+      errors,
+    },
     null,
     1,
   ),

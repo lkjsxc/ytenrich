@@ -3,8 +3,10 @@ const youtube = 'https://www.youtube.com/*';
 const common = {
   manifest_version: 3,
   name: 'ytenrich',
-  version: '0.1.0',
-  description: 'YouTube, enriched: recommendation stats, one-click dismiss, tiling window manager.',
+  version: '0.0.0', // replaced with package.json "version" by scripts/build.ts
+  description: '__MSG_description__', // src/_locales/*/messages.json (store listings localize from it)
+  default_locale: 'en',
+  homepage_url: 'https://github.com/lkjsxc/ytenrich',
   permissions: ['storage', 'unlimitedStorage'],
   host_permissions: [youtube],
   incognito: 'not_allowed',
@@ -23,6 +25,7 @@ const common = {
 
 export const chromiumManifest = {
   ...common,
+  minimum_chrome_version: '120',
   background: { service_worker: 'background.js', type: 'module' },
 };
 

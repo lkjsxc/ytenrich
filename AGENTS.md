@@ -10,6 +10,7 @@ AI-first repo: no human ergonomics, no backward compatibility, no migrations. Mo
 
 ## Commands
 - `pnpm build`: writes Chromium to `dist/`. `pnpm build --firefox`: writes Firefox to `dist-firefox/`. `pnpm dev`: watch build.
+- `pnpm package`: store zips (chromium, firefox, source) from a clean commit → `release/`. `pnpm store-assets`: listing images → `release/store/`.
 - `pnpm check`: the canonical gate (repo rules + tsc + biome + vitest). Prints `ok check`. `pnpm fix` auto-formats.
 - `pnpm smoke`: live Chromium + extension runs on youtube.com (`scripts/smoke.ts` watch page, `scripts/smoke-browse.ts` search/channel and family switches; launcher in `smoke-lib.ts`). Prints JSON facts and writes `tmp/smoke-*.png`. Read the PNGs to judge layout. It is not canonical (depends on the network and on YouTube). It auto-falls back to the newest cached Chromium; `YTE_CHROME=<path>` overrides.
 
