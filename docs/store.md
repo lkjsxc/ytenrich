@@ -13,7 +13,46 @@ Keep this file in sync with `PRIVACY.md` and the code. Re-check it whenever a fe
   - `promo-440x280.png` (Chrome Web Store small promo tile);
   - `logo-300.png` (Edge);
   - `icon-128.png`.
-- Mozilla's linter passed on 0.1.0 with no errors, warnings or notices: `pnpm dlx web-ext@8 lint --source-dir dist-firefox`. Run it again before each AMO upload.
+- To check the Firefox package locally, run `pnpm dlx web-ext@10.8.0 lint --source-dir dist-firefox`. AMO also validates the package during submission. The desktop-only manifest may produce a warning about Firefox for Android 140 and the data consent manifest key.
+
+## Automated updates
+
+The **Browser stores** GitHub Actions workflow uses `pnpm check` and `pnpm package`. **Run workflow** builds downloadable ZIPs without credentials. A push of `vX.Y.Z` to GitHub submits an update for the existing Chrome, Edge and Firefox listings. The tag must match `package.json` and point to a commit on `main`. The version for both browser manifests comes from `package.json`.
+
+### One-time setup
+
+1. Wait for the initial versions to be published. In [GitHub Environments](https://github.com/lkjsxc/ytenrich/settings/environments), use the `browser-stores` environment and restrict deployment to tags matching `v*`.
+2. For Chrome, enable the Chrome Web Store API and IAM Service Account Credentials API in a Google Cloud project. Create a service account and [link its email](https://developer.chrome.com/docs/webstore/service-accounts) in the Chrome developer dashboard. Set up [GitHub OIDC with Google Cloud Workload Identity Federation](https://docs.github.com/en/actions/how-tos/secure-your-work/security-harden-deployments/oidc-in-google-cloud-platform). Map `attribute.repository_id=assertion.repository_id` alongside `google.subject=assertion.sub`. Grant the repository's principal set for `attribute.repository_id/1451180403` the `roles/iam.workloadIdentityUser` role on that service account. Use this provider condition:
+
+   ```text
+   assertion.repository_id == '1451180403' &&
+   assertion.environment == 'browser-stores' &&
+   assertion.event_name == 'push' &&
+   assertion.workflow_ref.startsWith('lkjsxc/ytenrich/.github/workflows/store-release.yml@refs/tags/v')
+   ```
+
+   Add these environment **variables**:
+   - `CHROME_WIF_PROVIDER` — `projects/PROJECT_NUMBER/locations/global/workloadIdentityPools/POOL/providers/PROVIDER`
+   - `CHROME_SERVICE_ACCOUNT` — the linked service account email
+3. In [Edge Partner Center](https://partner.microsoft.com/dashboard/microsoftedge/overview), open **Publish API** and use the current API key experience. Save the client ID and API key as environment **secrets** `EDGE_CLIENT_ID` and `EDGE_API_KEY`. Renew the key when it expires.
+4. In [Firefox Add-ons API Credentials](https://addons.mozilla.org/en-US/developers/addon/api/key/), use credentials from an account that can manage ytenrich. Save the JWT issuer and secret as environment **secrets** `AMO_API_KEY` and `AMO_API_SECRET`.
+
+The workflow requests a short-lived Chrome token. Enter the Edge and Firefox secrets directly in GitHub's environment settings.
+
+### Release
+
+1. Bump the version in `package.json` and land it with the release changes on `main`. Check the listing and privacy declarations in each store when data handling, permissions or listing text change. This workflow submits packages to the existing listings. Use the dashboards to update listing details and privacy declarations.
+2. When ready to submit, push one matching tag at a time from the intended commit on `main`. For example, for version `0.1.1`:
+
+   ```sh
+   git tag v0.1.1
+   git push origin refs/tags/v0.1.1
+   ```
+
+3. Check the three submission jobs under [Actions](https://github.com/lkjsxc/ytenrich/actions/workflows/store-release.yml) and the review status in each store dashboard. Firefox submits its source ZIP alongside the extension. The jobs finish when submissions are accepted for review.
+4. For a partial failure, check the affected dashboard first. If the version is still unsubmitted, correct the cause and use **Re-run failed jobs**. Chrome and Firefox check for an existing submission of the same version. For Edge, verify a timed-out upload or publish using the operation ID in the job log and the status in Partner Center before rerunning. Use the original ZIP to finish any confirmed draft in the dashboard if the store rejects a repeated upload. If a store rejects the version and the code needs a fix, release a new version.
+
+API references: [Chrome Web Store v2](https://developer.chrome.com/docs/webstore/using-api/), [Edge Add-ons v1.1](https://learn.microsoft.com/en-us/microsoft-edge/extensions/update/api/using-addons-api), [Firefox Add-ons](https://mozilla.github.io/addons-server/topics/api/addons.html#version-create).
 
 ## Listing text
 **Name:** ytenrich
