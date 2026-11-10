@@ -42,3 +42,7 @@ html[ytenrich-wm] [ytenrich-slot="page"] { padding: 0 !important; }
 /* Page parts that are position:fixed against window scroll (channel/playlist header, home chips) scroll with the tile. */
 html[ytenrich-wm] [ytenrich-slot="page"] tp-yt-app-header[fixed] { position: absolute !important; top: 0 !important; margin-top: 0 !important; left: 0 !important; right: 0 !important; transform: none !important; }
 html[ytenrich-wm] [ytenrich-slot="page"] #chips-wrapper { position: relative !important; top: 0 !important; left: 0 !important; width: auto !important; transform: none !important; }
+/* Feed chip bars (home, channel grids) stick to the top of the page tile, as they stick under the masthead natively. */
+html[ytenrich-wm] [ytenrich-slot="page"] ytd-rich-grid-renderer > #header:has(ytd-feed-filter-chip-bar-renderer, chip-bar-view-model) { position: sticky !important; top: 0 !important; z-index: 3; background: var(--yt-spec-base-background, #fff); }
+/* Home's frosted-glass band (ytd-app #frosted-glass: fixed, top 0, 112px, z 2018, blur) would cover the tab strips. */
+html[ytenrich-wm] ytd-app #frosted-glass { display: none !important; }

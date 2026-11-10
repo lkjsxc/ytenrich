@@ -57,10 +57,16 @@ const channel = {
   ...(await pageFacts()),
   header: await rect(page, '[ytenrich-slot=page] tp-yt-app-header'),
 };
+// Home's frosted-glass band (signed in only) must not cover the tab strips: force its mode and hit-test the strip.
+const frostedCovered = await page.evaluate(() => {
+  const f = document.querySelector('ytd-app #frosted-glass');
+  f?.classList.replace('none', 'with-chipbar');
+  return document.elementFromPoint(400, 70)?.tagName.toLowerCase() !== 'ytenrich-root';
+});
 await page.screenshot({ path: 'tmp/smoke-browse-channel.png' });
 console.log(
   JSON.stringify(
-    { search, infinite, guideClosed, guideBack, watch, back, channel, errors },
+    { search, infinite, guideClosed, guideBack, watch, back, channel, frostedCovered, errors },
     null,
     1,
   ),

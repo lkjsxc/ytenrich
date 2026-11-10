@@ -37,6 +37,8 @@ All names live in `src/youtube/selectors.ts` and `src/youtube/youtube.css`. Fixt
 - `ytd-page-manager` keeps one element per visited page type; inactive ones carry `[hidden]`. The `page` slot is the visible `ytd-browse` (all feeds, channels, playlists) or `ytd-search`.
 - Projected whole, it becomes its own scroller. Infinite scroll keeps working (continuations use IntersectionObserver), verified on search and channel videos.
 - Parts that are `position:fixed` against window scroll must be unfixed: the channel/playlist `tp-yt-app-header[fixed]` (absolute at the top of its `tp-yt-app-header-layout`, which already reserves its height as padding; it also has `margin-top: masthead`), and the home `#chips-wrapper` (made relative; not verifiable signed out).
+- Home (signed in) sets `ytd-app #frosted-glass` to `with-chipbar`: fixed at top 0, 112px tall, z 2018, backdrop blur. It sits over our tab strips (host z 2), so it is hidden while tiling. The browse smoke forces that mode and hit-tests the strip.
+- Feed chip bars live in `ytd-rich-grid-renderer > #header` (home: `ytd-feed-filter-chip-bar-renderer #chips-wrapper`, fixed at `--ytd-rich-grid-chips-bar-top`; channel grids: `chip-bar-view-model`). While tiling, the header is `position: sticky; top: 0` inside the page tile.
 - On wide windows the guide drawer is *persistent* there; while tiling it and `ytd-mini-guide-renderer` are hidden unless the guide is projected.
 
 ## Guide (hamburger sidebar)
