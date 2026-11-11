@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { parseAge } from '../src/shared/age.ts';
 import {
   applyImpression,
   applyOffer,
@@ -17,6 +18,21 @@ const imp: Impression = {
 };
 
 describe('stats rules', () => {
+  it('reads upload ages in English and Japanese and keeps the first estimate', () => {
+    const H = 3600_000;
+    expect(parseAge('3 months ago')).toBe(90 * 24 * H);
+    expect(parseAge('2y ago')).toBe(730 * 24 * H);
+    expect(parseAge('Streamed 5 hours ago')).toBe(5 * H);
+    expect(parseAge('5 日前')).toBe(5 * 24 * H);
+    expect(parseAge('1 か月前')).toBe(30 * 24 * H);
+    expect(parseAge('5.6M views')).toBe(0);
+    const first = applyOffer(undefined, { ...imp, age: '2 days ago' }, 10 * 24 * H);
+    expect(first.published).toBe(8 * 24 * H);
+    expect(applyImpression(first, { ...imp, age: '1 month ago' }, 50 * 24 * H).published).toBe(
+      8 * 24 * H,
+    );
+  });
+
   it('keeps an offered recommendation without counting it as shown', () => {
     const o = applyOffer(undefined, imp, 1);
     expect([o.seen, o.title, o.lastSeen, o.surfaces]).toEqual([0, 'T', 1, {}]);

@@ -11,6 +11,8 @@ export type Impression = {
   readonly surface: Surface;
   readonly title: string;
   readonly channel: string;
+  /** Upload age as the tile words it ("3 months ago"), when it shows one. */
+  readonly age?: string;
   /** Address of the channel's avatar image, when the tile shows one. */
   readonly icon?: string;
 };
@@ -29,6 +31,8 @@ export type VideoStat = {
   dismissedAt: number;
   /** Page views on which YouTube put it on the page, on screen or not (0 in rows from before the collector). */
   offers: number;
+  /** Estimated upload time, from the age a tile showed (0 = unknown). */
+  published: number;
   /** Kind of page that last offered or showed it. */
   via: Surface | '';
   surfaces: Partial<Record<Surface, number>>;

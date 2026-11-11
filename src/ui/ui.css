@@ -1,6 +1,6 @@
 /* Shadow-root + options-page UI. Dark by default; host [theme=light] mirrors YouTube html[dark] absence. */
-.wm, .layer, .page { --bg: #0f0f0f; --raised: #212121; --fg: #f1f1f1; --muted: #aaa; --line: rgba(255, 255, 255, 0.12); --hover: rgba(255, 255, 255, 0.1); --accent: #3ea6ff; --sep: #4a4a4a; --glow: rgba(62, 166, 255, 0.55); --s1: #3987e5; --s2: #d95926; color: var(--fg); font: 13px / 1.45 Roboto, "Noto Sans JP", Arial, sans-serif; }
-:host([theme="light"]) :is(.wm, .layer) { --bg: #fff; --raised: #f2f2f2; --fg: #0f0f0f; --muted: #606060; --line: rgba(0, 0, 0, 0.12); --hover: rgba(0, 0, 0, 0.06); --accent: #065fd4; --sep: #c4c4c4; --glow: rgba(6, 95, 212, 0.4); --s1: #2a78d6; --s2: #eb6834; }
+.wm, .layer, .page { --bg: #0f0f0f; --raised: #212121; --fg: #f1f1f1; --muted: #aaa; --line: rgba(255, 255, 255, 0.12); --hover: rgba(255, 255, 255, 0.1); --accent: #3ea6ff; --sep: #4a4a4a; --s1: #3987e5; --s2: #d95926; color: var(--fg); font: 13px / 1.45 Roboto, "Noto Sans JP", Arial, sans-serif; }
+:host([theme="light"]) :is(.wm, .layer) { --bg: #fff; --raised: #f2f2f2; --fg: #0f0f0f; --muted: #606060; --line: rgba(0, 0, 0, 0.12); --hover: rgba(0, 0, 0, 0.06); --accent: #065fd4; --sep: #c4c4c4; --s1: #2a78d6; --s2: #eb6834; }
 .wm { position: absolute; inset: 0; display: flex; }
 .wm > .split, .wm > .pane { flex: 1; }
 .split { display: flex; flex: 1; min-width: 0; min-height: 0; }
@@ -20,10 +20,10 @@
 .split.col > .handle { cursor: row-resize; }
 .split > .handle:hover, .split > .handle.active { background: var(--accent); }
 .pane { flex: 1; display: flex; flex-direction: column; min-width: 0; min-height: 0; }
-/* More tabs than fit: an accent glow marks the side that has more. The glow is fixed to the bar and a cover in
-   the bar's own colour scrolls with the tabs, hiding the glow at whichever end has been reached. */
-.strip { display: flex; align-items: center; gap: 2px; flex: 0 0 30px; padding: 0 4px; overflow-x: auto; scrollbar-width: none; border-bottom: 1px solid var(--line); pointer-events: auto;
-  background: linear-gradient(to right, var(--bg) 70%, transparent) left / 44px 100% no-repeat local, linear-gradient(to left, var(--bg) 70%, transparent) right / 44px 100% no-repeat local, linear-gradient(to right, var(--glow), transparent) left / 28px 100% no-repeat scroll, linear-gradient(to left, var(--glow), transparent) right / 28px 100% no-repeat scroll, var(--bg); }
+/* More tabs than fit: the tabs fade out toward a side that hides more (classes set by wm/strip.ts). */
+.strip { display: flex; align-items: center; gap: 2px; flex: 0 0 30px; padding: 0 4px; overflow-x: auto; scrollbar-width: none; background: var(--bg); border-bottom: 1px solid var(--line); pointer-events: auto; --fl: #000; --fr: #000; mask-image: linear-gradient(to right, var(--fl), #000 48px, #000 calc(100% - 48px), var(--fr)); }
+.strip.more-l { --fl: transparent; }
+.strip.more-r { --fr: transparent; }
 [hidden] { display: none !important; }
 button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
 .icon { width: 24px; height: 24px; border-radius: 4px; color: var(--muted); }

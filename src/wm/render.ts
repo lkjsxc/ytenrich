@@ -1,6 +1,7 @@
 // Builds pane/split DOM for a layout. Rebuilt only on structural change; resize mutates flex-grow in place.
 import { h } from '../shared/h.ts';
 import type { LayoutNode, PaneNode, SplitNode, ViewId } from './layout.ts';
+import { closeButton, forgetStrips, strip } from './strip.ts';
 
 export type RenderCtx = {
   title(view: ViewId): string;
@@ -21,51 +22,13 @@ export type Rendered = {
 
 export function renderLayout(root: LayoutNode, ctx: RenderCtx): Rendered {
   const out: Rendered = { el: document.createElement('div'), bodies: new Map(), panes: new Map() };
+  forgetStrips();
   out.el = renderNode(root, ctx, out);
   return out;
 }
 
 function renderNode(node: LayoutNode, ctx: RenderCtx, out: Rendered): HTMLElement {
   return node.type === 'pane' ? renderPane(node, ctx, out) : renderSplit(node, ctx, out);
-}
-
-const ARM_MS = 2500; // a started close is forgotten after this long without another click
-
-/** × that closes on the n-th click; until then a ring fills around it (`--p` is the filled fraction). */
-function closeButton(need: () => number, run: () => void): HTMLElement {
-  let count = 0;
-  let timer: ReturnType<typeof setTimeout> | undefined;
-  const show = (): void => {
-    const left = need() - count;
-    el.classList.toggle('arming', count > 0);
-    el.style.setProperty('--p', String(count / need()));
-    el.title = count ? `Click ${left} more time${left > 1 ? 's' : ''} to close` : 'Close tab';
-  };
-  const el: HTMLElement = h(
-    'button',
-    {
-      class: 'x',
-      title: 'Close tab',
-      onpointerdown: (e) => e.stopPropagation(),
-      onclick: () => {
-        clearTimeout(timer);
-        if (++count >= need()) return run();
-        timer = setTimeout(() => ((count = 0), show()), ARM_MS);
-        show();
-      },
-    },
-    '×',
-  );
-  return el;
-}
-
-/** A vertical wheel scrolls a tab bar sideways when it holds more tabs than fit. */
-function sideways(e: Event): void {
-  const strip = e.currentTarget as HTMLElement;
-  const dy = (e as WheelEvent).deltaY;
-  if (!dy || strip.scrollWidth <= strip.clientWidth) return;
-  e.preventDefault();
-  strip.scrollLeft += dy;
 }
 
 function renderPane(p: PaneNode, ctx: RenderCtx, out: Rendered): HTMLElement {
@@ -102,7 +65,7 @@ function renderPane(p: PaneNode, ctx: RenderCtx, out: Rendered): HTMLElement {
   const el = h(
     'div',
     { class: 'pane', 'data-pane': p.id },
-    h('div', { class: 'strip', onwheel: sideways }, menu, add, p.tabs.map(tab)),
+    strip([menu, add, p.tabs.map(tab)]),
     body,
   );
   out.panes.set(p.id, el);

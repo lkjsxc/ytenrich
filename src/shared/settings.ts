@@ -1,8 +1,7 @@
 // Settings: flat, typed, schema-described so the Settings view renders itself.
 export type HideMode = 'hide' | 'dim' | 'off';
-/** What feeds the Recommended list: only what was on screen, everything on the page, or more loaded for it.
- * `ask`: not chosen yet (acts as `shown`); enabling stats chooses `more`, older installs are asked in Recommended. */
-export type Collect = 'ask' | 'more' | 'page' | 'shown';
+/** What feeds the Recommended list: only what was on screen, everything on the page, or more loaded for it. */
+export type Collect = 'more' | 'page' | 'shown';
 
 export const DEFAULT_SETTINGS = {
   wmEnabled: true,
@@ -10,9 +9,9 @@ export const DEFAULT_SETTINGS = {
   hideThreshold: 5,
   dismissEnabled: true,
   dismissLabel: '',
-  statsEnabled: false, // on only after consent (views/consent.ts)
+  statsEnabled: true, // explained on the welcome page, which also turns it off (views/consent.ts)
   thumbnailsEnabled: true, // Chromium only; the Firefox build has no image code
-  collect: 'ask' as Collect,
+  collect: 'more' as Collect,
   tabWidth: 0, // px; 0 fits each tab to its title
   uiScale: 1, // 1.00 = normal size; ytenrich's own UI only
   tabScale: 1.2, // tab bars, on top of uiScale
@@ -44,9 +43,9 @@ const SCHEMA: readonly SettingField[] = [
   {
     key: 'collect',
     label:
-      'Collect for Recommended: more = also load more of YouTube’s hidden lists, page = everything on the page, shown = only what was on screen, ask = not chosen yet',
+      'Collect for Recommended: more = also load more of YouTube’s hidden lists, page = everything on the page, shown = only what was on screen',
     type: 'enum',
-    options: ['ask', 'more', 'page', 'shown'],
+    options: ['more', 'page', 'shown'],
   },
   {
     key: 'hideMode',

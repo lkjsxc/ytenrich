@@ -2,7 +2,7 @@
 import { launch, rect, tabs } from './smoke-lib.ts';
 
 const { ctx, page, sw, errors, welcome } = await launch();
-// Consent: the welcome tab opens on install; stats stay off until "Enable stats".
+// Welcome tab: opens on install, states what is recorded, and its switch turns stats off and on again.
 const consent = { welcome: Boolean(welcome), before: false, after: false };
 if (welcome) {
   await welcome.waitForLoadState();
@@ -15,9 +15,12 @@ if (welcome) {
     );
   consent.before = await on();
   await welcome.screenshot({ path: 'tmp/smoke-welcome.png' });
-  await welcome.locator('button:has-text("Enable stats")').click();
+  // Stats are on by default (`before` reads the stored value, absent while it equals the default).
+  await welcome.locator('button:has-text("Turn stats off")').click();
   await welcome.waitForTimeout(500);
-  consent.after = await on();
+  consent.after = (await welcome.locator('button:has-text("Turn stats on")').count()) === 1;
+  await welcome.locator('button:has-text("Turn stats on")').click();
+  await welcome.waitForTimeout(300);
   await welcome.close();
 }
 const pageFacts = async () => ({

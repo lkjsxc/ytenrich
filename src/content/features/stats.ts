@@ -1,6 +1,7 @@
 // Impression recording (seen once per navigation) and "opened" tracking.
 import { createDisposables } from '../../shared/signal.ts';
 import type { Impression, Kind } from '../../shared/types.ts';
+import { ageOf } from '../../youtube/extract.ts';
 import type { Feature } from '../features.ts';
 
 const FLUSH_MS = 2000;
@@ -40,6 +41,7 @@ export const stats: Feature = {
           surface: item.surface,
           title: item.title,
           channel: item.channel,
+          age: ageOf(item.el),
         });
         timer ??= setTimeout(flush, FLUSH_MS);
       }),
@@ -59,6 +61,11 @@ export const stats: Feature = {
     let titleMo: MutationObserver | undefined;
     const describeLater = (id: string): void => {
       titleMo?.disconnect();
+      // The content script starts before <head> exists; the title is watched once the document has one.
+      if (!document.head) {
+        document.addEventListener('DOMContentLoaded', () => describeLater(id), { once: true });
+        return;
+      }
       const read = (): boolean => {
         const title = document.title.replace(/^\(\d+\)\s*/, '').replace(/\s*-\s*YouTube$/, '');
         if (!title || title === 'YouTube' || rt.page.get().videoId !== id) return false;

@@ -1,6 +1,6 @@
 # Store submission
 
-Keep this file in sync with `PRIVACY.md` and the code. Re-check it whenever a feature starts storing or sending anything new.
+Keep this file in sync with `PRIVACY.md` and the code. `docs/store-update-prompt.md` is a ready prompt for an agent that updates the three dashboards from this file. Re-check it whenever a feature starts storing or sending anything new.
 
 ## Packages and assets
 - `pnpm package` builds from a clean commit and writes to `release/`:
@@ -71,7 +71,9 @@ API references: [Chrome Web Store v2](https://developer.chrome.com/docs/webstore
 > • Hide over-exposed videos (optional): recommendations YouTube keeps showing for more than a day that you never open can be hidden or dimmed.
 > • One-click "Not interested": a ⊘ button next to every recommendation's ⋮ menu.
 >
-> Privacy: stats are counted only after you enable them, the data stays in your browser, and is never sent to the developer or anyone else. There are no accounts, analytics or ads. The source is open (Apache-2.0).
+> • Your own recommended lists: Videos, Shorts and Channels collected from what YouTube offers you, ordered by what you actually open.
+>
+> Privacy: the statistics are kept in your browser only (you can turn them off or clear them at any time) and are never sent to the developer or anyone else. There are no accounts, analytics or ads. The source is open (Apache-2.0).
 >
 > ytenrich is not affiliated with, endorsed by or sponsored by YouTube or Google.
 
@@ -80,10 +82,12 @@ API references: [Chrome Web Store v2](https://developer.chrome.com/docs/webstore
 >
 > • Shorts を含む全ページをタイル型レイアウトに。再生ページではプレーヤー・概要・コメント・おすすめが、それぞれ独立してスクロールする可変サイズのペインに並びます。それ以外のページでは、ページ本体がガイドの横に並びます。タブをドラッグしてペインを分割・結合・並べ替えできます。Alt+W でオン/オフ。
 > • おすすめの統計：YouTube が何度も表示してくる動画と、実際に開いた動画が分かります。
-> • 出すぎた動画を非表示：N 回表示されても開かなかったおすすめを非表示または半透明にします。
+> • 出すぎた動画を非表示（任意）：1 日以上にわたって何度も表示されても開かなかったおすすめを、非表示または半透明にできます。
 > • ワンクリック「興味なし」：各おすすめの ⋮ メニューの隣に ⊘ ボタンを表示します。
 >
-> プライバシー：統計はあなたが有効化してから記録され、ブラウザ内にだけ保存され、開発者や第三者には一切送信されません。アカウント・解析・広告はありません。ソースコードは公開されています（Apache-2.0）。
+> • 自分専用のおすすめリスト：YouTube が提示した動画・ショート・チャンネルを集め、あなたが実際に開くものに合わせて並べます。
+>
+> プライバシー：統計はブラウザ内にだけ保存され（いつでも無効化・消去できます）、開発者や第三者には一切送信されません。アカウント・解析・広告はありません。ソースコードは公開されています（Apache-2.0）。
 >
 > ytenrich は YouTube および Google とは提携しておらず、承認や後援も受けていません。
 
@@ -108,7 +112,8 @@ API references: [Chrome Web Store v2](https://developer.chrome.com/docs/webstore
   - Website content: video titles and channel names.
   - User activity: opens and "Not interested" clicks.
   - Certify all three: no sale, no use unrelated to the single purpose, no creditworthiness use.
-- **Disclosure and consent:** done in the extension. Stats are off by default. The welcome page that opens on install, and the Stats view, explain the record and need an explicit "Enable stats" (`src/views/consent.ts`).
+- **Disclosure:** stats are the extension's prominently described purpose (listing summary and description, welcome page), so they are on by default. The welcome page that opens on install states what is recorded and has **Turn stats off**; Settings has the same switch (`src/views/consent.ts`). Keep the listing's first lines about the statistics, since that is what makes default-on acceptable under the store's disclosure rule.
+- **Privacy practices answers to keep true:** images (thumbnails, avatars) are loaded from YouTube's image servers by default in the Chromium build; nothing goes to the developer.
 
 ## Firefox (addons.mozilla.org)
 - `data_collection_permissions: { required: ['none'] }`. Mozilla's data collection means data transmitted outside the add-on or the local browser:

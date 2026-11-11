@@ -4,7 +4,7 @@
 import { h } from '../../shared/h.ts';
 import { onStatsChanged } from '../../shared/protocol.ts';
 import type { ChannelSort, ChannelStat, Overview, StatsQuery } from '../../shared/types.ts';
-import { consentCard } from '../consent.ts';
+import { statsCard } from '../consent.ts';
 import type { ViewEnv } from '../registry.ts';
 import { CHANNEL_STEP, channelsCard } from './channels.ts';
 import { num } from './format.ts';
@@ -27,7 +27,6 @@ export function mountStats(el: HTMLElement, env: ViewEnv): () => void {
   let range: Range = 7;
   let chSort: ChannelSort = 'seen';
   let chLimit = CHANNEL_STEP;
-  let declined = false; // "Not now" in this view: a one-line hint replaces the card
   let token = 0;
   let visible = false;
   let dirty = false;
@@ -61,16 +60,7 @@ export function mountStats(el: HTMLElement, env: ViewEnv): () => void {
         ? empty
           ? [h('p', { class: 'muted' }, 'No stats yet. They fill up as you browse YouTube.')]
           : []
-        : declined
-          ? [
-              h(
-                'p',
-                { class: 'muted actions' },
-                'Stats are off, so nothing new is counted. ',
-                h('button', { onclick: () => ((declined = false), refresh()) }, 'Enable stats…'),
-              ),
-            ]
-          : [consentCard(() => ((declined = true), refresh()))]),
+        : [statsCard(false)]),
     );
   };
   const paintTop = (o: Overview): void => {

@@ -8,14 +8,18 @@ import {
 } from '../shared/protocol.ts';
 import { DEFAULT_SETTINGS, loadSettings, onSettings, type Settings } from '../shared/settings.ts';
 import * as backup from './backup.ts';
-import { recommend, wanted } from './recommend.ts';
+import { recommend, touch, wanted } from './recommend.ts';
 import * as read from './stats-read.ts';
 import * as repo from './stats-repo.ts';
 import { judge, suppressedIds } from './suppress.ts';
 
-// First install: the welcome page explains the extension and asks for recording consent.
-chrome.runtime.onInstalled.addListener(({ reason }) => {
-  if (reason === 'install')
+// The welcome page says what is recorded and holds the switch. It opens on install, and once on the update
+// that turned stats on by default (versions are one counter: 0.2.5 reads as 205).
+const STATS_ON_SINCE = 206;
+const counter = (v = ''): number =>
+  v.split('.').reduce((n, part) => n * 100 + Number(part), 0) % 1e6;
+chrome.runtime.onInstalled.addListener(({ reason, previousVersion }) => {
+  if (reason === 'install' || (reason === 'update' && counter(previousVersion) < STATS_ON_SINCE))
     void chrome.tabs.create({ url: chrome.runtime.getURL('options.html#welcome') });
 });
 
@@ -23,7 +27,10 @@ chrome.runtime.onInstalled.addListener(({ reason }) => {
 const thresholdOf = (s: Settings): number => (s.hideMode === 'off' ? Infinity : s.hideThreshold);
 let threshold = thresholdOf(DEFAULT_SETTINGS);
 void loadSettings().then((s) => (threshold = thresholdOf(s)));
-onSettings((s) => (threshold = thresholdOf(s)));
+onSettings((s) => {
+  threshold = thresholdOf(s);
+  touch();
+});
 
 const PRUNE_EVERY = 2000; // recorded items between prune passes
 let sincePrune = 0;
@@ -83,7 +90,7 @@ chrome.runtime.onMessage.addListener(
     if (!handler) return false;
     handler(msg.req).then(
       (ok) => {
-        if (MUTATING.has(msg.type)) bumpRev();
+        if (MUTATING.has(msg.type)) touch(), bumpRev();
         sendResponse({ ok });
       },
       (e: unknown) => sendResponse({ error: String(e) }),

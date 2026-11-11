@@ -8,7 +8,7 @@ import { autoMore, grow, type Keyed, keyed } from './more.ts';
 import { openVideo, videoUrl } from './open.ts';
 import { recoNotes } from './reco-notes.ts';
 import type { ViewEnv } from './registry.ts';
-import { shownLine } from './stats/format.ts';
+import { shownLine, since } from './stats/format.ts';
 import { choice } from './stats/parts.ts';
 
 const STEP = 40;
@@ -21,6 +21,9 @@ const MODES: readonly (readonly [RecoMode, string])[] = [
 ];
 const LABELS = Object.fromEntries(MODES) as Record<RecoMode, string>; // a tab is named after its mode
 const titleOf = (m: RecoMode): string => LABELS[m];
+/** Channel and upload age, e.g. "Lofi Girl · 3mo ago" (the channel is left out under a channel heading). */
+const byline = (v: VideoStat, bare: boolean): string =>
+  [bare ? '' : v.channel, v.published ? since(v.published) : ''].filter(Boolean).join(' · ');
 /** Channel names are all the record has, so a channel opens as a channel search for its name. */
 const channelUrl = (name: string): string =>
   `https://www.youtube.com/results?search_query=${encodeURIComponent(name)}&sp=EgIQAg%253D%253D`;
@@ -60,7 +63,7 @@ export function mountRecommended(el: HTMLElement, env: ViewEnv, initial: RecoMod
           'div',
           { class: 'rtext' },
           h('b', null, v.title || v.id),
-          mode === 'channel' ? null : h('span', { class: 'muted' }, v.channel),
+          h('span', { class: 'muted' }, byline(v, mode === 'channel')),
           env.settings.get().recoMeta ? h('span', { class: 'muted' }, shownLine(v)) : null,
         ),
         h('button', { class: 'rno', title: NO_HINT, onclick: dismiss }, dismissIcon()),
@@ -117,7 +120,7 @@ export function mountRecommended(el: HTMLElement, env: ViewEnv, initial: RecoMod
         ]);
       }
       channel = v.channel;
-      items.push([`${mode}${meta}${img}${v.id}${v.seen}${v.title}`, () => card(v)]);
+      items.push([`${mode}${meta}${img}${v.id}${v.seen}${v.title}${v.published}`, () => card(v)]);
     }
     keyed(cards, items);
     replaceChildren(

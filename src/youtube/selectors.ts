@@ -15,6 +15,8 @@ export const ITEM_ROOT_INNER = [
 /** Tiles that stand for a list (Mix, playlist, podcast): a stacked thumbnail, or the classic list renderers. */
 export const LIST_TILE =
   ':is(ytd-radio-renderer, ytd-compact-radio-renderer, ytd-playlist-renderer, ytd-compact-playlist-renderer, :has(yt-collection-thumbnail-view-model, yt-collections-stack))';
+/** Metadata texts of a tile; one of them is the upload age ("3 months ago"). */
+export const AGE_TEXT = '.ytContentMetadataViewModelMetadataText, #metadata-line span';
 /** The channel avatar inside a tile: the only image a tile loads from YouTube's avatar host. */
 export const AVATAR = 'img[src^="https://yt3."]';
 export const NOT_RECO =

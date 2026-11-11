@@ -1,25 +1,12 @@
-// First-run welcome (options.html#welcome, opened on install): what ytenrich does, then stats consent.
+// First-run welcome (options.html#welcome, opened on install): what ytenrich does, what it records, and the switch.
 import { h } from '../../shared/h.ts';
 import type { Settings } from '../../shared/settings.ts';
 import type { Signal } from '../../shared/signal.ts';
-import { consentCard } from '../../views/consent.ts';
+import { statsCard } from '../../views/consent.ts';
 
 export function welcome(settings: Signal<Settings>): HTMLElement {
   const answer = h('div');
-  let declined = false;
-  const render = (s: Settings): void => {
-    answer.replaceChildren(
-      s.statsEnabled
-        ? h('p', null, 'Stats are on. They fill up as you browse YouTube.')
-        : declined
-          ? h(
-              'p',
-              { class: 'muted' },
-              'Stats stay off. You can enable them later in Stats or Settings.',
-            )
-          : consentCard(() => ((declined = true), render(settings.get()))),
-    );
-  };
+  const render = (s: Settings): void => answer.replaceChildren(statsCard(s.statsEnabled));
   render(settings.get());
   settings.subscribe(render);
   return h(

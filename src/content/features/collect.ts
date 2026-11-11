@@ -3,7 +3,7 @@
 import { toggleAttr } from '../../shared/dom.ts';
 import { createDisposables } from '../../shared/signal.ts';
 import type { Impression } from '../../shared/types.ts';
-import { avatarOf } from '../../youtube/extract.ts';
+import { ageOf, avatarOf } from '../../youtube/extract.ts';
 import type { Feature } from '../features.ts';
 
 const FLUSH_MS = 2000;
@@ -23,7 +23,7 @@ export const collect: Feature = {
 
     const mode = (): string => {
       const s = rt.settings.get();
-      return s.statsEnabled && s.collect !== 'ask' ? s.collect : 'shown';
+      return s.statsEnabled ? s.collect : 'shown';
     };
     const steer = (): void =>
       toggleAttr(
@@ -35,8 +35,8 @@ export const collect: Feature = {
       );
     const flush = (): void => {
       timer = undefined;
-      // Avatars load lazily, so they are read now, a moment after the tile was found.
-      const items = buffer.map(({ item, el }) => ({ ...item, icon: avatarOf(el) }));
+      // Avatars and the age line render late, so they are read now, a moment after the tile was found.
+      const items = buffer.map(({ item, el }) => ({ ...item, age: ageOf(el), icon: avatarOf(el) }));
       buffer = [];
       if (!items.length || mode() === 'shown') return;
       rt.call('offer', { items }).then(

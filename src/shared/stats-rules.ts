@@ -1,3 +1,4 @@
+import { parseAge } from './age.ts';
 import {
   type ChannelDelta,
   type ChannelStat,
@@ -42,9 +43,16 @@ export function emptyStat(id: string, now: number): VideoStat {
     openedAt: 0,
     dismissedAt: 0,
     offers: 0,
+    published: 0,
     via: '',
     surfaces: {},
   };
+}
+
+/** The first estimate stays: later tiles word the age more coarsely ("1 year ago" covers 12 to 23 months). */
+function publishedAt(s: VideoStat, item: Impression, now: number): number {
+  const age = s.published ? 0 : parseAge(item.age ?? '');
+  return age ? now - age : s.published;
 }
 
 export function applyImpression(
@@ -59,6 +67,7 @@ export function applyImpression(
     title: item.title || s.title,
     channel: item.channel || s.channel,
     lastSeen: now,
+    published: publishedAt(s, item, now),
     via: item.surface,
     seen: s.seen + 1,
     surfaces: { ...s.surfaces, [item.surface]: (s.surfaces[item.surface] ?? 0) + 1 },
@@ -75,6 +84,7 @@ export function applyOffer(prev: VideoStat | undefined, item: Impression, now: n
     channel: s.channel || item.channel,
     lastSeen: now,
     offers: s.offers + 1,
+    published: publishedAt(s, item, now),
     via: item.surface,
   };
 }

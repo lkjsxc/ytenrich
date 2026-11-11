@@ -1,5 +1,7 @@
+import { parseAge } from '../shared/age.ts';
 import type { Kind } from '../shared/types.ts';
 import {
+  AGE_TEXT,
   AVATAR,
   CHANNEL,
   ITEM_ROOT_INNER,
@@ -61,4 +63,13 @@ export function menuHostOf(root: Element): Element | null {
 /** The channel avatar's address, once the tile has loaded it (it is lazy, so read this late). */
 export function avatarOf(root: Element): string {
   return root.querySelector<HTMLImageElement>(AVATAR)?.src ?? '';
+}
+
+/** The tile's upload-age text ('' when it shows none, as Shorts do). Rendered late, so read this late too. */
+export function ageOf(root: Element): string {
+  for (const el of root.querySelectorAll(AGE_TEXT)) {
+    const text = (el.textContent ?? '').trim();
+    if (text.length < 40 && parseAge(text)) return text;
+  }
+  return '';
 }

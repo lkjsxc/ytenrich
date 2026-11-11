@@ -11,7 +11,9 @@ const FRESH_MS = 72 * 3600_000;
 
 const TASTE_TITLES = 400; // titles per class the taste model learns from
 
-export async function recommend(mode: RecoMode, limit: number, sup: Judge): Promise<RecoPage> {
+type Ranking = { ranked: VideoStat[]; channels: Map<string, ChannelStat> };
+
+async function rankAll(mode: RecoMode, sup: Judge): Promise<Ranking> {
   const tx = (await openDb()).transaction([VIDEOS, CHANNELS]);
   const videos = tx.objectStore(VIDEOS);
   const pool: VideoStat[] = []; // bound: POOL
@@ -35,7 +37,23 @@ export async function recommend(mode: RecoMode, limit: number, sup: Judge): Prom
   const stats = await Promise.all(names.map((n) => done<ChannelStat | undefined>(store.get(n))));
   const channels = new Map(stats.flatMap((c) => (c ? [[c.name, c] as const] : []))); // bound: ≤ POOL
   const rank = mode === 'channel' ? rankByChannel : rankVideos;
-  const ranked = rank(pool, channels, Date.now(), taste);
+  return { ranked: rank(pool, channels, Date.now(), taste), channels };
+}
+
+// The last ranking per mode is kept until the record changes (or a minute passes, since freshness moves the
+// order): the view's refreshes and its "load more" pages then cost one slice. Bound: 3 modes × POOL rows.
+const MEMO_MS = 60_000;
+const memo = new Map<RecoMode, { at: number; ranking: Ranking }>();
+/** The record or the settings changed: rankings are stale. */
+export const touch = (): void => memo.clear();
+
+export async function recommend(mode: RecoMode, limit: number, sup: Judge): Promise<RecoPage> {
+  let hit = memo.get(mode);
+  if (!hit || Date.now() - hit.at > MEMO_MS) {
+    hit = { at: Date.now(), ranking: await rankAll(mode, sup) };
+    memo.set(mode, hit);
+  }
+  const { ranked, channels } = hit.ranking;
   const rows = ranked.slice(0, limit);
   const shown = new Set(rows.map((v) => v.channel));
   return {
@@ -47,7 +65,10 @@ export async function recommend(mode: RecoMode, limit: number, sup: Judge): Prom
 }
 
 /** Whether the stock of fresh candidates is low, so pages may load more of YouTube's lists. */
+const STOCK_MS = 20_000; // collectors ask every couple of seconds while loading; one count serves them all
+let stock: { at: number; low: boolean } | undefined;
 export async function wanted(sup: Judge): Promise<boolean> {
+  if (stock && Date.now() - stock.at < STOCK_MS) return stock.low;
   const index = (await openDb()).transaction(VIDEOS).objectStore(VIDEOS).index('lastSeen');
   let fresh = 0;
   await walk(index, IDBKeyRange.lowerBound(Date.now() - FRESH_MS), 'prev', (c) => {
@@ -55,5 +76,6 @@ export async function wanted(sup: Judge): Promise<boolean> {
     if (!s.opened && !s.dismissedAt && !sup(s)) fresh++;
     return fresh < STOCK;
   });
-  return fresh < STOCK;
+  stock = { at: Date.now(), low: fresh < STOCK };
+  return stock.low;
 }

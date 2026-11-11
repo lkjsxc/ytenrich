@@ -60,7 +60,7 @@ export function niceMax(n: number): number {
 
 /** Days from the oldest recorded day through today (at least 1): the length of the "all time" period. */
 export function span(days: readonly DayStat[], now: number): number {
-  const first = days.reduce((min, d) => (d.day < min ? d.day : min), dayKey(now));
+  const first = [...days.map((d) => d.day), dayKey(now)].sort()[0] ?? dayKey(now); // ISO keys sort by date
   const [y = 0, m = 1, d = 1] = first.split('-').map(Number);
   const noon = new Date(now).setHours(12, 0, 0, 0);
   return Math.max(1, Math.round((noon - new Date(y, m - 1, d, 12).getTime()) / DAY_MS) + 1);

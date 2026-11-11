@@ -19,3 +19,18 @@ export const dayShort = (key: string): string => date(key, { month: 'short', day
 /** A candidate's exposure: collected without ever being on screen reads as not shown yet. */
 export const shownLine = (v: { seen: number; lastSeen: number; via: string }): string =>
   `${v.seen ? `shown ${v.seen}×` : 'not shown yet'}${v.via ? ` · from ${v.via}` : ''} · ${ago(v.lastSeen)} ago`;
+/** Upload age in a few characters: "5h ago", "3d ago", "2w ago", "4mo ago", "2y ago". */
+export function since(t: number): string {
+  const d = Math.max(0, Date.now() - t) / 86_400_000;
+  const text =
+    d < 1
+      ? `${Math.max(1, Math.round(d * 24))}h`
+      : d < 14
+        ? `${Math.round(d)}d`
+        : d < 60
+          ? `${Math.round(d / 7)}w`
+          : d < 365
+            ? `${Math.round(d / 30)}mo`
+            : `${Math.floor(d / 365)}y`;
+  return `${text} ago`;
+}

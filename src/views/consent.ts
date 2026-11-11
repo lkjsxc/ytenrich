@@ -1,23 +1,24 @@
-// Stats consent: stores require an in-extension disclosure and an explicit "yes" before any
-// recommendation is counted (Chrome Web Store user data policy). Shown on the welcome page and in Stats.
+// Stats disclosure. Stats are on from the start because they are what ytenrich is for (the store listing says
+// so first); the welcome page states plainly what is kept and offers the switch, and so does the Stats view
+// whenever stats are off.
 import { h } from '../shared/h.ts';
 import { patchSettings } from '../shared/settings.ts';
 
 export const PRIVACY_URL = 'https://github.com/lkjsxc/ytenrich/blob/main/PRIVACY.md';
 
-/** `onNo` runs after "Not now"; enabling stats reaches every view through the settings signal. */
-export function consentCard(onNo: () => void): HTMLElement {
+/** What is kept and where, with the one switch for it. `on`: the current state of stats. */
+export function statsCard(on: boolean): HTMLElement {
   return h(
     'section',
     { class: 'consent' },
-    h('h2', null, 'Enable stats?'),
+    h('h2', null, on ? 'Stats are on' : 'Stats are off'),
     h(
       'p',
       null,
-      'ytenrich can record the recommendations YouTube puts on your pages and the videos you open ' +
-        '(video ID, title, channel, counts and times). The record powers your Stats, the Recommended ' +
-        'list and the optional hiding of recommendations that keep reappearing unopened. To fill ' +
-        'Recommended, ytenrich also lets YouTube load more of its own list on a page.',
+      'ytenrich records the recommendations YouTube puts on your pages and the videos you open ' +
+        '(video ID, title, channel, counts and times). The record powers your Stats, History and the ' +
+        'recommended Videos, Shorts and Channels lists. To fill those lists, ytenrich also lets ' +
+        'YouTube load more of its own list on a page.',
     ),
     h(
       'p',
@@ -26,21 +27,23 @@ export function consentCard(onNo: () => void): HTMLElement {
         (__FIREFOX__
           ? ''
           : 'The lists show thumbnails, loaded from YouTube’s image server by video ID (Settings turns them off). ') +
-        'You can turn stats off or clear them at any time in Settings. ',
+        'You can clear the record at any time in Settings. ',
       h('a', { href: PRIVACY_URL, target: '_blank', rel: 'noopener' }, 'Privacy policy'),
     ),
     h(
       'div',
       { class: 'actions' },
-      h(
-        'button',
-        {
-          class: 'primary',
-          onclick: () => void patchSettings({ statsEnabled: true, collect: 'more' }),
-        },
-        'Enable stats',
-      ),
-      h('button', { onclick: onNo }, 'Not now'),
+      on
+        ? h(
+            'button',
+            { onclick: () => void patchSettings({ statsEnabled: false }) },
+            'Turn stats off',
+          )
+        : h(
+            'button',
+            { class: 'primary', onclick: () => void patchSettings({ statsEnabled: true }) },
+            'Turn stats on',
+          ),
     ),
   );
 }
