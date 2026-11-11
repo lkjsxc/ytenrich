@@ -44,7 +44,7 @@ AI-first repo: no human ergonomics, no backward compatibility, no migrations. Mo
 ## Images
 - Users drop raw screenshots in `tmp/` (gitignored). Run `pnpm image tmp/<file> <kebab-name>` to write `docs/images/<name>.webp` (≤1920px wide, WebP). Then delete the raw file.
 - Name images `<page>-<feature>[-<variant>]`, e.g. `watch-tiling-dark`. Look at an image before naming it.
-- Reference each image from `README.md` § Screenshots (the hero image goes at the top). Check enforces .webp only and ≤600KB.
+- Reference each image from `README.md` exactly once: the hero image at the top, any others in a § Screenshots table. Check enforces .webp only and ≤600KB.
 
 ## Work loop
 1. Read only the doc/files the task touches. The map above is enough to route.

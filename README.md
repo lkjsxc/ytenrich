@@ -30,7 +30,7 @@ The newest release is always at these links:
 - Chromium browsers: [ytenrich-chromium.zip](https://github.com/lkjsxc/ytenrich/releases/latest/download/ytenrich-chromium.zip)
 - Firefox: [ytenrich-firefox.zip](https://github.com/lkjsxc/ytenrich/releases/latest/download/ytenrich-firefox.zip)
 
-To try the very newest code instead (rebuilt on every change, ahead of the stores and less tested), use the [latest build](https://github.com/lkjsxc/ytenrich/releases/tag/latest-build): [Chromium zip](https://github.com/lkjsxc/ytenrich/releases/download/latest-build/ytenrich-chromium.zip), [Firefox zip](https://github.com/lkjsxc/ytenrich/releases/download/latest-build/ytenrich-firefox.zip).
+To try the very newest code instead (built on every change, ahead of the releases and less tested), open the newest run of the [Build workflow](https://github.com/lkjsxc/ytenrich/actions/workflows/build.yml?query=branch%3Amain+is%3Asuccess) and download `ytenrich-chromium` or `ytenrich-firefox` under **Artifacts** (GitHub asks you to sign in for this). Each download is the extension itself as a zip.
 
 Chrome, Edge, Brave, Vivaldi:
 1. Download the Chromium zip and unzip it into a folder you will keep (for example `Documents/ytenrich`).
@@ -54,11 +54,6 @@ pnpm install && pnpm build
 - Bump `version` in `package.json`, commit, then run `pnpm package`. It writes `release/ytenrich-<version>-{chromium,firefox,source}.zip`.
 - `pnpm store-assets` writes the listing images to `release/store/`.
 - Listing text, dashboard answers and per-store steps are in [docs/store.md](docs/store.md).
-
-## Screenshots
-| | |
-|-|-|
-| ![Watch page, dark theme](docs/images/watch-views-dark.webp) | Watch page (dark): the player with Details, Comments and History below it, and ytenrich's Recommended and Stats views on the right |
 
 ## Development
 AI-first repository: start at [AGENTS.md](AGENTS.md).

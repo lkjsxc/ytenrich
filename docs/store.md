@@ -55,8 +55,8 @@ The workflow requests a short-lived Chrome token. Enter the Edge and Firefox sec
 
 API references: [Chrome Web Store v2](https://developer.chrome.com/docs/webstore/using-api/), [Edge Add-ons v1.1](https://learn.microsoft.com/en-us/microsoft-edge/extensions/update/api/using-addons-api), [Firefox Add-ons](https://mozilla.github.io/addons-server/topics/api/addons.html#version-create).
 
-## Latest build
-`.github/workflows/latest-build.yml` runs on every push to `main`: `pnpm check`, `pnpm package`, then it moves the `latest-build` tag to that commit and replaces the two zips of the `latest-build` pre-release. It never touches the stores, and being a pre-release it never becomes GitHub's "latest release", so README's `releases/latest/download/…` links keep pointing at the last store version.
+## Build of main
+`.github/workflows/build.yml` runs on every push to `main`: `pnpm check`, `pnpm package`, then it keeps `dist/` and `dist-firefox/` as the run's artifacts `ytenrich-chromium` and `ytenrich-firefox` (downloadable from the run page by signed-in GitHub users, kept 90 days). It touches neither the stores nor GitHub releases, which hold versions only.
 
 ## Listing text
 **Name:** ytenrich
