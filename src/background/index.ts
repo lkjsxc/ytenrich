@@ -6,11 +6,12 @@ import {
   type Reply,
   STATS_REV_KEY,
 } from '../shared/protocol.ts';
-import { DEFAULT_SETTINGS, loadSettings, onSettings } from '../shared/settings.ts';
+import { DEFAULT_SETTINGS, loadSettings, onSettings, type Settings } from '../shared/settings.ts';
 import * as backup from './backup.ts';
 import { recommend, wanted } from './recommend.ts';
 import * as read from './stats-read.ts';
 import * as repo from './stats-repo.ts';
+import { judge, suppressedIds } from './suppress.ts';
 
 // First install: the welcome page explains the extension and asks for recording consent.
 chrome.runtime.onInstalled.addListener(({ reason }) => {
@@ -18,9 +19,11 @@ chrome.runtime.onInstalled.addListener(({ reason }) => {
     void chrome.tabs.create({ url: chrome.runtime.getURL('options.html#welcome') });
 });
 
-let threshold = DEFAULT_SETTINGS.hideThreshold;
-void loadSettings().then((s) => (threshold = s.hideThreshold));
-onSettings((s) => (threshold = s.hideThreshold));
+// With hiding off nothing counts as over-exposed, so nothing is held back from Recommended either.
+const thresholdOf = (s: Settings): number => (s.hideMode === 'off' ? Infinity : s.hideThreshold);
+let threshold = thresholdOf(DEFAULT_SETTINGS);
+void loadSettings().then((s) => (threshold = thresholdOf(s)));
+onSettings((s) => (threshold = thresholdOf(s)));
 
 const PRUNE_EVERY = 2000; // recorded items between prune passes
 let sincePrune = 0;
@@ -46,7 +49,6 @@ const MUTATING: ReadonlySet<Method> = new Set([
   'opened',
   'describe',
   'dismissed',
-  'allow',
   'clear',
   'restore',
 ]);
@@ -60,17 +62,16 @@ const handlers: Handlers = {
   async offer({ items }) {
     countForPrune(items.length);
     await repo.offer(items);
-    return { want: await wanted(threshold) };
+    return { want: await wanted(await judge(threshold)) };
   },
   opened: (req) => repo.opened(req).then(() => null),
   describe: ({ id, title }) => repo.describe(id, title).then(() => null),
   dismissed: ({ id }) => repo.dismissed(id).then(() => null),
-  suppressed: async () => [...(await repo.suppressedIds(threshold))],
+  suppressed: async () => [...(await suppressedIds(threshold))],
   query: (q) => read.query(q, threshold),
-  recommend: ({ mode, limit }) => recommend(mode, limit, threshold),
+  recommend: async ({ mode, limit }) => recommend(mode, limit, await judge(threshold)),
   overview: () => read.overview(threshold),
   channels: ({ sort, limit }) => read.channels(sort, limit),
-  allow: ({ id, allowed }) => repo.allow(id, allowed).then(() => null),
   clear: () => repo.clear().then(() => null),
   dump: ({ store, after, limit }) => backup.dump(store, after, limit),
   restore: ({ store, rows }) => backup.restore(store, rows).then(() => null),

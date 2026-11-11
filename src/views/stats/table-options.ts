@@ -8,7 +8,6 @@ export const FILTERS: readonly (readonly [StatsFilter, string])[] = [
   ['unopened', 'Never opened'],
   ['opened', 'Opened'],
   ['dismissed', 'Not interested'],
-  ['allowed', 'Always shown'],
 ];
 export const KINDS: readonly (readonly [StatsQuery['kind'], string])[] = [
   ['all', 'Videos + Shorts'],

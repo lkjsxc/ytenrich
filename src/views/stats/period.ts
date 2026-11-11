@@ -2,8 +2,9 @@
 import { emptyDay } from '../../shared/stats-rules.ts';
 import { type DayStat, dayKey, type Surface } from '../../shared/types.ts';
 
-export type Range = 7 | 30 | 90;
-export const RANGES: readonly Range[] = [7, 30, 90];
+/** Days in the period; 0 is everything on record. */
+export type Range = 7 | 30 | 90 | 0;
+export const RANGES: readonly Range[] = [7, 30, 90, 0];
 export type Totals = Omit<DayStat, 'day'>;
 
 const DAY_MS = 86_400_000;
@@ -55,4 +56,22 @@ export const change = (cur: number, prev: number): number | null =>
 export function niceMax(n: number): number {
   const p = 10 ** Math.floor(Math.log10(Math.max(n, 1)));
   return [1, 2, 5, 10].map((m) => m * p).find((v) => v >= n) ?? n;
+}
+
+/** Days from the oldest recorded day through today (at least 1): the length of the "all time" period. */
+export function span(days: readonly DayStat[], now: number): number {
+  const first = days.reduce((min, d) => (d.day < min ? d.day : min), dayKey(now));
+  const [y = 0, m = 1, d = 1] = first.split('-').map(Number);
+  const noon = new Date(now).setHours(12, 0, 0, 0);
+  return Math.max(1, Math.round((noon - new Date(y, m - 1, d, 12).getTime()) / DAY_MS) + 1);
+}
+
+/** Sums consecutive days into at most `max` buckets, each named after its first day (charts of long periods). */
+export function buckets(list: readonly DayStat[], max: number): DayStat[] {
+  const size = Math.ceil(list.length / max);
+  if (size <= 1) return [...list];
+  const out: DayStat[] = [];
+  for (let i = 0; i < list.length; i += size)
+    out.push({ ...totals(list.slice(i, i + size)), day: list[i]?.day ?? '' });
+  return out;
 }

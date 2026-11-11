@@ -6,7 +6,7 @@ export type Collect = 'ask' | 'more' | 'page' | 'shown';
 
 export const DEFAULT_SETTINGS = {
   wmEnabled: true,
-  hideMode: 'hide' as HideMode,
+  hideMode: 'off' as HideMode,
   hideThreshold: 5,
   dismissEnabled: true,
   dismissLabel: '',
@@ -47,13 +47,14 @@ const SCHEMA: readonly SettingField[] = [
   },
   {
     key: 'hideMode',
-    label: 'Over-exposed unopened videos',
+    label:
+      'Over-exposed videos (recommended again and again over more than a day, never opened; channels you open get more patience)',
     type: 'enum',
-    options: ['hide', 'dim', 'off'],
+    options: ['off', 'dim', 'hide'],
   },
   {
     key: 'hideThreshold',
-    label: 'Over-exposed after N impressions',
+    label: 'Over-exposed after N impressions (3 × N for channels you open)',
     type: 'number',
     min: 2,
     max: 100,

@@ -3,6 +3,7 @@ import {
   CHANNEL,
   ITEM_ROOT_INNER,
   ITEM_ROOT_OUTER,
+  LIST_TILE,
   MENU_HOST,
   NOT_RECO,
   TITLE,
@@ -47,7 +48,8 @@ function firstText(root: Element, selectors: readonly string[]): string {
 export function extractItem(root: Element): ItemInfo | undefined {
   const anchor = root.querySelector<HTMLAnchorElement>(VIDEO_ANCHOR);
   const parsed = anchor && parseHref(anchor.getAttribute('href') ?? '');
-  if (!anchor || !parsed) return undefined;
+  // A Mix or playlist tile links to its first video, but it is a list, not that video.
+  if (!anchor || !parsed || root.matches(LIST_TILE)) return undefined;
   return { ...parsed, anchor, title: firstText(root, TITLE), channel: firstText(root, CHANNEL) };
 }
 

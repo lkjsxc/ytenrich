@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { channelScore, rankByChannel, rankVideos } from '../src/shared/recommend.ts';
 import { emptyStat } from '../src/shared/stats-rules.ts';
+import { affinity, learn, tokens } from '../src/shared/taste.ts';
 import type { ChannelStat, VideoStat } from '../src/shared/types.ts';
 
 const NOW = 1_800_000_000_000;
@@ -55,5 +56,29 @@ describe('recommend', () => {
       ...['l1', 'l2', 'l3', 'l4', 'l5'].map((id) => video(id, 'loved')),
     ];
     expect(ids(rankByChannel(list, channels, NOW))).toBe('l1 l2 l3 l4 i1');
+  });
+  it('learns title taste and lets it and repeated offers reorder equal candidates', () => {
+    expect(tokens('Rust async 入門ガイド a')).toEqual([
+      'rust',
+      'async',
+      '入門',
+      '門ガ',
+      'ガイ',
+      'イド',
+    ]);
+    const taste = learn(
+      ['Rust async basics', 'Rust lifetimes', 'Rust traits explained'],
+      ['Celebrity gossip daily', 'Top gossip moments', 'Daily prank'],
+      ['Prank gone wrong', 'Prank compilation'],
+    );
+    expect(affinity(taste, 'Advanced Rust')).toBeGreaterThan(1);
+    expect(affinity(taste, 'Best prank ever')).toBeLessThan(affinity(taste, 'Gossip hour'));
+    expect(affinity(taste, 'Gossip hour')).toBeLessThan(1);
+    expect(affinity(taste, 'Cooking pasta')).toBe(1);
+    const a = { ...video('a', 'new-ch'), title: 'Gossip hour' };
+    const b = { ...video('b', 'new-ch'), title: 'Rust macros' };
+    expect(ids(rankVideos([a, b], channels, NOW, taste))).toBe('b a');
+    const often = { ...video('often', 'x'), offers: 4 };
+    expect(ids(rankVideos([video('once', 'y'), often], channels, NOW))).toBe('often once');
   });
 });

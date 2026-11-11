@@ -19,5 +19,5 @@ export const dayFull = (key: string): string =>
   date(key, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
 export const dayShort = (key: string): string => date(key, { month: 'short', day: 'numeric' });
 /** A candidate's exposure: collected without ever being on screen reads as not shown yet. */
-export const shownLine = (v: { seen: number; lastSeen: number }): string =>
-  `${v.seen ? `shown ${v.seen}×` : 'not shown yet'} · ${ago(v.lastSeen)} ago`;
+export const shownLine = (v: { seen: number; lastSeen: number; via: string }): string =>
+  `${v.seen ? `shown ${v.seen}×` : 'not shown yet'}${v.via ? ` · from ${v.via}` : ''} · ${ago(v.lastSeen)} ago`;

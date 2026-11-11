@@ -10,7 +10,7 @@ import { CHANNEL_STEP, channelsCard } from './channels.ts';
 import { num } from './format.ts';
 import { breakdowns, dailyCard, kpis } from './overview.ts';
 import { choice } from './parts.ts';
-import { RANGES, type Range, series, totals } from './period.ts';
+import { buckets, RANGES, type Range, series, span, totals } from './period.ts';
 import { createVideoTable, PAGE_STEP } from './table.ts';
 
 const LIVE_MS = 4000; // at most one live refresh per window
@@ -45,7 +45,7 @@ export function mountStats(el: HTMLElement, env: ViewEnv): () => void {
     rangeBox.replaceChildren(
       choice(
         'seg-ctl',
-        RANGES.map((r) => [r, `${r} days`] as const),
+        RANGES.map((r) => [r, r ? `${r} days` : 'All time'] as const),
         range,
         (r) => {
           range = r;
@@ -75,10 +75,11 @@ export function mountStats(el: HTMLElement, env: ViewEnv): () => void {
   };
   const paintTop = (o: Overview): void => {
     const now = Date.now();
-    const cur = series(o.days, range, now);
+    const len = range || span(o.days, now);
+    const cur = series(o.days, len, now);
     top.replaceChildren(
-      kpis(totals(cur), totals(series(o.days, range, now, range)), o),
-      dailyCard(cur),
+      kpis(totals(cur), totals(range ? series(o.days, len, now, len) : []), o),
+      dailyCard(buckets(cur, 120)),
       breakdowns(totals(cur)),
       h(
         'p',

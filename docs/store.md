@@ -68,7 +68,7 @@ API references: [Chrome Web Store v2](https://developer.chrome.com/docs/webstore
 >
 > • Tiling layout on every page, Shorts included. On watch pages, the player, details, comments and recommendations sit in resizable panes that scroll on their own. Elsewhere, the page itself sits next to the guide. Drag tabs to split, join or reorder panes. Alt+W turns the layout off and on.
 > • Recommendation stats: see which videos YouTube keeps showing you, how often, and which ones you actually opened.
-> • Hide over-exposed videos: recommendations shown N times that you never opened are hidden or dimmed.
+> • Hide over-exposed videos (optional): recommendations YouTube keeps showing for more than a day that you never open can be hidden or dimmed.
 > • One-click "Not interested": a ⊘ button next to every recommendation's ⋮ menu.
 >
 > Privacy: stats are counted only after you enable them, the data stays in your browser, and is never sent to the developer or anyone else. There are no accounts, analytics or ads. The source is open (Apache-2.0).

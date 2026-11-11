@@ -7,7 +7,8 @@ import type { Feature } from '../features.ts';
 
 const FLUSH_MS = 2000;
 const MAX_BUFFER = 500; // offers buffered between flushes
-const MAX_PER_PAGE = 150; // items one navigation may gather before loading more stops
+const MAX_PER_PAGE = 300; // items one navigation may gather before loading more stops
+const MIN_PER_PAGE = 80; // gathered from every page even when the stock is full, so each kind of page contributes
 const HARVEST = 'ytenrich-harvest'; // youtube.css keeps hidden lists loading while this is set
 
 export const collect: Feature = {
@@ -27,7 +28,9 @@ export const collect: Feature = {
       toggleAttr(
         document.documentElement,
         HARVEST,
-        mode() === 'more' && want && offered.size < MAX_PER_PAGE && !document.hidden,
+        mode() === 'more' &&
+          offered.size < (want ? MAX_PER_PAGE : MIN_PER_PAGE) &&
+          !document.hidden,
       );
     const flush = (): void => {
       timer = undefined;
@@ -49,7 +52,7 @@ export const collect: Feature = {
         const { id, kind, surface, title, channel } = item;
         buffer.push({ id, kind, surface, title, channel });
         timer ??= setTimeout(flush, FLUSH_MS);
-        if (offered.size >= MAX_PER_PAGE) steer();
+        if (offered.size >= MIN_PER_PAGE) steer();
       }),
     );
     d.add(

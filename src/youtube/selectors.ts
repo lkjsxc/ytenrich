@@ -12,6 +12,9 @@ export const ITEM_ROOT_INNER = [
   'ytd-reel-item-renderer',
 ].join(', ');
 /** Anchors inside these are never recommendations (player end screens, queue panels, ads). */
+/** Tiles that stand for a list (Mix, playlist, podcast): a stacked thumbnail, or the classic list renderers. */
+export const LIST_TILE =
+  ':is(ytd-radio-renderer, ytd-compact-radio-renderer, ytd-playlist-renderer, ytd-compact-playlist-renderer, :has(yt-collection-thumbnail-view-model, yt-collections-stack))';
 export const NOT_RECO =
   '#movie_player, ytd-playlist-panel-renderer, ad-button-view-model, ytd-miniplayer';
 

@@ -37,7 +37,8 @@ export const hideOverexposed: Feature = {
     let { hideThreshold, hideMode } = rt.settings.get();
     d.add(
       rt.settings.subscribe((s) => {
-        if (s.hideThreshold !== hideThreshold) setTimeout(refresh, 300);
+        // The background judges with the new settings a moment later; `off` there means nothing is suppressed.
+        if (s.hideThreshold !== hideThreshold || s.hideMode !== hideMode) setTimeout(refresh, 300);
         if (s.hideMode !== hideMode) applyAll();
         ({ hideThreshold, hideMode } = s);
       }),

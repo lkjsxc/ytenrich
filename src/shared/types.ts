@@ -25,7 +25,10 @@ export type VideoStat = {
   /** Time of the latest open (0 = never). */
   openedAt: number;
   dismissedAt: number;
-  allowed: boolean;
+  /** Page views on which YouTube put it on the page, on screen or not (0 in rows from before the collector). */
+  offers: number;
+  /** Kind of page that last offered or showed it. */
+  via: Surface | '';
   surfaces: Partial<Record<Surface, number>>;
 };
 
@@ -62,14 +65,7 @@ export type StoreName = 'videos' | 'days' | 'channels';
 export type ChannelSort = 'seen' | 'opened';
 
 /** `pending`: recommended but never opened, dismissed or over-exposed (the Recommended view). */
-export type StatsFilter =
-  | 'pending'
-  | 'all'
-  | 'unopened'
-  | 'suppressed'
-  | 'dismissed'
-  | 'opened'
-  | 'allowed';
+export type StatsFilter = 'pending' | 'all' | 'unopened' | 'suppressed' | 'dismissed' | 'opened';
 export type StatsSort = 'seen' | 'opened' | 'lastSeen' | 'openedAt';
 export type StatsQuery = {
   sort: StatsSort;
@@ -80,14 +76,15 @@ export type StatsQuery = {
   limit: number;
   search: string;
 };
-export type StatsPage = { rows: VideoStat[]; more: boolean };
+/** `suppressed`: ids among `rows` that count as over-exposed right now. */
+export type StatsPage = { rows: VideoStat[]; more: boolean; suppressed: string[] };
 /** Recommended view: videos, Shorts, or both grouped under the channels the user likes most. */
 export type RecoMode = 'video' | 'short' | 'channel';
 /** `channels`: stats of the channels in `rows` (channel mode only). */
 export type RecoPage = StatsPage & { channels: ChannelStat[] };
-/** `days` is newest first and sparse (days without activity are absent), at most OVERVIEW_DAYS long. */
+/** `days` is newest first and sparse (days without activity are absent), at most OVERVIEW_DAYS long (in effect all). */
 export type Overview = { videos: number; channels: number; suppressed: number; days: DayStat[] };
-export const OVERVIEW_DAYS = 180;
+export const OVERVIEW_DAYS = 3660;
 
 export function dayKey(time: number): string {
   const d = new Date(time);

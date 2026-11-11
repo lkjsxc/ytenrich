@@ -26,7 +26,6 @@ export type Api = {
   recommend: { req: { mode: RecoMode; limit: number }; res: RecoPage };
   overview: { req: null; res: Overview };
   channels: { req: { sort: ChannelSort; limit: number }; res: ChannelStat[] };
-  allow: { req: { id: string; allowed: boolean }; res: null };
   clear: { req: null; res: null };
   /** Backup: one page of a store's rows after primary key `after`; `next` is null at the end. */
   dump: {

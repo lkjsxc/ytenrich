@@ -71,4 +71,4 @@ html[dark][ytenrich-wm] [ytenrich-slot="page"] ytd-rich-grid-renderer > #header:
 html[ytenrich-wm] ytd-app #frosted-glass { display: none !important; }
 /* Collector (content/features/collect.ts): a list the WM is not drawing keeps its loader inside the viewport, so
    YouTube loads the next page of it; each new page brings a new loader until the attribute is removed. */
-html[ytenrich-wm][ytenrich-harvest] :is(ytd-watch-flexy #related, ytd-browse[page-subtype="home"]):is(:not([ytenrich-slot]), [ytenrich-slot-inactive]) ytd-continuation-item-renderer { position: fixed !important; top: 0 !important; left: 0 !important; width: 10px !important; height: 10px !important; overflow: hidden !important; visibility: hidden !important; pointer-events: none !important; }
+html[ytenrich-wm][ytenrich-harvest] :is(ytd-watch-flexy #related, ytd-page-manager > ytd-browse):is(:not([ytenrich-slot]), [ytenrich-slot-inactive]) ytd-continuation-item-renderer { position: fixed !important; top: 0 !important; left: 0 !important; width: 10px !important; height: 10px !important; overflow: hidden !important; visibility: hidden !important; pointer-events: none !important; }

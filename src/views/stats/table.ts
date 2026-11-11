@@ -1,6 +1,5 @@
 // Video table of the Stats view: filter chips, kind, search, sortable columns, paging and the allow action.
 import { h } from '../../shared/h.ts';
-import { isSuppressed } from '../../shared/stats-rules.ts';
 import type { StatsPage, StatsQuery, VideoStat } from '../../shared/types.ts';
 import { autoMore, grow, keyed } from '../more.ts';
 import { openVideo, videoUrl } from '../open.ts';
@@ -72,18 +71,12 @@ export function createVideoTable(env: ViewEnv, q: StatsQuery, refresh: () => voi
           key === q.sort ? `${label} ↓` : label,
         ),
       ),
-      h('th'),
     );
   };
 
+  let over: ReadonlySet<string> = new Set(); // bound: ids of the page shown
   const badge = (v: VideoStat): string =>
-    v.dismissedAt
-      ? 'not interested'
-      : v.allowed
-        ? 'always shown'
-        : isSuppressed(v, env.settings.get().hideThreshold)
-          ? 'over-exposed'
-          : '';
+    v.dismissedAt ? 'not interested' : over.has(v.id) ? 'over-exposed' : '';
   const row = (v: VideoStat): HTMLElement => {
     const state = badge(v);
     const where = Object.entries(v.surfaces)
@@ -134,20 +127,6 @@ export function createVideoTable(env: ViewEnv, q: StatsQuery, refresh: () => voi
       h('td', { class: 'num', title: where }, num(v.seen)),
       h('td', { class: 'num' }, num(v.opened)),
       h('td', { class: 'num muted' }, ago(v.lastSeen)),
-      h(
-        'td',
-        null,
-        h(
-          'button',
-          {
-            title: v.allowed
-              ? 'Let ytenrich hide this video again when it is over-exposed'
-              : 'Never hide this video',
-            onclick: () => void env.call('allow', { id: v.id, allowed: !v.allowed }).then(refresh),
-          },
-          v.allowed ? 'Undo' : 'Always show',
-        ),
-      ),
     );
   };
 
@@ -163,11 +142,12 @@ export function createVideoTable(env: ViewEnv, q: StatsQuery, refresh: () => voi
     ),
     sync,
     show(page) {
+      over = new Set(page.suppressed);
       const look = `${env.settings.get().thumbnailsEnabled}${env.settings.get().hideThreshold}`;
       keyed(
         body,
         page.rows.length
-          ? page.rows.map((v) => [look + JSON.stringify(v), () => row(v)])
+          ? page.rows.map((v) => [look + over.has(v.id) + JSON.stringify(v), () => row(v)])
           : [
               [
                 'none',

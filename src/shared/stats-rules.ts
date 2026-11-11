@@ -9,8 +9,24 @@ import {
   type VideoStat,
 } from './types.ts';
 
-export function isSuppressed(s: VideoStat, threshold: number): boolean {
-  return !s.allowed && s.opened === 0 && s.dismissedAt === 0 && s.seen >= threshold;
+const DAY_MS = 24 * 3600 * 1000;
+export const LIKED_OPENS = 3; // opens that make a channel one the user likes
+const LIKED_PATIENCE = 3; // a liked channel's video needs this many times the impressions
+const REST_MS = 30 * DAY_MS; // not offered for this long: no longer pushed, so no longer over-exposed
+
+/**
+ * Over-exposed: YouTube keeps pushing a video this person keeps passing over. It takes `threshold` impressions
+ * (three times as many for a channel they open), spread over more than a day (one long session is not
+ * insistence), with the latest one recent. Opening or dismissing it settles the matter.
+ */
+export function isSuppressed(
+  s: VideoStat,
+  threshold: number,
+  liked = false,
+  now = Date.now(),
+): boolean {
+  if (s.opened || s.dismissedAt || s.seen < threshold * (liked ? LIKED_PATIENCE : 1)) return false;
+  return s.lastSeen - s.firstSeen >= DAY_MS && now - s.lastSeen < REST_MS;
 }
 
 export function emptyStat(id: string, now: number): VideoStat {
@@ -25,7 +41,8 @@ export function emptyStat(id: string, now: number): VideoStat {
     opened: 0,
     openedAt: 0,
     dismissedAt: 0,
-    allowed: false,
+    offers: 0,
+    via: '',
     surfaces: {},
   };
 }
@@ -42,6 +59,7 @@ export function applyImpression(
     title: item.title || s.title,
     channel: item.channel || s.channel,
     lastSeen: now,
+    via: item.surface,
     seen: s.seen + 1,
     surfaces: { ...s.surfaces, [item.surface]: (s.surfaces[item.surface] ?? 0) + 1 },
   };
@@ -56,6 +74,8 @@ export function applyOffer(prev: VideoStat | undefined, item: Impression, now: n
     title: s.title || item.title, // what is known stays: a Mix tile carries the id of its first video
     channel: s.channel || item.channel,
     lastSeen: now,
+    offers: s.offers + 1,
+    via: item.surface,
   };
 }
 
@@ -125,6 +145,6 @@ export const PRUNE_AGE_MS = 90 * 24 * 3600 * 1000;
 export const MAX_VIDEOS = 100_000;
 
 export function isPrunable(s: VideoStat, now: number): boolean {
-  return s.opened === 0 && !s.allowed && s.dismissedAt === 0 && now - s.lastSeen > PRUNE_AGE_MS;
+  return s.opened === 0 && s.dismissedAt === 0 && now - s.lastSeen > PRUNE_AGE_MS;
 }
 export const MAX_CHANNELS = 20_000;

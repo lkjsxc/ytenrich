@@ -6,7 +6,6 @@ import {
   applyOffer,
   emptyStat,
   isPrunable,
-  isSuppressed,
   MAX_CHANNELS,
   MAX_VIDEOS,
   PRUNE_AGE_MS,
@@ -22,29 +21,9 @@ import type {
 } from '../shared/types.ts';
 import { dayKey } from '../shared/types.ts';
 import { CHANNELS, complete, DAYS, done, openDb, VIDEOS, walk } from './db.ts';
+import { forget, judge, track, untrack } from './suppress.ts';
 
 const ALL = [VIDEOS, DAYS, CHANNELS];
-
-/** Suppressed ids for one threshold, loaded once per worker lifetime and then kept current by `track`. */
-let cache: { threshold: number; ids: Set<string> } | undefined; // bound: ≤ MAX_VIDEOS ids
-
-export async function suppressedIds(threshold: number): Promise<ReadonlySet<string>> {
-  if (cache?.threshold === threshold) return cache.ids;
-  const ids = new Set<string>();
-  const index = (await openDb()).transaction(VIDEOS).objectStore(VIDEOS).index('seen');
-  await walk(index, IDBKeyRange.lowerBound(threshold), 'next', (c) => {
-    if (isSuppressed(c.value as VideoStat, threshold)) ids.add((c.value as VideoStat).id);
-    return true;
-  });
-  cache = { threshold, ids };
-  return ids;
-}
-
-function track(s: VideoStat): void {
-  if (!cache) return;
-  if (isSuppressed(s, cache.threshold)) cache.ids.add(s.id);
-  else cache.ids.delete(s.id);
-}
 
 async function putDay(tx: IDBTransaction, now: number, delta: DayDelta): Promise<void> {
   const days = tx.objectStore(DAYS);
@@ -68,6 +47,7 @@ export async function record(
   hidden: number,
   threshold: number,
 ): Promise<string[]> {
+  const sup = await judge(threshold);
   const tx = (await openDb()).transaction(ALL, 'readwrite');
   const videos = tx.objectStore(VIDEOS);
   const now = Date.now();
@@ -80,7 +60,7 @@ export async function record(
     const next = applyImpression(prev, item, now);
     videos.put(next);
     track(next);
-    if (isSuppressed(next, threshold)) suppressed.push(next.id);
+    if (sup(next)) suppressed.push(next.id);
     const first = !prev || prev.seen === 0;
     if (first) day.fresh++;
     if (item.kind === 'short') day.shorts++;
@@ -99,8 +79,11 @@ export async function offer(items: readonly Impression[]): Promise<void> {
   const tx = (await openDb()).transaction(VIDEOS, 'readwrite');
   const videos = tx.objectStore(VIDEOS);
   const now = Date.now();
-  for (const item of items)
-    videos.put(applyOffer(await done<VideoStat | undefined>(videos.get(item.id)), item, now));
+  for (const item of items) {
+    const next = applyOffer(await done<VideoStat | undefined>(videos.get(item.id)), item, now);
+    videos.put(next);
+    track(next);
+  }
   await complete(tx);
 }
 
@@ -136,7 +119,7 @@ export function opened(req: Pick<VideoStat, 'id' | 'kind' | 'title' | 'channel'>
       openedAt: Date.now(),
     }),
     (prev) => ({ day: { opened: 1, picked: prev?.seen ? 1 : 0 }, channel: { opened: 1 } }),
-  );
+  ).then(forget); // the channel may have become a liked one
 }
 
 export function describe(id: string, title: string): Promise<void> {
@@ -154,18 +137,14 @@ export function dismissed(id: string): Promise<void> {
   );
 }
 
-export function allow(id: string, allowed: boolean): Promise<void> {
-  return edit(id, (s) => ({ ...s, allowed }));
-}
-
 /** After rows were written behind this module's back (a restored backup). */
-export const forget = (): void => void (cache = undefined);
+export { forget };
 
 export async function clear(): Promise<void> {
   const tx = (await openDb()).transaction(ALL, 'readwrite');
   for (const name of ALL) tx.objectStore(name).clear();
   await complete(tx);
-  cache = undefined;
+  forget();
 }
 
 /** Drops stale unopened rows, then the oldest rows beyond the caps. */
@@ -179,7 +158,7 @@ export async function prune(): Promise<number> {
     const s = c.value as VideoStat;
     if (excess > 0 || isPrunable(s, now)) {
       c.delete();
-      cache?.ids.delete(s.id);
+      untrack(s.id);
       excess--;
       removed++;
       return true;

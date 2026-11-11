@@ -1,5 +1,5 @@
 // Stats reads for the Stats view. Everything is bounded: index walks stop at the page size.
-import { isSuppressed, normDay } from '../shared/stats-rules.ts';
+import { normDay } from '../shared/stats-rules.ts';
 import {
   type ChannelSort,
   type ChannelStat,
@@ -11,24 +11,24 @@ import {
   type VideoStat,
 } from '../shared/types.ts';
 import { CHANNELS, DAYS, done, openDb, VIDEOS, walk } from './db.ts';
-import { suppressedIds } from './stats-repo.ts';
+import { type Judge, judge, suppressedIds } from './suppress.ts';
 
-const FILTERS: Record<StatsQuery['filter'], (s: VideoStat, t: number) => boolean> = {
+const FILTERS: Record<StatsQuery['filter'], (s: VideoStat, sup: Judge) => boolean> = {
   all: () => true,
-  pending: (s, t) => s.opened === 0 && s.dismissedAt === 0 && !isSuppressed(s, t),
+  pending: (s, sup) => s.opened === 0 && s.dismissedAt === 0 && !sup(s),
   unopened: (s) => s.opened === 0,
   opened: (s) => s.opened > 0,
-  suppressed: (s, t) => isSuppressed(s, t),
+  suppressed: (s, sup) => sup(s),
   dismissed: (s) => s.dismissedAt > 0,
-  allowed: (s) => s.allowed,
 };
 
 export async function query(q: StatsQuery, threshold: number): Promise<StatsPage> {
+  const sup = await judge(threshold);
   const store = (await openDb()).transaction(VIDEOS).objectStore(VIDEOS);
   const needle = q.search.trim().toLowerCase();
   const match = (s: VideoStat): boolean =>
     (q.kind === 'all' || s.kind === q.kind) &&
-    FILTERS[q.filter](s, threshold) &&
+    FILTERS[q.filter](s, sup) &&
     (!needle || `${s.title} ${s.channel} ${s.id}`.toLowerCase().includes(needle));
   let rows: VideoStat[] = [];
   if (q.channel) {
@@ -49,7 +49,8 @@ export async function query(q: StatsQuery, threshold: number): Promise<StatsPage
       return rows.length <= q.limit;
     });
   }
-  return { rows: rows.slice(0, q.limit), more: rows.length > q.limit };
+  const page = rows.slice(0, q.limit);
+  return { rows: page, more: rows.length > q.limit, suppressed: page.filter(sup).map((s) => s.id) };
 }
 
 export async function overview(threshold: number): Promise<Overview> {

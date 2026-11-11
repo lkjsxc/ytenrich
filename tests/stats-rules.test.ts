@@ -22,7 +22,7 @@ describe('stats rules', () => {
     expect([o.seen, o.title, o.lastSeen, o.surfaces]).toEqual([0, 'T', 1, {}]);
     const again = applyOffer(applyImpression(o, imp, 2), { ...imp, title: 'Mix' }, 3);
     expect([again.seen, again.title, again.lastSeen, again.firstSeen]).toEqual([1, 'T', 3, 1]);
-    expect(isSuppressed(applyOffer(again, imp, 4), 1)).toBe(true);
+    expect([again.offers, again.via]).toEqual([2, 'home']);
   });
 
   it('counts impressions per surface and suppresses at threshold', () => {
@@ -31,10 +31,15 @@ describe('stats rules', () => {
     expect(s.seen).toBe(5);
     expect(s.surfaces).toEqual({ home: 1, watch: 4 });
     expect(s.firstSeen).toBe(1);
-    expect(isSuppressed(s, 5)).toBe(true);
-    expect(isSuppressed(s, 6)).toBe(false);
-    expect(isSuppressed({ ...s, opened: 1 }, 5)).toBe(false);
-    expect(isSuppressed({ ...s, allowed: true }, 5)).toBe(false);
+    const DAY = 86_400_000;
+    expect(isSuppressed(s, 5, false, 10)).toBe(false); // all within one session
+    const pushed = applyImpression({ ...s, seen: 4 }, imp, 2 * DAY);
+    expect(isSuppressed(pushed, 5, false, 2 * DAY)).toBe(true);
+    expect(isSuppressed(pushed, 6, false, 2 * DAY)).toBe(false);
+    expect(isSuppressed(pushed, 5, true, 2 * DAY)).toBe(false); // a liked channel gets 3× the patience
+    expect(isSuppressed({ ...pushed, seen: 15 }, 5, true, 2 * DAY)).toBe(true);
+    expect(isSuppressed(pushed, 5, false, 40 * DAY)).toBe(false); // no longer pushed
+    expect(isSuppressed({ ...pushed, opened: 1 }, 5, false, 2 * DAY)).toBe(false);
   });
   it('keeps known title when a later impression has none', () => {
     const s = applyImpression(applyImpression(undefined, imp, 1), { ...imp, title: '' }, 2);

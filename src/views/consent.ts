@@ -16,7 +16,7 @@ export function consentCard(onNo: () => void): HTMLElement {
       null,
       'ytenrich can record the recommendations YouTube puts on your pages and the videos you open ' +
         '(video ID, title, channel, counts and times). The record powers your Stats, the Recommended ' +
-        'list and the hiding of recommendations that keep reappearing without being opened. To fill ' +
+        'list and the optional hiding of recommendations that keep reappearing unopened. To fill ' +
         'Recommended, ytenrich also lets YouTube load more of its own list on a page.',
     ),
     h(
