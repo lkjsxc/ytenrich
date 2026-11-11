@@ -15,6 +15,8 @@ import type {
 export type Api = {
   /** `hidden`: over-exposed recommendations hidden since the last call. */
   record: { req: { items: readonly Impression[]; hidden: number }; res: { suppressed: string[] } };
+  /** Recommendations found on the page but not on screen. `want`: the stock is low, collect more. */
+  offer: { req: { items: readonly Impression[] }; res: { want: boolean } };
   opened: { req: { id: string; kind: Kind; title: string; channel: string }; res: null };
   /** Fills a missing title (a video opened without ever being recommended). */
   describe: { req: { id: string; title: string }; res: null };

@@ -64,3 +64,6 @@ All names live in `src/youtube/selectors.ts` and `src/youtube/youtube.css`. Fixt
 - The drawer's own close/open toggles the transform and `visibility`. Our slot forces `visibility: visible`, so it survives the closed state.
 - Body scroll lock (`body.lock-scrollbar`, position fixed) happens on drawer open, including our wake.
 
+## Collector (hidden lists keep loading)
+- YouTube loads the next page of a list when its `ytd-continuation-item-renderer` intersects the viewport (IntersectionObserver; `visibility: hidden` does not matter). `html[ytenrich-harvest]` pins that loader at the viewport's top-left corner for a list the WM is not drawing (`#related`, or `ytd-browse[page-subtype="home"]`, without `[ytenrich-slot]` or with `[ytenrich-slot-inactive]`). Each loaded page brings a new loader, so loading continues until the attribute goes.
+- Verified 2026-11-11 signed out on a watch page: about 150 related videos within 6 s, titles and channels complete. The home feed rule is unverified (no feed signed out); check it signed in.

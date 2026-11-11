@@ -3,6 +3,7 @@ import {
   addChannel,
   addDay,
   applyImpression,
+  applyOffer,
   emptyStat,
   isPrunable,
   isSuppressed,
@@ -91,6 +92,16 @@ export async function record(
   for (const [name, delta] of channels) await putChannel(tx, name, now, delta);
   await complete(tx);
   return suppressed;
+}
+
+/** Keeps recommendations that were on a page without being on screen (video rows only, no counters). */
+export async function offer(items: readonly Impression[]): Promise<void> {
+  const tx = (await openDb()).transaction(VIDEOS, 'readwrite');
+  const videos = tx.objectStore(VIDEOS);
+  const now = Date.now();
+  for (const item of items)
+    videos.put(applyOffer(await done<VideoStat | undefined>(videos.get(item.id)), item, now));
+  await complete(tx);
 }
 
 async function edit(

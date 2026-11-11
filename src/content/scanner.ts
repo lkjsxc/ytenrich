@@ -15,6 +15,8 @@ export type RecoItem = {
 };
 type Listener = (item: RecoItem) => void;
 
+/** The WM draws or hides native lists by these attributes, which changes what the user can see. */
+const SLOT_ATTRS = ['ytenrich-slot', 'ytenrich-slot-inactive'];
 const MAX_PAGE_ITEMS = 3000; // per-navigation item index bound (cleared on navigation)
 
 export type Scanner = {
@@ -47,15 +49,28 @@ export function createScanner(page: Signal<Page>): Scanner {
     for (const fn of seenListeners) fn(item);
   };
 
+  // In view but not drawn (its tile is closed or behind another tab): seen once it shows. Bound: page items.
+  let latent = new Set<Element>();
+  const shown = (el: Element): boolean => el.checkVisibility({ visibilityProperty: true });
   const io = new IntersectionObserver(
     (entries) => {
       for (const e of entries) {
-        const item = e.isIntersecting ? byEl.get(e.target) : undefined;
-        if (item) markSeen(item);
+        const item = byEl.get(e.target);
+        if (!item || !e.isIntersecting) latent.delete(e.target);
+        else if (shown(e.target)) markSeen(item);
+        else latent.add(e.target);
       }
     },
     { threshold: 0.5 },
   );
+  const recheck = (): void => {
+    for (const el of latent) {
+      const item = shown(el) ? byEl.get(el) : undefined;
+      if (!item) continue;
+      latent.delete(el);
+      markSeen(item);
+    }
+  };
 
   const visit = (anchor: Element): void => {
     const root = itemRootOf(anchor);
@@ -76,11 +91,14 @@ export function createScanner(page: Signal<Page>): Scanner {
     for (const a of anchorsIn(node)) visit(a);
   };
   const scanAll = (records: readonly MutationRecord[]): void => {
+    let slots = false;
     for (const r of records) {
-      if (r.type === 'attributes') visit(r.target as Element);
+      if (r.type === 'attributes' && r.attributeName !== 'href') slots = true;
+      else if (r.type === 'attributes') visit(r.target as Element);
       else for (const n of r.addedNodes) if (n.nodeType === 1) scan(n as Element);
     }
     batch.clear();
+    if (slots && latent.size) recheck();
   };
 
   const mo = new MutationObserver((records) => {
@@ -91,12 +109,13 @@ export function createScanner(page: Signal<Page>): Scanner {
     childList: true,
     subtree: true,
     attributes: true,
-    attributeFilter: ['href'],
+    attributeFilter: ['href', ...SLOT_ATTRS],
   });
 
   const unsubPage = page.subscribe(() => {
     items = new Map();
     seen = new Set();
+    latent = new Set();
   });
   if (document.body) scan(document.body), batch.clear();
 

@@ -114,6 +114,7 @@ API references: [Chrome Web Store v2](https://developer.chrome.com/docs/webstore
 - `data_collection_permissions: { required: ['none'] }`. Mozilla's data collection means data transmitted outside the add-on or the local browser:
   - stats stay local;
   - "Not interested" only clicks YouTube's own menu, on the user's click;
+  - the collector only keeps the page's own list loading (a CSS position on YouTube's loader element), so those requests are YouTube's, made by its page in the user's session;
   - remote thumbnails, the only request carrying user-derived data, are compiled out of the Firefox build (`__FIREFOX__`).
 - Private browsing: `incognito: 'not_allowed'`. Mozilla forbids storing data from private sessions.
 - **Reviewer notes** (paste into the submission):

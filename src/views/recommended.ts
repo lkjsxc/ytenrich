@@ -8,7 +8,7 @@ import { loadViewState, saveViewState } from '../shared/view-state.ts';
 import { autoMore, grow, type Keyed, keyed } from './more.ts';
 import { openVideo, videoUrl } from './open.ts';
 import type { ViewEnv } from './registry.ts';
-import { ago } from './stats/format.ts';
+import { shownLine } from './stats/format.ts';
 import { choice } from './stats/parts.ts';
 
 const STEP = 40;
@@ -68,7 +68,7 @@ export function mountRecommended(el: HTMLElement, env: ViewEnv): () => void {
           { class: 'rtext' },
           h('b', null, v.title || v.id),
           mode === 'channel' ? null : h('span', { class: 'muted' }, v.channel),
-          h('span', { class: 'muted' }, `shown ${v.seen}× · ${ago(v.lastSeen)} ago`),
+          h('span', { class: 'muted' }, shownLine(v)),
         ),
         h('button', { class: 'rno', title: NO_HINT, onclick: dismiss }, dismissIcon()),
       ),

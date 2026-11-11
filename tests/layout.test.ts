@@ -46,7 +46,7 @@ describe('layout', () => {
     }
     expect(viewsOf('browse').some((v) => v.id === 'player')).toBe(false);
     expect(shape(homePreset(1600))).toEqual({
-      row: ['guide', 'home-videos|home-shorts|stats|history|settings|log'],
+      row: ['guide', 'recommended|home-shorts|stats|history|settings|log'],
     });
   });
   it('page kinds map to layout families (Shorts tiles as a page)', () => {

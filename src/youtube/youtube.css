@@ -66,3 +66,6 @@ html[ytenrich-wm] [ytenrich-slot="page"] :is(ytd-feed-filter-chip-bar-renderer, 
 html[dark][ytenrich-wm] [ytenrich-slot="page"] ytd-rich-grid-renderer > #header:has(ytd-feed-filter-chip-bar-renderer, chip-bar-view-model), html[dark][ytenrich-wm] [ytenrich-slot="page"] :is(ytd-feed-filter-chip-bar-renderer, #chips-wrapper) { background: #0f0f0f !important; }
 /* Home's frosted-glass band (ytd-app #frosted-glass: fixed, top 0, 112px, z 2018, blur) would cover the tab strips. */
 html[ytenrich-wm] ytd-app #frosted-glass { display: none !important; }
+/* Collector (content/features/collect.ts): a list the WM is not drawing keeps its loader inside the viewport, so
+   YouTube loads the next page of it; each new page brings a new loader until the attribute is removed. */
+html[ytenrich-wm][ytenrich-harvest] :is(ytd-watch-flexy #related, ytd-browse[page-subtype="home"]):is(:not([ytenrich-slot]), [ytenrich-slot-inactive]) ytd-continuation-item-renderer { position: fixed !important; top: 0 !important; left: 0 !important; width: 10px !important; height: 10px !important; overflow: hidden !important; visibility: hidden !important; pointer-events: none !important; }

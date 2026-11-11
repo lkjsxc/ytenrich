@@ -1,6 +1,6 @@
 # ytenrich privacy policy
 
-Last updated: November 10, 2026
+Last updated: November 11, 2026
 
 ytenrich is a browser extension for `www.youtube.com`. It runs entirely in your browser. It has no developer-operated server, account, analytics, telemetry or advertising, and it never sends data to the developer.
 
@@ -8,13 +8,14 @@ ytenrich is a browser extension for `www.youtube.com`. It runs entirely in your 
 
 **Stats** are off until you agree to them ("Enable stats"). After installation, ytenrich opens a welcome page that explains the record and asks whether to enable it. You can also turn it on later from the Stats view or **Settings**, and turn it off again in **Settings**. While it is on, ytenrich keeps a local record of:
 - each video or Short that YouTube shows you as a recommendation and that is at least half visible: its video ID, type (video or Short), title, channel name, the kind of page it appeared on (home, watch, search, channel, subscriptions, Shorts or other), how many times it was shown, and when it was first and last shown;
+- each video or Short that YouTube places on a page as a recommendation without it reaching your screen (further down a list, or in a list that your layout hides): the same details, with a shown count of zero. These fill the Recommended view. **Settings → Collect for Recommended** limits the record to what was on screen (`shown`);
 - how many times you opened each video and when you last opened it, which amounts to a list of the videos you watched (shown in the History view);
 - when you used ytenrich's **Not interested** button on a video;
 - videos you exempted from hiding;
 - daily totals: recommendations shown (also by page kind, by hour of day, and how many were new, repeats or Shorts), videos opened, videos dismissed, and recommendations hidden by ytenrich;
 - per-channel totals, keyed by channel name: recommendations shown, distinct videos, opens and dismissals.
 
-ytenrich uses this record only to show your statistics and to hide or dim recommendations that keep reappearing without being opened. It does not record search queries, comments, or your YouTube account details.
+ytenrich uses this record only to show your statistics, to build the Recommended view, and to hide or dim recommendations that keep reappearing without being opened. It does not record search queries, comments, or your YouTube account details.
 
 ytenrich also stores your **settings**, **pane layouts** and each tab's small display choices (for example, whether a Recommended tab lists videos or Shorts).
 
@@ -38,6 +39,7 @@ ytenrich makes no network requests of its own except optional images:
 ## Actions on YouTube
 
 - **Not interested.** When you click ytenrich's **Not interested** button on a video, ytenrich selects that same option in YouTube's own menu for that video. YouTube receives this feedback as part of your YouTube session, exactly as if you had chosen it yourself. ytenrich never does this without your click.
+- **Loading more recommendations (on by default with stats; `more` in Settings → Collect for Recommended).** On a watch page or the home page whose YouTube list your layout does not show, ytenrich lets YouTube load further pages of that list, as scrolling it would, until about 150 recommendations are on the page. It stops while ytenrich already holds 400 recent unopened recommendations. These are YouTube's own requests in your YouTube session; ytenrich sends nothing itself. Choose `page` or `shown` to turn this off.
 - **Opening videos.** Opening a video from the Stats, History or Recommended view uses YouTube's normal navigation.
 
 Your use of YouTube is subject to [Google's privacy policy](https://policies.google.com/privacy).

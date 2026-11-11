@@ -16,6 +16,7 @@ A browser extension that makes YouTube more personal and more comfortable to use
   - Stats, History, Recommended, Settings and Log open as tabs inside the panes. Settings can reset the layout.
   - `Alt+W` turns tiling off and on.
 - **Recommendation stats**: each recommendation counts as seen once it is at least half visible, at most once per page view. The Stats view updates live; clicking a video opens it in the same tab.
+- **Recommended**: ytenrich's own list of what YouTube recommended and you have not opened, ranked by what you actually open. It collects every recommendation YouTube puts on a page, including lists your layout hides, and lets those hidden lists load more until it holds enough (Settings → Collect for Recommended).
 - **Hide over-exposed videos**: videos recommended N times that you never opened are hidden or dimmed. You choose N.
 - **One-click "Not interested"**: an always-visible ⊘ button right next to every recommendation's ⋮ menu. On success the item collapses at once; on failure ⊘ turns red and its tooltip (and the Log) lists the menu entries YouTube offered.
 

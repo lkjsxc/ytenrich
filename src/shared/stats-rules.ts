@@ -47,6 +47,18 @@ export function applyImpression(
   };
 }
 
+/** A recommendation YouTube put on a page that was not (yet) on screen: kept as a candidate, `seen` untouched. */
+export function applyOffer(prev: VideoStat | undefined, item: Impression, now: number): VideoStat {
+  const s = prev ?? emptyStat(item.id, now);
+  return {
+    ...s,
+    kind: s.opened ? s.kind : item.kind,
+    title: item.title || s.title,
+    channel: item.channel || s.channel,
+    lastSeen: now,
+  };
+}
+
 export function emptyDay(day: string): DayStat {
   return {
     day,

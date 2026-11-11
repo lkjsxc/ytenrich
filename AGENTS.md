@@ -4,7 +4,7 @@ MV3 browser extension (Chromium + Firefox ≥140) that enriches youtube.com:
 - recommendation impression stats
 - hiding over-exposed unopened videos
 - a one-click "Not interested" button
-- a tiling window manager (WM) on every page (layout families `watch`, `home`, `shorts` and `browse`; home shows the feed's videos and Shorts shelves as separate tabs; the Shorts player and unknown page types tile as `page`), with ytenrich's own views (Recommended/Stats/History/Settings/Log) as WM tabs
+- a tiling window manager (WM) on every page (layout families `watch`, `home`, `shorts` and `browse`; home defaults to ytenrich's Recommended with the feed's Shorts shelves as a tab; the Shorts player and unknown page types tile as `page`), with ytenrich's own views (Recommended/Stats/History/Settings/Log) as WM tabs
 
 AI-first repo: no human ergonomics, no backward compatibility, no migrations. Move fast.
 
@@ -30,7 +30,7 @@ AI-first repo: no human ergonomics, no backward compatibility, no migrations. Mo
   - `runtime.ts`: shared context.
   - `scanner.ts`: one MO + IO, giving `RecoItem` and `seen` events.
   - `features.ts`: registry.
-  - `features/*.ts`: one feature each.
+  - `features/*.ts`: one feature each (`stats` counts what was on screen; `collect` gathers every recommendation on the page for Recommended and lets hidden lists load more).
 - `src/wm/`:
   - `layout.ts`: the pure tree. `layout-parse.ts`: validation of stored JSON.
   - `controller.ts`: state, render, persistence.

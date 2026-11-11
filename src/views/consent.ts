@@ -14,9 +14,10 @@ export function consentCard(onNo: () => void): HTMLElement {
     h(
       'p',
       null,
-      'ytenrich can count the YouTube recommendations you are shown and the videos you open ' +
-        '(video ID, title, channel, counts and times). The counts power your Stats and the hiding of ' +
-        'recommendations that keep reappearing without being opened.',
+      'ytenrich can record the recommendations YouTube puts on your pages and the videos you open ' +
+        '(video ID, title, channel, counts and times). The record powers your Stats, the Recommended ' +
+        'list and the hiding of recommendations that keep reappearing without being opened. To fill ' +
+        'Recommended, ytenrich also lets YouTube load more of its own list on a page.',
     ),
     h(
       'p',

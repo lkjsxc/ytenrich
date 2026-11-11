@@ -1,5 +1,7 @@
 // Settings: flat, typed, schema-described so the Settings view renders itself.
 export type HideMode = 'hide' | 'dim' | 'off';
+/** What feeds the Recommended list: only what was on screen, everything on the page, or more loaded for it. */
+export type Collect = 'more' | 'page' | 'shown';
 
 export const DEFAULT_SETTINGS = {
   wmEnabled: true,
@@ -9,6 +11,7 @@ export const DEFAULT_SETTINGS = {
   dismissLabel: '',
   statsEnabled: false, // on only after consent (views/consent.ts)
   thumbnailsEnabled: false,
+  collect: 'more' as Collect,
   tabWidth: 0, // px; 0 fits each tab to its title
   uiScale: 100, // percent, ytenrich's own UI only
 };
@@ -33,6 +36,13 @@ const SCHEMA: readonly SettingField[] = [
     label:
       'Show images in Stats, History and Recommended by requesting video IDs from YouTube’s image server',
     type: 'bool',
+  },
+  {
+    key: 'collect',
+    label:
+      'Collect for Recommended: more = also load more of YouTube’s list on watch pages, page = everything on the page, shown = only what was on screen',
+    type: 'enum',
+    options: ['more', 'page', 'shown'],
   },
   {
     key: 'hideMode',

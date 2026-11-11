@@ -15,7 +15,7 @@ import { suppressedIds } from './stats-repo.ts';
 
 const FILTERS: Record<StatsQuery['filter'], (s: VideoStat, t: number) => boolean> = {
   all: () => true,
-  pending: (s, t) => s.seen > 0 && s.opened === 0 && s.dismissedAt === 0 && !isSuppressed(s, t),
+  pending: (s, t) => s.opened === 0 && s.dismissedAt === 0 && !isSuppressed(s, t),
   unopened: (s) => s.opened === 0,
   opened: (s) => s.opened > 0,
   suppressed: (s, t) => isSuppressed(s, t),

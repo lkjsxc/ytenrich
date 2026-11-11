@@ -8,7 +8,7 @@ import {
 } from '../shared/protocol.ts';
 import { DEFAULT_SETTINGS, loadSettings, onSettings } from '../shared/settings.ts';
 import * as backup from './backup.ts';
-import { recommend } from './recommend.ts';
+import { recommend, wanted } from './recommend.ts';
 import * as read from './stats-read.ts';
 import * as repo from './stats-repo.ts';
 
@@ -22,8 +22,14 @@ let threshold = DEFAULT_SETTINGS.hideThreshold;
 void loadSettings().then((s) => (threshold = s.hideThreshold));
 onSettings((s) => (threshold = s.hideThreshold));
 
-const PRUNE_EVERY = 2000; // impressions between prune passes
+const PRUNE_EVERY = 2000; // recorded items between prune passes
 let sincePrune = 0;
+const countForPrune = (n: number): void => {
+  sincePrune += n;
+  if (sincePrune <= PRUNE_EVERY) return;
+  sincePrune = 0;
+  void repo.prune();
+};
 
 const REV_MS = 1500; // at most one stats-changed broadcast per window (trailing)
 let revTimer: ReturnType<typeof setTimeout> | undefined;
@@ -36,6 +42,7 @@ const bumpRev = (): void => {
 };
 const MUTATING: ReadonlySet<Method> = new Set([
   'record',
+  'offer',
   'opened',
   'describe',
   'dismissed',
@@ -47,12 +54,13 @@ const MUTATING: ReadonlySet<Method> = new Set([
 type Handlers = { [K in Method]: (req: Api[K]['req']) => Promise<Api[K]['res']> };
 const handlers: Handlers = {
   async record({ items, hidden }) {
-    sincePrune += items.length;
-    if (sincePrune > PRUNE_EVERY) {
-      sincePrune = 0;
-      void repo.prune();
-    }
+    countForPrune(items.length);
     return { suppressed: await repo.record(items, hidden, threshold) };
+  },
+  async offer({ items }) {
+    countForPrune(items.length);
+    await repo.offer(items);
+    return { want: await wanted(threshold) };
   },
   opened: (req) => repo.opened(req).then(() => null),
   describe: ({ id, title }) => repo.describe(id, title).then(() => null),
