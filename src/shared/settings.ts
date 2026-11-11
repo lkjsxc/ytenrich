@@ -1,7 +1,8 @@
 // Settings: flat, typed, schema-described so the Settings view renders itself.
 export type HideMode = 'hide' | 'dim' | 'off';
-/** What feeds the Recommended list: only what was on screen, everything on the page, or more loaded for it. */
-export type Collect = 'more' | 'page' | 'shown';
+/** What feeds the Recommended list: only what was on screen, everything on the page, or more loaded for it.
+ * `ask`: not chosen yet (acts as `shown`); enabling stats chooses `more`, older installs are asked in Recommended. */
+export type Collect = 'ask' | 'more' | 'page' | 'shown';
 
 export const DEFAULT_SETTINGS = {
   wmEnabled: true,
@@ -11,7 +12,7 @@ export const DEFAULT_SETTINGS = {
   dismissLabel: '',
   statsEnabled: false, // on only after consent (views/consent.ts)
   thumbnailsEnabled: false,
-  collect: 'more' as Collect,
+  collect: 'ask' as Collect,
   tabWidth: 0, // px; 0 fits each tab to its title
   uiScale: 100, // percent, ytenrich's own UI only
 };
@@ -40,9 +41,9 @@ const SCHEMA: readonly SettingField[] = [
   {
     key: 'collect',
     label:
-      'Collect for Recommended: more = also load more of YouTube’s list on watch pages, page = everything on the page, shown = only what was on screen',
+      'Collect for Recommended: more = also load more of YouTube’s hidden lists, page = everything on the page, shown = only what was on screen, ask = not chosen yet',
     type: 'enum',
-    options: ['more', 'page', 'shown'],
+    options: ['ask', 'more', 'page', 'shown'],
   },
   {
     key: 'hideMode',

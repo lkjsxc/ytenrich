@@ -53,8 +53,8 @@ export function applyOffer(prev: VideoStat | undefined, item: Impression, now: n
   return {
     ...s,
     kind: s.opened ? s.kind : item.kind,
-    title: item.title || s.title,
-    channel: item.channel || s.channel,
+    title: s.title || item.title, // what is known stays: a Mix tile carries the id of its first video
+    channel: s.channel || item.channel,
     lastSeen: now,
   };
 }

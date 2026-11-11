@@ -19,4 +19,3 @@ awkward natively are rebuilt as own views. Steps, in order:
 - Option to auto-send "Not interested" for over-exposed videos.
 - Compact related-list density options (thumbnail size) in the Videos pane.
 - MAIN-world bridge (manifest `world: "MAIN"`) for data-level access (SPA navigation to arbitrary URLs, guide data), only when DOM automation proves fragile.
-- Export/import of stats, settings and layouts.

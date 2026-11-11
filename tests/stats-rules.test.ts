@@ -20,7 +20,7 @@ describe('stats rules', () => {
   it('keeps an offered recommendation without counting it as shown', () => {
     const o = applyOffer(undefined, imp, 1);
     expect([o.seen, o.title, o.lastSeen, o.surfaces]).toEqual([0, 'T', 1, {}]);
-    const again = applyOffer(applyImpression(o, imp, 2), { ...imp, title: '' }, 3);
+    const again = applyOffer(applyImpression(o, imp, 2), { ...imp, title: 'Mix' }, 3);
     expect([again.seen, again.title, again.lastSeen, again.firstSeen]).toEqual([1, 'T', 3, 1]);
     expect(isSuppressed(applyOffer(again, imp, 4), 1)).toBe(true);
   });

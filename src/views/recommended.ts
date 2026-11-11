@@ -2,11 +2,11 @@
 import { h, replaceChildren } from '../shared/h.ts';
 import { dismissIcon } from '../shared/icons.ts';
 import { onStatsChanged } from '../shared/protocol.ts';
-import { patchSettings } from '../shared/settings.ts';
 import type { ChannelStat, RecoMode, RecoPage, VideoStat } from '../shared/types.ts';
 import { loadViewState, saveViewState } from '../shared/view-state.ts';
 import { autoMore, grow, type Keyed, keyed } from './more.ts';
 import { openVideo, videoUrl } from './open.ts';
+import { recoNotes } from './reco-notes.ts';
 import type { ViewEnv } from './registry.ts';
 import { shownLine } from './stats/format.ts';
 import { choice } from './stats/parts.ts';
@@ -94,21 +94,7 @@ export function mountRecommended(el: HTMLElement, env: ViewEnv): () => void {
           setMode(next);
         }),
       ),
-      !__FIREFOX__ && !env.settings.get().thumbnailsEnabled
-        ? h(
-            'p',
-            { class: 'muted actions' },
-            'Images are off. ',
-            h(
-              'button',
-              {
-                title: 'Loads thumbnails by requesting video IDs from YouTube’s image server',
-                onclick: () => void patchSettings({ thumbnailsEnabled: true }),
-              },
-              'Show images',
-            ),
-          )
-        : null,
+      recoNotes(env.settings.get()),
     );
   const setMode = (next: RecoMode): void => {
     mode = next;
@@ -142,7 +128,7 @@ export function mountRecommended(el: HTMLElement, env: ViewEnv): () => void {
             'p',
             { class: 'muted' },
             env.settings.get().statsEnabled
-              ? 'Nothing yet. Recommendations you are shown on YouTube collect here until you open them.'
+              ? 'Nothing yet. Recommendations YouTube puts on your pages collect here until you open them.'
               : 'This list is built from stats, which are off (see the Stats tab).',
           ),
       autoMore(page.more, limit, () => {

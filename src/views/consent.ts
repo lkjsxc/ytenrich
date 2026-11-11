@@ -31,7 +31,10 @@ export function consentCard(onNo: () => void): HTMLElement {
       { class: 'actions' },
       h(
         'button',
-        { class: 'primary', onclick: () => void patchSettings({ statsEnabled: true }) },
+        {
+          class: 'primary',
+          onclick: () => void patchSettings({ statsEnabled: true, collect: 'more' }),
+        },
         'Enable stats',
       ),
       h('button', { onclick: onNo }, 'Not now'),

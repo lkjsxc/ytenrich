@@ -21,7 +21,7 @@ export const collect: Feature = {
 
     const mode = (): string => {
       const s = rt.settings.get();
-      return s.statsEnabled ? s.collect : 'shown';
+      return s.statsEnabled && s.collect !== 'ask' ? s.collect : 'shown';
     };
     const steer = (): void =>
       toggleAttr(
