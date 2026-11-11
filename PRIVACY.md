@@ -12,7 +12,7 @@ ytenrich is a browser extension for `www.youtube.com`. It runs entirely in your 
 - how many times you opened each video and when you last opened it, which amounts to a list of the videos you watched (shown in the History view);
 - when you used ytenrich's **Not interested** button on a video;
 - daily totals: recommendations shown (also by page kind, by hour of day, and how many were new, repeats or Shorts), videos opened, videos dismissed, and recommendations hidden by ytenrich;
-- per-channel totals, keyed by channel name: recommendations shown, distinct videos, opens and dismissals.
+- per-channel totals, keyed by channel name: recommendations shown, distinct videos, opens and dismissals, and the address of the channel's avatar image when a recommendation showed one.
 
 ytenrich uses this record only to show your statistics, to build and order the Recommended view (from the channels and title words of what you open, pass over or dismiss), and, if you turn that on, to hide or dim recommendations that keep reappearing without being opened. It does not record search queries, comments, or your YouTube account details.
 
@@ -33,7 +33,7 @@ Everything is stored in your browser profile, in the extension's local storage a
 ## Network requests
 
 ytenrich makes no network requests of its own except optional images:
-- **Images (Chrome and other Chromium browsers only; off by default).** If you turn on images in **Settings**, the Stats, History and Recommended views load thumbnails from YouTube's image server (`i.ytimg.com`) over HTTPS. Each request contains a video ID. Requests are sent without cookies and without a referrer. The image server receives ordinary connection information, such as your IP address. The Firefox version does not include this option.
+- **Images (Chrome and other Chromium browsers only; off by default).** If you turn on images in **Settings**, the Stats, History and Recommended views load thumbnails from YouTube's image server (`i.ytimg.com`) and channel avatars from its avatar server (`yt3.ggpht.com` or `yt3.googleusercontent.com`) over HTTPS. A thumbnail request contains a video ID; an avatar request contains the avatar's address. Requests are sent without cookies and without a referrer. The image server receives ordinary connection information, such as your IP address. The Firefox version does not include this option.
 
 ## Actions on YouTube
 

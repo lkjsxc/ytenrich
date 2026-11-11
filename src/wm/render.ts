@@ -7,6 +7,8 @@ export type RenderCtx = {
   isNative(view: ViewId): boolean;
   onTabDown(view: ViewId, e: PointerEvent, tab: HTMLElement): void;
   onClose(view: ViewId): void;
+  /** Clicks on × that close a tab (a guard against closing by accident). */
+  closeClicks(): number;
   onPaneMenu(pane: PaneNode, button: HTMLElement): void;
   onAdd(pane: PaneNode): void;
   onHandleDown(split: SplitNode, index: number, e: PointerEvent, cells: HTMLElement[]): void;
@@ -27,18 +29,48 @@ function renderNode(node: LayoutNode, ctx: RenderCtx, out: Rendered): HTMLElemen
   return node.type === 'pane' ? renderPane(node, ctx, out) : renderSplit(node, ctx, out);
 }
 
+const ARM_MS = 2500; // a started close is forgotten after this long without another click
+
+/** × that closes on the n-th click; until then a ring fills around it (`--p` is the filled fraction). */
+function closeButton(need: () => number, run: () => void): HTMLElement {
+  let count = 0;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const show = (): void => {
+    const left = need() - count;
+    el.classList.toggle('arming', count > 0);
+    el.style.setProperty('--p', String(count / need()));
+    el.title = count ? `Click ${left} more time${left > 1 ? 's' : ''} to close` : 'Close tab';
+  };
+  const el: HTMLElement = h(
+    'button',
+    {
+      class: 'x',
+      title: 'Close tab',
+      onpointerdown: (e) => e.stopPropagation(),
+      onclick: () => {
+        clearTimeout(timer);
+        if (++count >= need()) return run();
+        timer = setTimeout(() => ((count = 0), show()), ARM_MS);
+        show();
+      },
+    },
+    '×',
+  );
+  return el;
+}
+
+/** A vertical wheel scrolls a tab bar sideways when it holds more tabs than fit. */
+function sideways(e: Event): void {
+  const strip = e.currentTarget as HTMLElement;
+  const dy = (e as WheelEvent).deltaY;
+  if (!dy || strip.scrollWidth <= strip.clientWidth) return;
+  e.preventDefault();
+  strip.scrollLeft += dy;
+}
+
 function renderPane(p: PaneNode, ctx: RenderCtx, out: Rendered): HTMLElement {
   const tab = (view: ViewId): HTMLElement => {
-    const close = h(
-      'button',
-      {
-        class: 'x',
-        title: 'Close tab',
-        onpointerdown: (e) => e.stopPropagation(),
-        onclick: () => ctx.onClose(view),
-      },
-      '×',
-    );
+    const close = closeButton(ctx.closeClicks, () => ctx.onClose(view));
     const el: HTMLElement = h(
       'div',
       {
@@ -70,7 +102,7 @@ function renderPane(p: PaneNode, ctx: RenderCtx, out: Rendered): HTMLElement {
   const el = h(
     'div',
     { class: 'pane', 'data-pane': p.id },
-    h('div', { class: 'strip' }, menu, add, p.tabs.map(tab)),
+    h('div', { class: 'strip', onwheel: sideways }, menu, add, p.tabs.map(tab)),
     body,
   );
   out.panes.set(p.id, el);

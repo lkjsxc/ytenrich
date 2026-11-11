@@ -14,14 +14,17 @@ export const DEFAULT_SETTINGS = {
   thumbnailsEnabled: false,
   collect: 'ask' as Collect,
   tabWidth: 0, // px; 0 fits each tab to its title
-  uiScale: 100, // percent, ytenrich's own UI only
+  uiScale: 1, // 1.00 = normal size; ytenrich's own UI only
+  tabScale: 1.2, // tab bars, on top of uiScale
+  closeClicks: 3, // clicks on × that close a tab (1 = at once)
+  recoMeta: false, // Recommended: how often and where each video appeared
 };
 export type Settings = typeof DEFAULT_SETTINGS;
 export type SettingKey = keyof Settings;
 
 export type SettingField =
   | { key: SettingKey; label: string; type: 'bool' }
-  | { key: SettingKey; label: string; type: 'number'; min: number; max: number }
+  | { key: SettingKey; label: string; type: 'number'; min: number; max: number; step?: number }
   | { key: SettingKey; label: string; type: 'enum'; options: readonly string[] }
   | { key: SettingKey; label: string; type: 'text'; placeholder: string };
 
@@ -66,7 +69,34 @@ const SCHEMA: readonly SettingField[] = [
     min: 0,
     max: 400,
   },
-  { key: 'uiScale', label: 'Scale of ytenrich’s own UI, in %', type: 'number', min: 50, max: 200 },
+  {
+    key: 'uiScale',
+    label: 'Scale of ytenrich’s own UI (1.00 = normal)',
+    type: 'number',
+    min: 0.5,
+    max: 2,
+    step: 0.05,
+  },
+  {
+    key: 'tabScale',
+    label: 'Scale of the tab bars (1.00 = same as the rest)',
+    type: 'number',
+    min: 0.8,
+    max: 2,
+    step: 0.05,
+  },
+  {
+    key: 'closeClicks',
+    label: 'Clicks on × needed to close a tab (1 = close at once)',
+    type: 'number',
+    min: 1,
+    max: 5,
+  },
+  {
+    key: 'recoMeta',
+    label: 'Recommended: show how often and where each video appeared',
+    type: 'bool',
+  },
   { key: 'dismissEnabled', label: 'One-click "Not interested" button', type: 'bool' },
   {
     key: 'dismissLabel',

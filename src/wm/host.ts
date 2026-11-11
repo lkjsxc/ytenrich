@@ -10,8 +10,8 @@ export type Host = {
   readonly root: HTMLElement;
   readonly layer: HTMLElement;
   setTop(px: number): void;
-  /** Applies the UI scale and the fixed tab width. */
-  look(s: Pick<Settings, 'uiScale' | 'tabWidth'>): void;
+  /** Applies the UI scale, the tab bar scale and the fixed tab width. */
+  look(s: Pick<Settings, 'uiScale' | 'tabScale' | 'tabWidth'>): void;
   dispose(): void;
 };
 
@@ -42,7 +42,8 @@ export function createHost(): Host {
     layer,
     setTop: (px) => void (host.style.top = `${px}px`),
     look(s) {
-      host.style.setProperty('--scale', String(s.uiScale / 100));
+      host.style.setProperty('--scale', String(s.uiScale));
+      host.style.setProperty('--tab-scale', String(s.tabScale));
       host.style.setProperty('--tab-w', s.tabWidth ? `${s.tabWidth}px` : 'auto');
     },
     dispose() {

@@ -12,20 +12,21 @@ import { shownLine } from './stats/format.ts';
 import { choice } from './stats/parts.ts';
 
 const STEP = 40;
+const IMG = { crossorigin: 'anonymous', referrerpolicy: 'no-referrer', loading: 'lazy', alt: '' };
 const NO_HINT = 'Not interested: hides it here and ranks its channel lower. YouTube is not told.';
 const MODES: readonly (readonly [RecoMode, string])[] = [
   ['video', 'Videos'],
   ['short', 'Shorts'],
   ['channel', 'Channels'],
 ];
-const LABELS = Object.fromEntries(MODES) as Record<RecoMode, string>; // tab name = view · mode
-const titleOf = (m: RecoMode): string => `Recommended · ${LABELS[m]}`;
+const LABELS = Object.fromEntries(MODES) as Record<RecoMode, string>; // a tab is named after its mode
+const titleOf = (m: RecoMode): string => LABELS[m];
 /** Channel names are all the record has, so a channel opens as a channel search for its name. */
 const channelUrl = (name: string): string =>
   `https://www.youtube.com/results?search_query=${encodeURIComponent(name)}&sp=EgIQAg%253D%253D`;
 
-export function mountRecommended(el: HTMLElement, env: ViewEnv): () => void {
-  let mode: RecoMode = 'video';
+export function mountRecommended(el: HTMLElement, env: ViewEnv, initial: RecoMode): () => void {
+  let mode: RecoMode = initial;
   let limit = STEP;
   let token = 0;
   let sig = '';
@@ -51,15 +52,7 @@ export function mountRecommended(el: HTMLElement, env: ViewEnv): () => void {
         title: v.title,
         onclick: (e) => openVideo(e as MouseEvent, v.id, v.kind, env),
       },
-      images()
-        ? h('img', {
-            crossorigin: 'anonymous',
-            referrerpolicy: 'no-referrer',
-            src: `https://i.ytimg.com/vi/${v.id}/mqdefault.jpg`,
-            loading: 'lazy',
-            alt: '',
-          })
-        : null,
+      images() ? h('img', { ...IMG, src: `https://i.ytimg.com/vi/${v.id}/mqdefault.jpg` }) : null,
       h(
         'div',
         { class: 'rrow' },
@@ -68,7 +61,7 @@ export function mountRecommended(el: HTMLElement, env: ViewEnv): () => void {
           { class: 'rtext' },
           h('b', null, v.title || v.id),
           mode === 'channel' ? null : h('span', { class: 'muted' }, v.channel),
-          h('span', { class: 'muted' }, shownLine(v)),
+          env.settings.get().recoMeta ? h('span', { class: 'muted' }, shownLine(v)) : null,
         ),
         h('button', { class: 'rno', title: NO_HINT, onclick: dismiss }, dismissIcon()),
       ),
@@ -79,8 +72,11 @@ export function mountRecommended(el: HTMLElement, env: ViewEnv): () => void {
     h(
       'h3',
       { class: 'rchan' },
+      images() && c?.icon ? h('img', { ...IMG, src: c.icon }) : null,
       h('a', { href: channelUrl(name), title: 'Find this channel on YouTube' }, name),
-      h('span', { class: 'muted' }, c ? ` opened ${c.opened} · shown ${c.seen}×` : ''),
+      env.settings.get().recoMeta && c
+        ? h('span', { class: 'muted' }, `opened ${c.opened} · shown ${c.seen}×`)
+        : null,
     );
   const paintHead = (): void =>
     replaceChildren(
@@ -106,6 +102,7 @@ export function mountRecommended(el: HTMLElement, env: ViewEnv): () => void {
 
   const paint = (page: RecoPage): void => {
     const img = images();
+    const meta = env.settings.get().recoMeta;
     const stats = new Map(page.channels.map((c) => [c.name, c])); // bound: the channels of one page
     cards.className = img ? 'rgrid' : 'rgrid text';
     cards.hidden = !page.rows.length;
@@ -114,10 +111,13 @@ export function mountRecommended(el: HTMLElement, env: ViewEnv): () => void {
     for (const v of page.rows) {
       if (mode === 'channel' && v.channel !== channel) {
         const c = stats.get(v.channel);
-        items.push([`ch${v.channel}${c?.opened}${c?.seen}`, () => channelHead(v.channel, c)]);
+        items.push([
+          `ch${meta}${img}${v.channel}${c?.icon}${c?.opened}${c?.seen}`,
+          () => channelHead(v.channel, c),
+        ]);
       }
       channel = v.channel;
-      items.push([`${mode}${img}${v.id}${v.seen}${v.title}`, () => card(v)]);
+      items.push([`${mode}${meta}${img}${v.id}${v.seen}${v.title}`, () => card(v)]);
     }
     keyed(cards, items);
     replaceChildren(
@@ -143,7 +143,7 @@ export function mountRecommended(el: HTMLElement, env: ViewEnv): () => void {
     const my = ++token;
     env.call('recommend', { mode, limit }).then(
       (page) => {
-        const next = JSON.stringify([mode, page, env.settings.get().thumbnailsEnabled]);
+        const next = JSON.stringify([mode, page, images(), env.settings.get().recoMeta]);
         if (my !== token || next === sig) return;
         sig = next;
         paint(page);

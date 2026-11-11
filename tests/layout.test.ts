@@ -46,7 +46,7 @@ describe('layout', () => {
     }
     expect(viewsOf('browse').some((v) => v.id === 'player')).toBe(false);
     expect(shape(homePreset(1600))).toEqual({
-      row: ['guide', 'recommended|home-shorts|stats|history|settings|log'],
+      row: ['guide', 'recommended|recommended-shorts|stats|history|settings|log'],
     });
   });
   it('page kinds map to layout families (Shorts tiles as a page)', () => {
@@ -161,7 +161,7 @@ describe('layout', () => {
     expect(freshTab('stats', new Set(['log']))).toBe('stats');
     expect(freshTab('stats', new Set(['stats', 'stats~2']))).toBe('stats~3');
     expect(kindOf('recommended~2')).toBe('recommended');
-    expect(viewOf('recommended~2')?.title).toBe('Recommended');
+    expect(viewOf('recommended~2')?.title).toBe('Videos');
     const next = L.replaceView(
       L.split('row', [L.pane(['a', 'new'], 'new'), L.pane(['b'])]),
       'new',

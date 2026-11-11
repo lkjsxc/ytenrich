@@ -1,5 +1,6 @@
 import type { Kind } from '../shared/types.ts';
 import {
+  AVATAR,
   CHANNEL,
   ITEM_ROOT_INNER,
   ITEM_ROOT_OUTER,
@@ -55,4 +56,9 @@ export function extractItem(root: Element): ItemInfo | undefined {
 
 export function menuHostOf(root: Element): Element | null {
   return root.querySelector(MENU_HOST);
+}
+
+/** The channel avatar's address, once the tile has loaded it (it is lazy, so read this late). */
+export function avatarOf(root: Element): string {
+  return root.querySelector<HTMLImageElement>(AVATAR)?.src ?? '';
 }

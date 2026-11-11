@@ -42,6 +42,15 @@ html[ytenrich-wm] [ytenrich-slot="guide"] { padding: 4px 0 !important; pointer-e
 html[ytenrich-guide-wake] tp-yt-app-drawer#guide { visibility: hidden !important; }
 /* ☰ toggles the Guide tile while tiling, so the drawer (persistent on browse pages) and mini guide stay hidden. */
 html[ytenrich-wm] tp-yt-app-drawer#guide:not(:has([ytenrich-slot])), html[ytenrich-wm] ytd-mini-guide-renderer { visibility: hidden !important; }
+/* The hidden drawer keeps a 20px swipe strip along the left window edge that would swallow clicks on our tab bar. */
+html[ytenrich-wm] tp-yt-app-drawer#guide:not(:has([ytenrich-slot])), html[ytenrich-wm] tp-yt-app-drawer#guide:not(:has([ytenrich-slot])) * { pointer-events: none !important; }
+/* Details tile: the channel row (subscribe, bell, actions) wraps instead of pushing the tile wider than its pane. */
+html[ytenrich-wm] [ytenrich-slot="details"] { overflow-x: hidden !important; }
+html[ytenrich-wm] [ytenrich-slot="details"] :is(#top-row, #owner, #actions, #actions-inner, #menu, #top-level-buttons-computed, #subscribe-button) { flex-wrap: wrap !important; min-width: 0 !important; max-width: 100% !important; row-gap: 8px; }
+/* The description box is sized from the window's column width: it follows the tile instead. */
+html[ytenrich-wm] [ytenrich-slot="details"] :is(#bottom-row, #description, #description-inner, #description-inline-expander, ytd-watch-info-text, #info-container, #info) { min-width: 0 !important; max-width: 100% !important; box-sizing: border-box !important; }
+html[ytenrich-wm] [ytenrich-slot="details"] #description { flex: 1 1 100% !important; margin-right: 0 !important; }
+html[ytenrich-wm] [ytenrich-slot="details"] :is(#info-container, #info) { flex-wrap: wrap !important; white-space: normal !important; }
 html[ytenrich-wm] ytd-page-manager > :not(ytd-watch-flexy, [ytenrich-slot]) { visibility: hidden !important; }
 html[ytenrich-wm] [ytenrich-slot="page"] { padding: 0 !important; }
 /* Videos tile: no Shorts. Their shelves and single Shorts leave the list (the Shorts tab still projects its shelf). */

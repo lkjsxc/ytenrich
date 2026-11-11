@@ -5,6 +5,7 @@ import {
   applyImpression,
   applyOffer,
   emptyStat,
+  isAvatarUrl,
   isPrunable,
   MAX_CHANNELS,
   MAX_VIDEOS,
@@ -76,13 +77,21 @@ export async function record(
 
 /** Keeps recommendations that were on a page without being on screen (video rows only, no counters). */
 export async function offer(items: readonly Impression[]): Promise<void> {
-  const tx = (await openDb()).transaction(VIDEOS, 'readwrite');
+  const tx = (await openDb()).transaction([VIDEOS, CHANNELS], 'readwrite');
   const videos = tx.objectStore(VIDEOS);
+  const channels = tx.objectStore(CHANNELS);
   const now = Date.now();
+  const icons = new Map<string, string>(); // bound: one per batch channel
   for (const item of items) {
     const next = applyOffer(await done<VideoStat | undefined>(videos.get(item.id)), item, now);
     videos.put(next);
     track(next);
+    if (item.icon && next.channel === item.channel && isAvatarUrl(item.icon))
+      icons.set(item.channel, item.icon);
+  }
+  for (const [name, icon] of icons) {
+    const prev = await done<ChannelStat | undefined>(channels.get(name));
+    if (prev?.icon !== icon) channels.put({ ...addChannel(prev, name, now, {}), icon });
   }
   await complete(tx);
 }

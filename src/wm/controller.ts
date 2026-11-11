@@ -89,6 +89,7 @@ export function createWmController(rt: Runtime, family: WmFamily): Wm {
       });
     },
     onClose: (view: string) => set(L.removeView(root, view)),
+    closeClicks: () => rt.settings.get().closeClicks,
     onPaneMenu(p: L.PaneNode, button: HTMLElement) {
       const splitTo = (zone: L.Zone) => () => set(L.moveView(root, p.active, p.id, zone));
       openMenu(host.layer, button, [

@@ -130,7 +130,7 @@ export function addChannel(
   now: number,
   delta: ChannelDelta,
 ): ChannelStat {
-  const c = prev ?? { name, seen: 0, videos: 0, opened: 0, dismissed: 0, lastSeen: now };
+  const c = prev ?? { name, seen: 0, videos: 0, opened: 0, dismissed: 0, lastSeen: now, icon: '' };
   return {
     name,
     seen: c.seen + (delta.seen ?? 0),
@@ -138,6 +138,7 @@ export function addChannel(
     opened: c.opened + (delta.opened ?? 0),
     dismissed: c.dismissed + (delta.dismissed ?? 0),
     lastSeen: delta.seen ? now : c.lastSeen,
+    icon: c.icon ?? '',
   };
 }
 
@@ -148,3 +149,7 @@ export function isPrunable(s: VideoStat, now: number): boolean {
   return s.opened === 0 && s.dismissedAt === 0 && now - s.lastSeen > PRUNE_AGE_MS;
 }
 export const MAX_CHANNELS = 20_000;
+
+/** Avatars are only ever read from YouTube's own image hosts. */
+export const isAvatarUrl = (url: string): boolean =>
+  url.length < 400 && /^https:\/\/yt3\.(ggpht|googleusercontent)\.com\//.test(url);

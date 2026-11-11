@@ -21,7 +21,15 @@ describe('day and channel counters', () => {
   it('accumulates channels and moves lastSeen only on impressions', () => {
     const a = addChannel(undefined, 'ch', 100, { seen: 2, videos: 1 });
     const b = addChannel(a, 'ch', 200, { opened: 1 });
-    expect(b).toEqual({ name: 'ch', seen: 2, videos: 1, opened: 1, dismissed: 0, lastSeen: 100 });
+    expect(b).toEqual({
+      name: 'ch',
+      seen: 2,
+      videos: 1,
+      opened: 1,
+      dismissed: 0,
+      lastSeen: 100,
+      icon: '',
+    });
     expect(addChannel(b, 'ch', 300, { seen: 1 }).lastSeen).toBe(300);
   });
 });

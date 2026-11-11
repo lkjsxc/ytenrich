@@ -24,9 +24,13 @@ function field(f: SettingField, s: Settings): HTMLElement {
       type: 'number',
       min: f.min,
       max: f.max,
-      value: String(value),
+      step: f.step ?? 1,
+      value: f.step ? Number(value).toFixed(2) : String(value),
       onchange: (e) => {
-        const n = Math.round(Number((e.target as HTMLInputElement).value));
+        const step = f.step ?? 1;
+        const n = Number(
+          (Math.round(Number((e.target as HTMLInputElement).value) / step) * step).toFixed(4),
+        );
         if (n >= f.min && n <= f.max) save(n);
       },
     });

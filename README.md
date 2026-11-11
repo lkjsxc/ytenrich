@@ -13,7 +13,7 @@ A browser extension that makes YouTube more personal and more comfortable to use
   - The ☰ button toggles YouTube's guide (sidebar) as a tile on the left instead of an overlay drawer.
   - On watch pages, Chat sits next to Comments, and the Shorts shelf of the recommendations can become its own tile (pane `+` menu → Shorts).
   - The Shorts player page is a tile too, with a **Recommended** tile beside it: videos YouTube recommended recently that you have not opened yet (from ytenrich's own stats).
-  - Stats, History, Recommended, Settings and Log open as tabs inside the panes. Settings can reset the layout.
+  - Stats, History, Settings, Log and the recommended Videos, Shorts and Channels lists open as tabs inside the panes (YouTube's own lists are the "Default · …" tabs). Closing a tab takes three clicks on × by default, so a slip does not lose it. Settings can reset the layout.
   - `Alt+W` turns tiling off and on.
 - **Recommendation stats**: each recommendation counts as seen once it is at least half visible, at most once per page view. The Stats view updates live; clicking a video opens it in the same tab.
 - **Recommended**: ytenrich's own list of what YouTube recommended and you have not opened, ranked by what you actually open: the channels you return to, the title words of videos you open against those you pass over or dismiss, freshness, and how persistently YouTube offers it. It collects every recommendation YouTube puts on a page, including lists your layout hides, and lets those hidden lists load more until it holds enough (Settings → Collect for Recommended).

@@ -14,7 +14,7 @@ const NO_TASTE: Taste = new Map();
 
 /** How much this person likes a channel: how often they open it, and how often per time it is shown. */
 export function channelScore(c: ChannelStat | undefined): number {
-  if (!c) return 0.35;
+  if (!c || c.seen + c.opened + c.dismissed === 0) return 0.35; // unknown, or known only by its avatar
   const loyalty = c.opened / (c.opened + 3);
   const rate = Math.min(0.5, (c.opened + 1) / (c.seen + 10));
   return (0.35 + 1.5 * loyalty + 2 * rate) / (1 + c.dismissed);

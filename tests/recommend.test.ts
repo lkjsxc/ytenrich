@@ -18,6 +18,7 @@ const chan = (name: string, seen: number, opened: number, dismissed = 0): Channe
   dismissed,
   videos: seen,
   lastSeen: NOW,
+  icon: '',
 });
 const channels = new Map(
   [chan('loved', 40, 12), chan('ignored', 200, 0), chan('disliked', 40, 12, 3)].map((c) => [

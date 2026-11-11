@@ -4,7 +4,7 @@ MV3 browser extension (Chromium + Firefox ≥140) that enriches youtube.com:
 - recommendation impression stats
 - hiding over-exposed unopened videos
 - a one-click "Not interested" button
-- a tiling window manager (WM) on every page (layout families `watch`, `home`, `shorts` and `browse`; home defaults to ytenrich's Recommended with the feed's Shorts shelves as a tab; the Shorts player and unknown page types tile as `page`), with ytenrich's own views (Recommended/Stats/History/Settings/Log) as WM tabs
+- a tiling window manager (WM) on every page (layout families `watch`, `home`, `shorts` and `browse`; home defaults to ytenrich's recommended Videos and Shorts; the Shorts player and unknown page types tile as `page`), with ytenrich's own views (recommended Videos/Shorts/Channels, Stats/History/Settings/Log) as WM tabs. YouTube's own lists are the views titled "Default · …"
 
 AI-first repo: no human ergonomics, no backward compatibility, no migrations. Move fast.
 

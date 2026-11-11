@@ -54,7 +54,7 @@ export const VIEWS: readonly ViewDef[] = [
   },
   {
     id: 'home-videos',
-    title: 'Videos',
+    title: 'Default · Videos',
     hint: 'The home feed without Shorts',
     slot: 'page',
     part: 'videos',
@@ -62,7 +62,7 @@ export const VIEWS: readonly ViewDef[] = [
   },
   {
     id: 'home-shorts',
-    title: 'Shorts',
+    title: 'Default · Shorts',
     hint: 'Only the Shorts of the home feed',
     slot: 'page',
     part: 'shorts',
@@ -86,7 +86,7 @@ export const VIEWS: readonly ViewDef[] = [
   { id: 'chat', title: 'Chat', hint: 'Live chat or chat replay', slot: 'chat', families: W },
   {
     id: 'videos',
-    title: 'Videos',
+    title: 'Default · Videos',
     hint: 'YouTube’s recommendations for this video',
     slot: 'videos',
     families: W,
@@ -101,16 +101,29 @@ export const VIEWS: readonly ViewDef[] = [
   },
   {
     id: 'shorts',
-    title: 'Shorts',
+    title: 'Default · Shorts',
     hint: 'The Shorts shelf of the recommendations',
     slot: 'shorts',
     families: W,
   },
+  // ytenrich's own recommendations take the plain names; YouTube's own lists are the "Default · …" views.
   {
     id: 'recommended',
-    title: 'Recommended',
-    hint: 'Recent recommendations you have not opened',
-    mount: mountRecommended,
+    title: 'Videos',
+    hint: 'Recommended videos you have not opened, in your order',
+    mount: (el, env) => mountRecommended(el, env, 'video'),
+  },
+  {
+    id: 'recommended-shorts',
+    title: 'Shorts',
+    hint: 'Recommended Shorts you have not opened',
+    mount: (el, env) => mountRecommended(el, env, 'short'),
+  },
+  {
+    id: 'recommended-channels',
+    title: 'Channels',
+    hint: 'Recommendations grouped by the channels you like most',
+    mount: (el, env) => mountRecommended(el, env, 'channel'),
   },
   {
     id: 'stats',

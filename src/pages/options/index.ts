@@ -19,7 +19,7 @@ void loadSettings().then(settings.set);
 onSettings(settings.set);
 const base = { call, log: createLog(), settings };
 const scale = (s: Settings): void =>
-  void document.documentElement.style.setProperty('--scale', String(s.uiScale / 100));
+  void document.documentElement.style.setProperty('--scale', String(s.uiScale));
 settings.subscribe(scale);
 const tabs = VIEWS.filter((v) => v.mount);
 const nav = h('nav');

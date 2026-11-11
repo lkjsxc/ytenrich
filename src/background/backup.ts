@@ -5,7 +5,15 @@ import { complete, openDb, walk } from './db.ts';
 import { forget, prune } from './stats-repo.ts';
 
 const KEY: Record<StoreName, string> = { videos: 'id', days: 'day', channels: 'name' };
-const CHANNEL: ChannelStat = { name: '', seen: 0, videos: 0, opened: 0, dismissed: 0, lastSeen: 0 };
+const CHANNEL: ChannelStat = {
+  name: '',
+  seen: 0,
+  videos: 0,
+  opened: 0,
+  dismissed: 0,
+  lastSeen: 0,
+  icon: '',
+};
 
 export async function dump(
   store: StoreName,

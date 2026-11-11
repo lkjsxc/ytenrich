@@ -34,7 +34,7 @@ page signal (watch/shorts videoId) ─► bg.opened (resets suppression for that
 - `patchSettings` stores only values that differ from `DEFAULT_SETTINGS`, so later default changes reach settings the user never touched.
 
 ## Tiling WM
-- Active when `wmEnabled && !fullscreen`; every page kind has a layout family (`wm/presets.ts` `familyOf`): `watch` for watch pages, `shorts` for the Shorts player (projected whole as `page`, with the own `recommended` view beside it by default), `home` for the home feed (default: the own `recommended` view in front and `home-shorts`; the `page` element has two part views, `home-videos` and `home-shorts`, that take turns), `browse` for every other kind. Alt+W toggles it.
+- Active when `wmEnabled && !fullscreen`; every page kind has a layout family (`wm/presets.ts` `familyOf`): `watch` for watch pages, `shorts` for the Shorts player (projected whole as `page`, with the own `recommended` view beside it by default), `home` for the home feed (default: the own `recommended` and `recommended-shorts` views; the `page` element has two part views, `home-videos` and `home-shorts`, that take turns), `browse` for every other kind. Alt+W toggles it.
 - One controller per family (`createWmController(rt, family)`). SPA navigation across families disposes it and creates the other; within a family it only refreshes (and resets the `page` scroll to the top).
 - Views declare `families` in the registry (`viewsOf(family)`); a family's layout, `+` menu and stored-layout filter only use its views.
 - `html[ytenrich-wm]` gates every WM CSS rule in `youtube/youtube.css`.
@@ -72,3 +72,11 @@ page signal (watch/shorts videoId) ─► bg.opened (resets suppression for that
 - Disposal restores YouTube exactly: attributes and inline props are removed, the host is removed, and a resize is dispatched.
 - Features never throw into YouTube. Failures go to `rt.log` (shown in the Log tab).
 - Stats writes are batched and at most one `record` is in flight per 2s per tab.
+
+## Tab bar
+- Names: the three Recommended views (`recommended`, `recommended-shorts`, `recommended-channels`; one mount with a different starting mode) are titled Videos / Shorts / Channels, and a tab renames itself when its mode switch changes. YouTube's own lists are "Default · Videos" / "Default · Shorts".
+- Closing takes `closeClicks` clicks on × (default 3; `wm/render.ts` `closeButton`): each click fills a ring (`--p`, a registered property so it animates) and the count resets after 2.5 s.
+- Scale: `.strip` zooms by `uiScale × tabScale` (defaults 1 and 1.2); views and menus by `uiScale`.
+- Overflow: the bar scrolls sideways (wheel too) and shows an accent glow on a side with more tabs, done with background attachment (`scroll` glow under a `local` cover), no script.
+- Resize handles are 5px lines with a `::before` that extends the grab area 5px to each side.
+- Channel avatars: `collect` reads a tile's `yt3.*` image at flush time (avatars load lazily) and `offer` stores it on the channel row (`isAvatarUrl` guards the host). Shown in Recommended · Channels when images are on.

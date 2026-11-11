@@ -40,9 +40,9 @@ export function browsePreset(width = globalThis.innerWidth || 1600): LayoutNode 
   return withGuide(['page', ...OWN], width);
 }
 
-/** Default for home: ytenrich's Recommended in front, the feed's Shorts shelves as a tab (its videos via `+`). */
+/** Default for home: ytenrich's recommended Videos and Shorts (YouTube's own feed is the Default views, via `+`). */
 export function homePreset(width = globalThis.innerWidth || 1600): LayoutNode {
-  return withGuide(['recommended', 'home-shorts', ...OWN], width);
+  return withGuide(['recommended', 'recommended-shorts', ...OWN], width);
 }
 
 /** Default for the Shorts player (a narrow column): recently recommended videos beside it. */

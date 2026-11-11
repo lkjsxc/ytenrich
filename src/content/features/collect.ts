@@ -3,6 +3,7 @@
 import { toggleAttr } from '../../shared/dom.ts';
 import { createDisposables } from '../../shared/signal.ts';
 import type { Impression } from '../../shared/types.ts';
+import { avatarOf } from '../../youtube/extract.ts';
 import type { Feature } from '../features.ts';
 
 const FLUSH_MS = 2000;
@@ -15,7 +16,7 @@ export const collect: Feature = {
   id: 'collect',
   start(rt) {
     const d = createDisposables();
-    let buffer: Impression[] = [];
+    let buffer: { item: Impression; el: Element }[] = [];
     let offered = new Set<string>(); // bound: ids of this navigation, MAX_PAGE_ITEMS in the scanner
     let timer: ReturnType<typeof setTimeout> | undefined;
     let want = true; // the background's last word on whether the stock is low
@@ -34,7 +35,8 @@ export const collect: Feature = {
       );
     const flush = (): void => {
       timer = undefined;
-      const items = buffer;
+      // Avatars load lazily, so they are read now, a moment after the tile was found.
+      const items = buffer.map(({ item, el }) => ({ ...item, icon: avatarOf(el) }));
       buffer = [];
       if (!items.length || mode() === 'shown') return;
       rt.call('offer', { items }).then(
@@ -50,7 +52,7 @@ export const collect: Feature = {
         if (mode() === 'shown' || offered.has(item.id) || buffer.length >= MAX_BUFFER) return;
         offered.add(item.id);
         const { id, kind, surface, title, channel } = item;
-        buffer.push({ id, kind, surface, title, channel });
+        buffer.push({ item: { id, kind, surface, title, channel }, el: item.el });
         timer ??= setTimeout(flush, FLUSH_MS);
         if (offered.size >= MIN_PER_PAGE) steer();
       }),

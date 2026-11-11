@@ -11,6 +11,8 @@ export type Impression = {
   readonly surface: Surface;
   readonly title: string;
   readonly channel: string;
+  /** Address of the channel's avatar image, when the tile shows one. */
+  readonly icon?: string;
 };
 
 export type VideoStat = {
@@ -58,8 +60,10 @@ export type ChannelStat = {
   opened: number;
   dismissed: number;
   lastSeen: number;
+  /** Avatar image address ('' when no tile showed one yet). */
+  icon: string;
 };
-export type ChannelDelta = Partial<Omit<ChannelStat, 'name' | 'lastSeen'>>;
+export type ChannelDelta = Partial<Omit<ChannelStat, 'name' | 'lastSeen' | 'icon'>>;
 /** Stats stores a backup carries, each paged by its primary key. */
 export type StoreName = 'videos' | 'days' | 'channels';
 export type ChannelSort = 'seen' | 'opened';
