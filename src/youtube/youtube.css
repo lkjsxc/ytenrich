@@ -26,6 +26,9 @@ html[ytenrich-wm] [ytenrich-slot] { position: fixed !important; visibility: visi
 html[dark][ytenrich-wm] [ytenrich-slot] { background: #0f0f0f; }
 html[ytenrich-wm] [ytenrich-slot="player"] { overflow: hidden !important; padding: 0 !important; background: #000; }
 html[ytenrich-wm] [ytenrich-slot][ytenrich-slot-inactive] { visibility: hidden !important; pointer-events: none !important; }
+/* YouTube sets `visibility: visible` on parts of its tiles, which would show through a hidden list and sit over the
+   tab in front. Everything inside a hidden tile or an undrawn page is hidden too, except a tile drawn from inside it. */
+html[ytenrich-wm] :is([ytenrich-slot-inactive], ytd-page-manager > :not(ytd-watch-flexy, [ytenrich-slot])) :not([ytenrich-slot]:not([ytenrich-slot-inactive]), [ytenrich-slot]:not([ytenrich-slot-inactive]) *) { visibility: hidden !important; pointer-events: none !important; }
 /* Shorts tile: the shelf leaves the Videos list (it is fixed-positioned) and wraps to the pane width, all items shown. */
 html[ytenrich-wm] [ytenrich-slot="shorts"] { display: block !important; }
 html[ytenrich-wm] [ytenrich-slot="shorts"] .ytGridShelfViewModelGridShelfRow { flex-wrap: wrap !important; gap: 12px 8px !important; }
