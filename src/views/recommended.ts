@@ -1,5 +1,6 @@
 // Recommended: unopened videos YouTube showed you, ordered by your own record (`shared/recommend.ts`).
 import { h, replaceChildren } from '../shared/h.ts';
+import { dismissIcon } from '../shared/icons.ts';
 import { onStatsChanged } from '../shared/protocol.ts';
 import { patchSettings } from '../shared/settings.ts';
 import type { ChannelStat, RecoMode, RecoPage, VideoStat } from '../shared/types.ts';
@@ -11,6 +12,7 @@ import { ago } from './stats/format.ts';
 import { choice } from './stats/parts.ts';
 
 const STEP = 40;
+const NO_HINT = 'Not interested: hides it here and ranks its channel lower. YouTube is not told.';
 const MODES: readonly (readonly [RecoMode, string])[] = [
   ['video', 'Videos'],
   ['short', 'Shorts'],
@@ -61,18 +63,17 @@ export function mountRecommended(el: HTMLElement, env: ViewEnv): () => void {
             alt: '',
           })
         : null,
-      h('b', null, v.title || v.id),
-      mode === 'channel' ? null : h('span', { class: 'muted' }, v.channel),
-      h('span', { class: 'muted' }, `shown ${v.seen}× · ${ago(v.lastSeen)} ago`),
       h(
-        'button',
-        {
-          class: 'rno',
-          title:
-            'Not interested: removes it from this list and ranks its channel lower. YouTube is not told.',
-          onclick: dismiss,
-        },
-        '⊘',
+        'div',
+        { class: 'rrow' },
+        h(
+          'div',
+          { class: 'rtext' },
+          h('b', null, v.title || v.id),
+          mode === 'channel' ? null : h('span', { class: 'muted' }, v.channel),
+          h('span', { class: 'muted' }, `shown ${v.seen}× · ${ago(v.lastSeen)} ago`),
+        ),
+        h('button', { class: 'rno', title: NO_HINT, onclick: dismiss }, dismissIcon()),
       ),
     );
     return node;
@@ -84,7 +85,6 @@ export function mountRecommended(el: HTMLElement, env: ViewEnv): () => void {
       h('a', { href: channelUrl(name), title: 'Find this channel on YouTube' }, name),
       h('span', { class: 'muted' }, c ? ` opened ${c.opened} · shown ${c.seen}×` : ''),
     );
-
   const paintHead = (): void =>
     replaceChildren(
       head,

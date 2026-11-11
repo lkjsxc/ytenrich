@@ -151,11 +151,11 @@ td button.link:hover { background: none; text-decoration: underline; }
 .ncard b { font-size: 14px; font-weight: 500; }
 .ncard .badge { margin: 4px 0 0; }
 .stats-head input.wide { flex: 0 1 300px; }
-.rno { position: absolute; top: 4px; right: 4px; width: 26px; height: 26px; border-radius: 50%; background: rgba(0, 0, 0, 0.7); color: #fff; font-size: 15px; line-height: 26px; padding: 0; opacity: 0; }
-.rcard:hover .rno, .rno:focus-visible { opacity: 1; }
-.rno:hover { background: #c00; }
-.rgrid.text .rno { top: 6px; right: 0; background: none; color: var(--muted); opacity: 1; }
-.rgrid.text .rcard { padding-right: 30px; }
+.rrow { display: flex; align-items: flex-start; gap: 2px; }
+.rtext { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.rno { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; margin: -4px -4px 0 0; padding: 0; border: 0; border-radius: 50%; background: transparent; color: var(--muted); }
+.rno svg { width: 20px; height: 20px; }
+.rno:hover, .rno:focus-visible { background: var(--raised); color: var(--fg); outline: none; }
 .rchan { grid-column: 1 / -1; margin: 10px 0 0; font-size: 14px; font-weight: 600; }
 .rchan a { color: var(--fg); text-decoration: none; }
 .rchan a:hover { color: var(--accent); }

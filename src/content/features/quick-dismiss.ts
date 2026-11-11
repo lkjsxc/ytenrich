@@ -1,6 +1,7 @@
 // One-click "Not interested" button, always visible, right before each recommendation's 3-dot menu.
 import { toggleAttr } from '../../shared/dom.ts';
-import { h, svg } from '../../shared/h.ts';
+import { h } from '../../shared/h.ts';
+import { dismissIcon } from '../../shared/icons.ts';
 import { createDisposables } from '../../shared/signal.ts';
 import { extractItem, menuHostOf } from '../../youtube/extract.ts';
 import { clickNotInterested } from '../../youtube/menu.ts';
@@ -13,14 +14,6 @@ const GONE = 'ytenrich-dismissed'; // collapses an item right after a successful
 const MAX_PENDING = 1000; // items whose menu has not rendered yet; oldest dropped beyond this
 const MAX_GONE = 1000; // ids dismissed in this tab (kept collapsed if YouTube shows them again)
 const HINT = 'Tell YouTube: Not interested';
-
-const icon = (): SVGElement =>
-  svg(
-    'svg',
-    { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': 2 },
-    svg('circle', { cx: 12, cy: 12, r: 8.5 }),
-    svg('path', { d: 'M6 6l12 12' }),
-  );
 
 export const quickDismiss: Feature = {
   id: 'dismiss',
@@ -81,7 +74,9 @@ export const quickDismiss: Feature = {
         if (e.isTrusted && !busy.has(root)) run(root, e.currentTarget as HTMLElement);
       };
       host.setAttribute(HOST, '');
-      host.prepend(h('button', { [BUTTON]: true, type: 'button', title: HINT, onclick }, icon()));
+      host.prepend(
+        h('button', { [BUTTON]: true, type: 'button', title: HINT, onclick }, dismissIcon()),
+      );
       return true;
     };
 
