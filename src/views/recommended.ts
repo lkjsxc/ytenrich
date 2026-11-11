@@ -18,11 +18,8 @@ const MODES: readonly (readonly [RecoMode, string])[] = [
   ['short', 'Shorts'],
   ['channel', 'Channels'],
 ];
-const TITLES: Record<RecoMode, string> = {
-  video: 'Recommended',
-  short: 'Recommended Shorts',
-  channel: 'Recommended channels',
-};
+const LABELS = Object.fromEntries(MODES) as Record<RecoMode, string>; // tab name = view · mode
+const titleOf = (m: RecoMode): string => `Recommended · ${LABELS[m]}`;
 /** Channel names are all the record has, so a channel opens as a channel search for its name. */
 const channelUrl = (name: string): string =>
   `https://www.youtube.com/results?search_query=${encodeURIComponent(name)}&sp=EgIQAg%253D%253D`;
@@ -93,7 +90,7 @@ export function mountRecommended(el: HTMLElement, env: ViewEnv): () => void {
         { class: 'stats-head' },
         h('h2', null, 'Recommended'),
         choice('seg-ctl', MODES, mode, (next) => {
-          saveViewState(env.instance, { kind: next, title: TITLES[next] });
+          saveViewState(env.instance, { kind: next, title: titleOf(next) });
           setMode(next);
         }),
       ),
@@ -116,7 +113,7 @@ export function mountRecommended(el: HTMLElement, env: ViewEnv): () => void {
   const setMode = (next: RecoMode): void => {
     mode = next;
     limit = STEP;
-    env.setTitle?.(TITLES[next]);
+    env.setTitle?.(titleOf(next));
     paintHead();
     refresh();
   };
@@ -186,9 +183,12 @@ export function mountRecommended(el: HTMLElement, env: ViewEnv): () => void {
   el.replaceChildren(head, cards, foot);
   paintHead();
   refresh();
-  void loadViewState<{ kind: RecoMode }>(env.instance).then((state) => {
-    if (token >= 0 && state.kind && state.kind !== mode && state.kind in TITLES)
-      setMode(state.kind);
+  void loadViewState<{ kind: RecoMode; title: string }>(env.instance).then((state) => {
+    if (token < 0) return;
+    const kind = state.kind && state.kind in LABELS ? state.kind : mode;
+    if (state.title !== titleOf(kind)) saveViewState(env.instance, { kind, title: titleOf(kind) });
+    if (kind !== mode) setMode(kind);
+    else env.setTitle?.(titleOf(kind));
   });
   return () => {
     io.disconnect();
