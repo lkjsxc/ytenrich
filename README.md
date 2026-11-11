@@ -20,7 +20,7 @@ A browser extension that makes YouTube more personal and more comfortable to use
 - **Hide over-exposed videos** (off by default): a video YouTube keeps showing over more than a day that you never open can be hidden or dimmed. You choose how many impressions it takes; channels you open get three times the patience, and a video YouTube stops pushing is forgiven.
 - **One-click "Not interested"**: an always-visible ⊘ button right next to every recommendation's ⋮ menu. On success the item collapses at once; on failure ⊘ turns red and its tooltip (and the Log) lists the menu entries YouTube offered.
 
-Stats are enabled only after you agree on the welcome page (or later in Stats or Settings). It stays on this device, never reaches the developer, and builds your stats and the repeated-recommendation filter. Thumbnail images in the Stats, History and Recommended views are a separate opt-in (Chromium only). See the [privacy policy](PRIVACY.md).
+Stats are enabled only after you agree on the welcome page (or later in Stats or Settings). It stays on this device, never reaches the developer, and builds your stats and the repeated-recommendation filter. Thumbnail images in the Stats, History and Recommended views are on by default and can be turned off in Settings (Chromium only; the Firefox build has none). See the [privacy policy](PRIVACY.md).
 
 ## Install
 The stores are the easy way, because they update on their own: [Chrome Web Store](https://chromewebstore.google.com/detail/ikcbajmfmiobffnnimnhojlbpieegijc) (also works in Edge, Brave and other Chromium browsers). The Edge Add-ons and Firefox Add-ons listings are in review.

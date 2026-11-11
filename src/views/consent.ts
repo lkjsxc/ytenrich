@@ -23,6 +23,9 @@ export function consentCard(onNo: () => void): HTMLElement {
       'p',
       null,
       'Everything stays in this browser and is never sent to the developer or anyone else. ' +
+        (__FIREFOX__
+          ? ''
+          : 'The lists show thumbnails, loaded from YouTube’s image server by video ID (Settings turns them off). ') +
         'You can turn stats off or clear them at any time in Settings. ',
       h('a', { href: PRIVACY_URL, target: '_blank', rel: 'noopener' }, 'Privacy policy'),
     ),

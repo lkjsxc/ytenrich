@@ -120,4 +120,4 @@ API references: [Chrome Web Store v2](https://developer.chrome.com/docs/webstore
 - **Reviewer notes** (paste into the submission):
   > Source: ytenrich-<v>-source.zip (git archive of the tagged commit). The submitted files are esbuild bundles of the TypeScript in src/.
   > Build: Node.js 24 and pnpm 11.1.2 (`corepack enable`), then `pnpm install --frozen-lockfile && pnpm build --firefox`. The output in dist-firefox/ matches the package.
-  > No remote code and no network requests (the optional thumbnails are not in the Firefox build). Data stays in extension storage.
+  > No remote code and no network requests (the thumbnails are not in the Firefox build). Data stays in extension storage.

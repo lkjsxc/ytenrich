@@ -11,7 +11,7 @@ export const DEFAULT_SETTINGS = {
   dismissEnabled: true,
   dismissLabel: '',
   statsEnabled: false, // on only after consent (views/consent.ts)
-  thumbnailsEnabled: false,
+  thumbnailsEnabled: true, // Chromium only; the Firefox build has no image code
   collect: 'ask' as Collect,
   tabWidth: 0, // px; 0 fits each tab to its title
   uiScale: 1, // 1.00 = normal size; ytenrich's own UI only

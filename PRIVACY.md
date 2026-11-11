@@ -32,8 +32,8 @@ Everything is stored in your browser profile, in the extension's local storage a
 
 ## Network requests
 
-ytenrich makes no network requests of its own except optional images:
-- **Images (Chrome and other Chromium browsers only; off by default).** If you turn on images in **Settings**, the Stats, History and Recommended views load thumbnails from YouTube's image server (`i.ytimg.com`) and channel avatars from its avatar server (`yt3.ggpht.com` or `yt3.googleusercontent.com`) over HTTPS. A thumbnail request contains a video ID; an avatar request contains the avatar's address. Requests are sent without cookies and without a referrer. The image server receives ordinary connection information, such as your IP address. The Firefox version does not include this option.
+ytenrich makes no network requests of its own except images, which you can turn off:
+- **Images (Chrome and other Chromium browsers only; on by default, turned off in Settings).** While images are on, the Stats, History and Recommended views load thumbnails from YouTube's image server (`i.ytimg.com`) and channel avatars from its avatar server (`yt3.ggpht.com` or `yt3.googleusercontent.com`) over HTTPS. A thumbnail request contains a video ID; an avatar request contains the avatar's address. Requests are sent without cookies and without a referrer. The image server receives ordinary connection information, such as your IP address. The Firefox version does not include this option.
 
 ## Actions on YouTube
 
