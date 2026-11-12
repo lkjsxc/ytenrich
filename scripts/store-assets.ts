@@ -1,5 +1,5 @@
 // Store listing assets → release/store/: 1280x800 screenshots (light + dark), 440x280 promo tile,
-// 300px logo (Edge) and 128px icon. Screenshots come from live YouTube (signed out). Usage: pnpm store-assets
+// 300px logo (Edge) and 128px icon. Screenshots come from live YouTube (signed out). Usage: pnpm store-assets [--branding-only]
 import { mkdirSync, readFileSync } from 'node:fs';
 import sharp from 'sharp';
 import { launch } from './smoke-lib.ts';
@@ -12,10 +12,16 @@ const icon = readFileSync('src/icon.svg', 'utf8').replace(/<\/?svg[^>]*>/g, '');
 const text = (y: number, size: number, fill: string, s: string, weight = 400): string =>
   `<text x="186" y="${y}" font-family="Roboto, Noto Sans, Arial, sans-serif" font-size="${size}" font-weight="${weight}" fill="${fill}">${s}</text>`;
 const promo = `<svg xmlns="http://www.w3.org/2000/svg" width="440" height="280">
-<rect width="440" height="280" fill="#0f1426"/><g transform="translate(34 76)">${icon}</g>
-${text(122, 40, '#f1f1f1', 'ytenrich', 700)}${text(156, 17, '#a6f1d0', 'Every YouTube page, tiled')}
-${text(180, 17, '#aab4d4', 'Recommendation stats')}${text(204, 17, '#aab4d4', 'One-click “Not interested”')}</svg>`;
+<rect width="440" height="280" fill="#241019"/><g transform="translate(34 76)">${icon}</g>
+${text(122, 40, '#FFF8FA', 'ytenrich', 700)}${text(156, 17, '#F8BCCB', 'Every YouTube page, tiled')}
+${text(180, 17, '#E4C8D1', 'Recommendation stats')}${text(204, 17, '#E4C8D1', 'One-click “Not interested”')}</svg>`;
 await sharp(Buffer.from(promo)).png().toFile(`${out}/promo-440x280.png`);
+
+// Refresh branding without recapturing the existing listing screenshots.
+if (process.argv.includes('--branding-only')) {
+  console.log(`ok ${out} branding`);
+  process.exit(0);
+}
 
 const shot = { width: 1280, height: 800 };
 for (const dark of [false, true]) {

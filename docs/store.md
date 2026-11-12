@@ -13,6 +13,7 @@ Keep this file in sync with `PRIVACY.md` and the code. `docs/store-update-prompt
   - `promo-440x280.png` (Chrome Web Store small promo tile);
   - `logo-300.png` (Edge);
   - `icon-128.png`.
+- The red rounded icon in `src/icon.svg` is the source for every browser icon and store logo. `pnpm store-assets --branding-only` refreshes the logos and promotional tile without recapturing screenshots.
 - To check the Firefox package locally, run `pnpm dlx web-ext@10.8.0 lint --source-dir dist-firefox`. AMO also validates the package during submission. The desktop-only manifest may produce a warning about Firefox for Android 140 and the data consent manifest key.
 
 ## Automated updates
