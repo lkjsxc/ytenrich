@@ -5,7 +5,7 @@ Paste everything below the line into the agent that operates the store dashboard
 ---
 
 You are updating the store listings of the browser extension **ytenrich** (repo `github.com/lkjsxc/ytenrich`) to
-match version 0.2.6. Work in the three dashboards: Chrome Web Store developer dashboard, Microsoft Partner
+match the latest release. Read its version from `package.json` on `main`. Work in the three dashboards: Chrome Web Store developer dashboard, Microsoft Partner
 Center (Edge Add-ons) and addons.mozilla.org (Firefox). The source of truth for every text is
 `docs/store.md` and `PRIVACY.md` on the `main` branch; read both first and copy texts from them exactly.
 
@@ -16,8 +16,11 @@ statistics prominently, because that is what makes default-on acceptable under t
 
 Do these steps, and stop to ask the owner whenever a dashboard shows something these steps do not cover.
 
-1. **Descriptions (all three stores).** Replace the English description with "Description (en)" from
-   `docs/store.md`, and the Japanese one with "Description (ja)". Keep the summary line as in `docs/store.md`.
+1. **English-only listings (all three stores).** Keep English as the default and remove Japanese and any
+   other non-English listing locales. Use "Description (en)" from `docs/store.md` and keep its summary line.
+   The package must contain only `_locales/en`; a new version is required to remove a packaged locale in
+   Chrome. Do not add translations back. The stores may localize their own navigation, but all developer
+   listing text and artwork must stay English.
 2. **Chrome: Privacy practices tab.**
    - Single purpose and permission justifications: use the texts under "Chrome Web Store" in `docs/store.md`.
    - Data usage: keep "Web history", "Website content" and "User activity" checked; keep all three

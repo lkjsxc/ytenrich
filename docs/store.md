@@ -60,9 +60,11 @@ API references: [Chrome Web Store v2](https://developer.chrome.com/docs/webstore
 `.github/workflows/build.yml` runs on every push to `main`: `pnpm check`, `pnpm package`, then it keeps `dist/` and `dist-firefox/` as the run's artifacts `ytenrich-chromium` and `ytenrich-firefox` (downloadable from the run page by signed-in GitHub users, kept 90 days). It touches neither the stores nor GitHub releases, which hold versions only.
 
 ## Listing text
+
+All store listings are English only. Keep English as the default and remove other listing locales, including Japanese. Package metadata lives only in `src/_locales/en/messages.json`; do not reintroduce other `_locales` directories. Store navigation may still follow the visitor's language; the extension's listing text stays English.
 **Name:** ytenrich
 
-**Summary** (the manifest description, ≤132 chars, localized in `src/_locales`): Tiling layout for every YouTube page, recommendation stats, hiding of repeated recommendations, one-click "Not interested".
+**Summary** (the manifest description, ≤132 chars, English only in `src/_locales/en/messages.json`): Tiling layout for every YouTube page, recommendation stats, hiding of repeated recommendations, one-click "Not interested".
 
 **Description (en):**
 > ytenrich makes YouTube calmer and more personal.
@@ -77,20 +79,6 @@ API references: [Chrome Web Store v2](https://developer.chrome.com/docs/webstore
 > Privacy: the statistics are kept in your browser only (you can turn them off or clear them at any time) and are never sent to the developer or anyone else. There are no accounts, analytics or ads. The source is open (Apache-2.0).
 >
 > ytenrich is not affiliated with, endorsed by or sponsored by YouTube or Google.
-
-**Description (ja):**
-> ytenrich は YouTube をもっと落ち着いた、自分好みの場所にします。
->
-> • Shorts を含む全ページをタイル型レイアウトに。再生ページではプレーヤー・概要・コメント・おすすめが、それぞれ独立してスクロールする可変サイズのペインに並びます。それ以外のページでは、ページ本体がガイドの横に並びます。タブをドラッグしてペインを分割・結合・並べ替えできます。Alt+W でオン/オフ。
-> • おすすめの統計：YouTube が何度も表示してくる動画と、実際に開いた動画が分かります。
-> • 出すぎた動画を非表示（任意）：1 日以上にわたって何度も表示されても開かなかったおすすめを、非表示または半透明にできます。
-> • ワンクリック「興味なし」：各おすすめの ⋮ メニューの隣に ⊘ ボタンを表示します。
->
-> • 自分専用のおすすめリスト：YouTube が提示した動画・ショート・チャンネルを集め、あなたが実際に開くものに合わせて並べます。
->
-> プライバシー：統計はブラウザ内にだけ保存され（いつでも無効化・消去できます）、開発者や第三者には一切送信されません。アカウント・解析・広告はありません。ソースコードは公開されています（Apache-2.0）。
->
-> ytenrich は YouTube および Google とは提携しておらず、承認や後援も受けていません。
 
 **Category:**
 - Chrome: Tools.

@@ -4,7 +4,7 @@ const common = {
   manifest_version: 3,
   name: 'ytenrich',
   version: '0.0.0', // replaced with package.json "version" by scripts/build.ts
-  description: '__MSG_description__', // src/_locales/*/messages.json (store listings localize from it)
+  description: '__MSG_description__', // English-only store metadata from src/_locales/en/messages.json
   default_locale: 'en',
   homepage_url: 'https://github.com/lkjsxc/ytenrich',
   permissions: ['storage', 'unlimitedStorage'],
