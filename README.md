@@ -2,6 +2,8 @@
 
 A browser extension that makes YouTube more personal and more comfortable to use: recommendation statistics, hiding of recommendations that keep reappearing without being opened, one-click "Not interested", and a tiling window manager layout on every YouTube page.
 
+**Install:** [Chrome Web Store](https://chromewebstore.google.com/detail/ytenrich/ikcbajmfmiobffnnimnhojlbpieegijc) · [Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/ytenrich/hnlgfllmbcccenikhnmbfakopidlmkfc) · [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/ytenrich/)
+
 ![A watch page tiled into panes: player, details, comments, History, Recommended and Stats](docs/images/watch-views-dark.webp)
 
 ## Features
@@ -23,7 +25,10 @@ A browser extension that makes YouTube more personal and more comfortable to use
 Stats are on from the start; the welcome page that opens after installing says what is recorded and can turn them off, as can Settings. The record stays on this device, never reaches the developer, and builds your stats and the repeated-recommendation filter. Thumbnail images in the Stats, History and Recommended views are on by default and can be turned off in Settings (Chromium only; the Firefox build has none). See the [privacy policy](PRIVACY.md).
 
 ## Install
-The stores are the easy way, because they update on their own: [Chrome Web Store](https://chromewebstore.google.com/detail/ikcbajmfmiobffnnimnhojlbpieegijc) (also works in Edge, Brave and other Chromium browsers). The Edge Add-ons and Firefox Add-ons listings are in review.
+The stores are the easy way, because they update on their own:
+- [Chrome Web Store](https://chromewebstore.google.com/detail/ytenrich/ikcbajmfmiobffnnimnhojlbpieegijc): Chrome, Brave, Vivaldi and other Chromium browsers.
+- [Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/ytenrich/hnlgfllmbcccenikhnmbfakopidlmkfc): Microsoft Edge.
+- [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/ytenrich/): Firefox desktop 140 or newer.
 
 ### From GitHub (no store)
 The newest release is always at these links:
@@ -39,7 +44,7 @@ Chrome, Edge, Brave, Vivaldi:
 
 To update, download the zip again, replace the folder's contents, and click the reload arrow on the ytenrich card in `chrome://extensions`. Settings, layouts and stats are kept as long as the folder stays in the same place. An install from GitHub does not update by itself; [watch releases](https://github.com/lkjsxc/ytenrich/releases) to hear about new ones. Settings → Export data moves your data between a GitHub install and a store install.
 
-Firefox only installs unsigned add-ons temporarily: open `about:debugging#/runtime/this-firefox`, click **Load Temporary Add-on** and pick the downloaded zip. It is removed when Firefox closes, so use the Firefox Add-ons listing for everyday use.
+Firefox only installs unsigned add-ons temporarily: open `about:debugging#/runtime/this-firefox`, click **Load Temporary Add-on** and pick the downloaded zip. It is removed when Firefox closes, so use the [Firefox Add-ons listing](https://addons.mozilla.org/firefox/addon/ytenrich/) for everyday use.
 
 All versions are on the [releases page](https://github.com/lkjsxc/ytenrich/releases).
 

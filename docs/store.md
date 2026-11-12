@@ -97,6 +97,11 @@ API references: [Chrome Web Store v2](https://developer.chrome.com/docs/webstore
 - AMO: Photos, Music & Videos.
 - Edge and Opera: Entertainment.
 
+**Live listings** (link these from `README.md` § Install):
+- Chrome: `https://chromewebstore.google.com/detail/ytenrich/ikcbajmfmiobffnnimnhojlbpieegijc` (item `ikcbajmfmiobffnnimnhojlbpieegijc`).
+- Edge: `https://microsoftedge.microsoft.com/addons/detail/ytenrich/hnlgfllmbcccenikhnmbfakopidlmkfc`.
+- Firefox: `https://addons.mozilla.org/firefox/addon/ytenrich/` (no locale in the path, so AMO redirects to the visitor's language).
+
 **Homepage and support:** `https://github.com/lkjsxc/ytenrich`; issues: `https://github.com/lkjsxc/ytenrich/issues`.
 
 **Privacy policy URL:** `https://github.com/lkjsxc/ytenrich/blob/main/PRIVACY.md`.
