@@ -1,6 +1,5 @@
 // WM controller for one page kind: layout state, persistence, rendering, own-view mounts, projection.
 import type { Runtime } from '../content/runtime.ts';
-import { layoutKey } from '../shared/layout-store.ts';
 import { patchSettings } from '../shared/settings.ts';
 import type { WmFamily } from '../shared/types.ts';
 import { kindOf, viewOf, viewsOf } from '../views/registry.ts';
@@ -21,12 +20,9 @@ import { startResize } from './resize.ts';
 import type { Space } from './spaces.ts';
 import { startTabDrag } from './tab-drag.ts';
 
-const SAVE_MS = 400;
-
 export type Wm = { readonly family: WmFamily; refresh(): void; dispose(): void };
 
 export function createWmController(rt: Runtime, family: WmFamily, at: Space): Wm {
-  const KEY = layoutKey(family, at.index);
   const preset = (): L.LayoutNode => presetOf(family, at.index);
   const VIEWS = viewsOf(family);
   const host = createHost();
@@ -41,17 +37,19 @@ export function createWmController(rt: Runtime, family: WmFamily, at: Space): Wm
       kindOf(tab) === NEW_TAB ||
       (kinds.has(kindOf(tab)) && (tab === kindOf(tab) || Boolean(viewOf(tab)?.mount))),
   };
-  let root: L.LayoutNode = preset();
+  /** A stored layout as this family can draw it (`undefined`: nothing stored, so the preset). */
+  const load = (value: unknown): L.LayoutNode | null => {
+    const saved = value === undefined ? preset() : parseLayout(value);
+    return saved && L.retainViews(saved, known);
+  };
+  let root: L.LayoutNode = load(at.stored) ?? preset();
   let rendered: Rendered | undefined;
-  let saveTimer: ReturnType<typeof setTimeout> | undefined;
   let disposed = false;
 
   const set = (next: L.LayoutNode | null, save = true): void => {
     root = next ?? preset();
     render();
-    if (!save) return;
-    clearTimeout(saveTimer);
-    saveTimer = setTimeout(() => void chrome.storage.local.set({ [KEY]: root }), SAVE_MS);
+    if (save) at.save(root);
   };
 
   /** The New tab page `tab` becomes `kind`: a native view moves here, an own view opens (again). */
@@ -99,7 +97,6 @@ export function createWmController(rt: Runtime, family: WmFamily, at: Space): Wm
         { label: 'Split down', run: splitTo('bottom'), disabled: p.tabs.length < 2 },
         { label: 'Close pane', run: () => set(L.closePane(root, p.id)) },
         { label: 'Reset layout', run: () => set(preset()) },
-        ...at.menu,
         { label: 'Turn off tiling (Alt+W)', run: () => void patchSettings({ wmEnabled: false }) },
       ]);
     },
@@ -136,18 +133,11 @@ export function createWmController(rt: Runtime, family: WmFamily, at: Space): Wm
 
   const optional = createOptional(VIEWS, () => render());
 
-  // Follow stored layout changes (reset from Settings, edits in other tabs); our own saves are no-ops.
-  const adopt = (value: unknown): void => {
-    const saved = value === undefined ? preset() : parseLayout(value);
-    const next = saved && L.retainViews(saved, known);
-    if (!next || disposed || JSON.stringify(next) === JSON.stringify(root)) return;
-    clearTimeout(saveTimer);
-    set(next, false);
-  };
-  const onStorage = (c: Record<string, chrome.storage.StorageChange>, area: string): void => {
-    if (area === 'local' && c[KEY]) adopt(c[KEY].newValue);
-  };
-  chrome.storage.onChanged.addListener(onStorage);
+  // Follow layout changes made elsewhere (a reset from Settings, an edit in another tab).
+  const offStore = at.watch((value) => {
+    const next = load(value);
+    if (next && !disposed && JSON.stringify(next) !== JSON.stringify(root)) set(next, false);
+  });
 
   // Hamburger toggles the Guide tile: add it on the far left, focus it, or close it.
   const offGuide = onGuideButton(() => {
@@ -161,8 +151,7 @@ export function createWmController(rt: Runtime, family: WmFamily, at: Space): Wm
   host.look(rt.settings.get());
   render();
   projector.refresh();
-  void chrome.storage.local.get([KEY, INTRODUCED_KEY]).then((s) => {
-    if (s[KEY] !== undefined) adopt(s[KEY]);
+  void chrome.storage.local.get(INTRODUCED_KEY).then((s) => {
     const next = optional.introduce(root, s[INTRODUCED_KEY]);
     if (next !== root) set(next);
   });
@@ -181,8 +170,7 @@ export function createWmController(rt: Runtime, family: WmFamily, at: Space): Wm
     },
     dispose() {
       disposed = true;
-      clearTimeout(saveTimer);
-      chrome.storage.onChanged.removeListener(onStorage);
+      offStore();
       offGuide();
       optional.dispose();
       offLook();

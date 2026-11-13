@@ -1,4 +1,5 @@
 import type { PageKind, WmFamily } from '../shared/types.ts';
+import { NEW_TAB } from './launcher.ts';
 import { type LayoutNode, pane, split } from './layout.ts';
 
 export const GUIDE_PX = 240; // YouTube's guide renderer width
@@ -54,27 +55,32 @@ export function shortsPreset(): LayoutNode {
   );
 }
 
-/** Second watch workspace, for reading along: details over comments at full height beside the player. */
-function readPreset(): LayoutNode {
-  return split(
+const BELOW = ['playlist', 'recommended', 'history', 'stats', 'settings', 'log'];
+/** Watch workspaces 2–4: the player over the other tabs, and `tabs` at full height beside them. */
+const beside = (tabs: string[]): LayoutNode =>
+  split(
     'row',
     [
-      split(
-        'col',
-        [
-          pane(['player']),
-          pane(['playlist', 'recommended', 'history', 'stats', 'settings', 'log']),
-        ],
-        [0.6, 0.4],
-      ),
-      split('col', [pane(['details']), pane(['comments', 'chat'])], [0.5, 0.5]),
+      split('col', [pane(['player']), pane(BELOW.filter((t) => !tabs.includes(t)))], [0.6, 0.4]),
+      pane(tabs),
     ],
     [0.58, 0.42],
   );
-}
-
-/** Workspaces a family starts with (more are added from the masthead as copies of the one showing). */
-export const DEFAULT_SPACES: Record<WmFamily, number> = { watch: 2, browse: 1, home: 1, shorts: 1 };
+/** Watch workspace 5: the player across the whole width, details and Recommended below it. */
+const wide = (): LayoutNode =>
+  split(
+    'col',
+    [pane(['player']), split('row', [pane(['details']), pane(['playlist', 'recommended'])])],
+    [0.68, 0.32],
+  );
+/** Watch workspaces by number: 1 the default, 2 details, 3 comments, 4 history, 5 the wide player. */
+const WATCH: readonly (() => LayoutNode)[] = [
+  watchPreset,
+  () => beside(['details']),
+  () => beside(['comments', 'chat']),
+  () => beside(['history']),
+  wide,
+];
 
 const PRESETS: Record<WmFamily, () => LayoutNode> = {
   watch: watchPreset,
@@ -82,5 +88,8 @@ const PRESETS: Record<WmFamily, () => LayoutNode> = {
   home: homePreset,
   shorts: shortsPreset,
 };
+/** Every family has `SPACES` workspaces (`wm/spaces.ts`). Those without a layout of their own start as a New tab page. */
 export const presetOf = (family: WmFamily, space = 1): LayoutNode =>
-  family === 'watch' && space === 2 ? readPreset() : PRESETS[family]();
+  space === 1
+    ? PRESETS[family]()
+    : ((family === 'watch' ? WATCH[space - 1]?.() : undefined) ?? pane([NEW_TAB]));

@@ -1,37 +1,34 @@
-// The workspace switcher: numbered chips and `+`, placed in the masthead's free space by the WM feature.
+// The workspace switcher: one numbered chip per workspace, placed in the masthead's free space by the WM feature.
 import { h } from '../shared/h.ts';
-import { MAX_SPACES, type Spaces } from './spaces.ts';
+import { SPACES } from './spaces.ts';
 
 export type SpacesBar = {
   readonly el: HTMLElement;
-  /** Draws the chips; `null` (tiling off) hides the bar. */
-  show(s: Spaces | null): void;
+  /** Marks the workspace showing; 0 (tiling off) hides the bar. */
+  show(active: number): void;
 };
 
-export function createSpacesBar(on: { pick(n: number): void; add(): void }): SpacesBar {
+export function createSpacesBar(pick: (n: number) => void): SpacesBar {
   const el = document.createElement('ytenrich-spaces');
+  const chips = Array.from({ length: SPACES }, (_, i) =>
+    h(
+      'button',
+      { title: `Workspace ${i + 1} (Alt+Shift+${i + 1})`, onclick: () => pick(i + 1) },
+      String(i + 1),
+    ),
+  );
+  el.append(...chips);
+  // Too narrow for all chips: they scroll sideways, by wheel as well.
+  el.addEventListener('wheel', (e) => void (el.scrollLeft += e.deltaY || e.deltaX), {
+    passive: true,
+  });
   return {
     el,
-    show(s) {
-      el.hidden = !s;
-      if (!s) return;
-      const chips = Array.from({ length: s.count }, (_, i) =>
-        h(
-          'button',
-          {
-            class: i + 1 === s.active ? 'on' : '',
-            title: `Workspace ${i + 1} (Alt+Shift+${i + 1})`,
-            onclick: () => on.pick(i + 1),
-          },
-          String(i + 1),
-        ),
-      );
-      const add = h(
-        'button',
-        { title: 'New workspace, a copy of this one. A pane’s menu removes it.', onclick: on.add },
-        '+',
-      );
-      el.replaceChildren(...chips, s.count < MAX_SPACES ? add : '');
+    show(active) {
+      el.hidden = !active;
+      chips.forEach((chip, i) => chip.classList.toggle('on', i + 1 === active));
+      const chip = chips[active - 1];
+      if (chip && el.isConnected) chip.scrollIntoView({ block: 'nearest', inline: 'nearest' });
     },
   };
 }

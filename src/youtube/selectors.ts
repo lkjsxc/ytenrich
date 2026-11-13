@@ -84,7 +84,7 @@ export const NATIVE_SLOTS = {
 export type NativeSlot = keyof typeof NATIVE_SLOTS;
 
 export const MASTHEAD = '#masthead-container';
-/** The masthead's left section (hamburger, logo): the workspace switcher sits at its end. */
+/** The masthead's left section (hamburger, logo): the workspace switcher follows it, before the search box. */
 export const MASTHEAD_START = 'ytd-masthead #start';
 export const GUIDE_BUTTON = 'ytd-masthead #guide-button';
 export const GUIDE_DRAWER = 'tp-yt-app-drawer#guide';

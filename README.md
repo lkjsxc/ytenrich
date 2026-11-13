@@ -11,7 +11,7 @@ A browser extension that makes YouTube more personal and more comfortable to use
   - Watch pages: the player sits above Details | Comments side by side, with recommendations on the right, all in resizable panes.
   - Home, search, channels, playlists and feeds: the guide sits on the left and the page itself is a tab next to Stats/Settings/Log.
   - Watch pages and the other pages each keep their own saved layout.
-  - **Workspaces**: each kind of page holds several layouts and shows one, like virtual desktops. The numbered chips next to the YouTube logo switch between them, as does `Alt+Shift+1`…`9`. Watch pages start with two: the player over Details | Comments, and the player beside Details and Comments at full height. `+` adds a copy of the one showing; a pane's `…` menu removes it.
+  - **Workspaces**: each kind of page has nine layouts and shows one, like virtual desktops. The numbered chips between the YouTube logo and the search box switch between them, as does `Alt+Shift+1`…`9`; on a narrow window the chips shrink with the search box and scroll sideways. On watch pages, 1 is the player over Details | Comments, 2 to 4 put Details, Comments or History at full height beside the player, and 5 gives the player the whole width with Details and Recommended below. Every other workspace starts as a New tab page to fill as you like.
   - Drag a tab to a pane edge to split that pane, onto a pane to join its tabs, or between tabs of a strip to reorder.
   - The ☰ button toggles YouTube's guide (sidebar) as a tile on the left instead of an overlay drawer.
   - On watch pages, Chat sits next to Comments, and the Shorts shelf of the recommendations can become its own tile (pane `+` menu → Shorts).
