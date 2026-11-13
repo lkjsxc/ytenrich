@@ -13,6 +13,8 @@ export type ProjEntry = {
 export type Projector = {
   sync(entries: readonly ProjEntry[]): void;
   refresh(): void;
+  /** Gives every element back to YouTube at once (tiling off, fullscreen). */
+  release(): void;
   dispose(): void;
 };
 
@@ -107,6 +109,18 @@ export function createProjector(log: Log): Projector {
     if (e.isTrusted) schedule();
   };
   window.addEventListener('resize', onResize);
+  function releaseAll(): void {
+    ro.disconnect();
+    entries = [];
+    cancelAnimationFrame(frame);
+    frame = 0;
+    clearTimeout(retryTimer);
+    clearTimeout(resizeTimer);
+    if (!tagged.size) return;
+    for (const t of tagged.values()) release(t.el);
+    tagged.clear();
+    window.dispatchEvent(new Event('resize'));
+  }
 
   return {
     sync(next) {
@@ -119,15 +133,10 @@ export function createProjector(log: Log): Projector {
       retries = RETRIES;
       invalidate();
     },
+    release: releaseAll,
     dispose() {
-      ro.disconnect();
-      cancelAnimationFrame(frame);
-      clearTimeout(retryTimer);
-      clearTimeout(resizeTimer);
+      releaseAll();
       window.removeEventListener('resize', onResize);
-      for (const t of tagged.values()) release(t.el);
-      tagged.clear();
-      window.dispatchEvent(new Event('resize'));
     },
   };
 }

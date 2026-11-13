@@ -27,7 +27,7 @@ const shot = { width: 1280, height: 800 };
 for (const dark of [false, true]) {
   const theme = dark ? 'dark' : 'light';
   const { ctx, page, welcome } = await launch(
-    { statsEnabled: true },
+    { statsEnabled: true, introDone: true },
     // No autoplay: no ads start, the player shows its poster.
     { ...shot, dark, args: ['--autoplay-policy=document-user-activation-required'] },
   );
@@ -41,8 +41,11 @@ for (const dark of [false, true]) {
         'ytd-mealbar-promo-renderer, tp-yt-paper-dialog, ytd-ad-slot-renderer, ytd-in-feed-ad-layout-renderer, ' +
         'ytd-search-pyv-renderer, ytd-promoted-sparkles-web-renderer, ytd-banner-promo-renderer { display: none !important; }',
     });
-  if (!dark) await welcome?.screenshot({ path: `${out}/4-welcome-consent.png` });
-  await welcome?.close();
+  if (!dark) {
+    const w = await welcome();
+    await w.screenshot({ path: `${out}/4-welcome-consent.png` });
+    await w.close();
+  }
   await page.goto('https://www.youtube.com/watch?v=dQw4w9WgXcQ', { waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(9000);
   await clean();

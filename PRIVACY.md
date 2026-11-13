@@ -6,7 +6,7 @@ ytenrich is a browser extension for `www.youtube.com`. It runs entirely in your 
 
 ## What ytenrich stores, and why
 
-**Stats** are on from the start, because they are what ytenrich is for. After installation, and once after the update that introduced this default, ytenrich opens a welcome page that says what is recorded and has a **Turn stats off** button. **Settings** has the same switch. While stats are on, ytenrich keeps a local record of:
+**Stats** are on from the start, because they are what ytenrich is for. After installation, ytenrich opens YouTube, where a welcome card above its recommended lists says what is recorded and has a **Turn stats off** button (it stays until you dismiss it). **Settings** has the same switch. While stats are on, ytenrich keeps a local record of:
 - each video or Short that YouTube shows you as a recommendation and that is at least half visible: its video ID, type (video or Short), title, channel name, the kind of page it appeared on (home, watch, search, channel, subscriptions, Shorts or other), how many times it was shown, and when it was first and last shown;
 - each video or Short that YouTube places on a page as a recommendation without it reaching your screen (further down a list, or in a list that your layout hides): the same details, with a shown count of zero, plus how many page views offered it and the kind of page that last did, and roughly when the video was uploaded (worked out from the age its tile shows, such as "3 months ago"). These fill the Recommended view. **Settings → Recommended: Collect** limits the record to what was on screen (`shown`);
 - how many times you opened each video and when you last opened it, which amounts to a list of the videos you watched (shown in the History view);

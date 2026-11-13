@@ -10,9 +10,10 @@ export const FILTERS: readonly (readonly [StatsFilter, string])[] = [
   ['dismissed', 'Not interested'],
 ];
 export const KINDS: readonly (readonly [StatsQuery['kind'], string])[] = [
-  ['all', 'Videos + Shorts'],
+  ['all', 'Everything'],
   ['video', 'Videos'],
   ['short', 'Shorts'],
+  ['mix', 'Mixes'],
 ];
 export const COLUMNS: readonly (readonly [StatsSort, string])[] = [
   ['seen', 'Shown'],

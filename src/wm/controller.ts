@@ -1,6 +1,5 @@
 // WM controller for one page kind: layout state, persistence, rendering, own-view mounts, projection.
 import type { Runtime } from '../content/runtime.ts';
-import { patchSettings } from '../shared/settings.ts';
 import type { WmFamily } from '../shared/types.ts';
 import { kindOf, viewOf, viewsOf } from '../views/registry.ts';
 import { onGuideButton } from '../youtube/guide.ts';
@@ -14,7 +13,7 @@ import { openMenu } from './menus.ts';
 import { createOptional, INTRODUCED_KEY } from './optional.ts';
 import { createOwnViews } from './own-views.ts';
 import { GUIDE_PX, presetOf } from './presets.ts';
-import { createProjector } from './projector.ts';
+import type { Projector } from './projector.ts';
 import { type Rendered, renderLayout } from './render.ts';
 import { startResize } from './resize.ts';
 import type { Space } from './spaces.ts';
@@ -22,14 +21,20 @@ import { startTabDrag } from './tab-drag.ts';
 
 export type Wm = { readonly family: WmFamily; refresh(): void; dispose(): void };
 
-export function createWmController(rt: Runtime, family: WmFamily, at: Space): Wm {
+/** `projector` outlives the controller: the next workspace takes the native elements over where this one left
+ * them, so YouTube never sees them released (the player would refit to its default size for a frame). */
+export function createWmController(
+  rt: Runtime,
+  family: WmFamily,
+  at: Space,
+  projector: Projector,
+): Wm {
   const preset = (): L.LayoutNode => presetOf(family, at.index);
   const VIEWS = viewsOf(family);
   const host = createHost();
   host.setTop(mastheadHeight());
-  const projector = createProjector(rt.log);
-  const { call, log, settings, scanner, page } = rt;
-  const env = { call, log, settings, scanner, page };
+  const { call, log, settings, scanner, page, channel } = rt;
+  const env = { call, log, settings, scanner, page, channel };
   const kinds = new Set(VIEWS.map((v) => v.id));
   /** Tabs this family can show: its views (own ones in any number) and New tab pages. */
   const known = {
@@ -97,7 +102,6 @@ export function createWmController(rt: Runtime, family: WmFamily, at: Space): Wm
         { label: 'Split down', run: splitTo('bottom'), disabled: p.tabs.length < 2 },
         { label: 'Close pane', run: () => set(L.closePane(root, p.id)) },
         { label: 'Reset layout', run: () => set(preset()) },
-        { label: 'Turn off tiling (Alt+W)', run: () => void patchSettings({ wmEnabled: false }) },
       ]);
     },
     onAdd(p: L.PaneNode) {
@@ -175,7 +179,6 @@ export function createWmController(rt: Runtime, family: WmFamily, at: Space): Wm
       optional.dispose();
       offLook();
       offPage();
-      projector.dispose();
       own.dispose();
       host.dispose();
     },

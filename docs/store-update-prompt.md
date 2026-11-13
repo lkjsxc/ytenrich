@@ -32,8 +32,8 @@ Do these steps, and stop to ask the owner whenever a dashboard shows something t
 4. **Firefox.** No change to the data-collection declaration: the Firefox build transmits nothing (it has no
    image loading), and local storage is not "data collection" in Mozilla's sense. Only update the descriptions.
 5. **Reviewer notes** (wherever a dashboard has a notes-for-reviewer field): "Local statistics are on by
-   default and described on the welcome page that opens after installation, which also has a Turn stats off
-   button. All data stays in the browser. On Chromium, thumbnails are loaded from i.ytimg.com and yt3.ggpht.com."
+   default and described on the welcome card shown on YouTube after installation, which also has a Turn stats
+   off button. All data stays in the browser. On Chromium, thumbnails are loaded from i.ytimg.com and yt3.ggpht.com."
 6. **Pending submissions.** For each store, report which version is live, which is in review, and whether a
    review was rejected (quote the reason). Do not cancel or withdraw anything without asking the owner.
 7. When a store has no submission in review, tell the owner so the newest version can be submitted from GitHub

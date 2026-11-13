@@ -4,9 +4,11 @@ import { type LayoutNode, pane, split } from './layout.ts';
 
 export const GUIDE_PX = 240; // YouTube's guide renderer width
 
-/** Watch pages, home and the Shorts player have their own families; every other page is `browse`. */
+/** Watch pages, home, channel pages and the Shorts player have their own families; every other page is `browse`. */
 export function familyOf(kind: PageKind): WmFamily {
-  return kind === 'watch' || kind === 'shorts' || kind === 'home' ? kind : 'browse';
+  return kind === 'watch' || kind === 'shorts' || kind === 'home' || kind === 'channel'
+    ? kind
+    : 'browse';
 }
 
 /** Default watch-page workspace: player over details | comments+chat | history, ytenrich's Recommended on the right
@@ -24,7 +26,7 @@ export function watchPreset(): LayoutNode {
         ],
         [0.7, 0.3],
       ),
-      pane(['playlist', 'recommended', 'stats', 'settings', 'log']),
+      pane(['playlist', 'recommended', 'channel-videos', 'stats', 'settings', 'log']),
     ],
     [0.66, 0.34],
   );
@@ -36,7 +38,7 @@ const withGuide = (tabs: string[], width: number): LayoutNode => {
 };
 const OWN = ['stats', 'history', 'settings', 'log'];
 
-/** Default for search/channel/feeds: guide on the left, the page itself with own views as tabs. */
+/** Default for search, feeds and the rest: guide on the left, the page itself with own views as tabs. */
 export function browsePreset(width = globalThis.innerWidth || 1600): LayoutNode {
   return withGuide(['page', ...OWN], width);
 }
@@ -44,6 +46,21 @@ export function browsePreset(width = globalThis.innerWidth || 1600): LayoutNode 
 /** Default for home: ytenrich's recommended Videos and Shorts (YouTube's own feed is the Default views, via `+`). */
 export function homePreset(width = globalThis.innerWidth || 1600): LayoutNode {
   return withGuide(['recommended', 'recommended-shorts', ...OWN], width);
+}
+
+/** Default for channel pages: guide, the channel page itself, and beside it ytenrich's picks from this channel
+ * (unopened videos it showed you, ranked for you), with the general Recommended behind them. */
+export function channelPreset(width = globalThis.innerWidth || 1600): LayoutNode {
+  const f = Math.min(0.3, GUIDE_PX / Math.max(width, 800));
+  return split(
+    'row',
+    [
+      pane(['guide']),
+      pane(['page']),
+      pane(['channel-videos', 'recommended', 'history', 'stats', 'settings', 'log']),
+    ],
+    [f, (1 - f) * 0.64, (1 - f) * 0.36],
+  );
 }
 
 /** Default for the Shorts player (a narrow column): recently recommended videos beside it. */
@@ -55,7 +72,7 @@ export function shortsPreset(): LayoutNode {
   );
 }
 
-const BELOW = ['playlist', 'recommended', 'history', 'stats', 'settings', 'log'];
+const BELOW = ['playlist', 'recommended', 'channel-videos', 'history', 'stats', 'settings', 'log'];
 /** Watch workspaces 2–4: the player over the other tabs, and `tabs` at full height beside them. */
 const beside = (tabs: string[]): LayoutNode =>
   split(
@@ -70,7 +87,10 @@ const beside = (tabs: string[]): LayoutNode =>
 const wide = (): LayoutNode =>
   split(
     'col',
-    [pane(['player']), split('row', [pane(['details']), pane(['playlist', 'recommended'])])],
+    [
+      pane(['player']),
+      split('row', [pane(['details']), pane(['playlist', 'recommended', 'channel-videos'])]),
+    ],
     [0.68, 0.32],
   );
 /** Watch workspaces by number: 1 the default, 2 details, 3 comments, 4 history, 5 the wide player. */
@@ -86,6 +106,7 @@ const PRESETS: Record<WmFamily, () => LayoutNode> = {
   watch: watchPreset,
   browse: browsePreset,
   home: homePreset,
+  channel: channelPreset,
   shorts: shortsPreset,
 };
 /** Every family has `SPACES` workspaces (`wm/spaces.ts`). Those without a layout of their own start as a New tab page. */

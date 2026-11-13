@@ -1,6 +1,7 @@
-// Notes above the Recommended list: the images hint.
+// Notes above the Recommended list: the first-run welcome card and the images hint.
 import { h } from '../shared/h.ts';
 import { patchSettings, type Settings } from '../shared/settings.ts';
+import { introCard } from './consent.ts';
 
 function imagesHint(): HTMLElement {
   return h(
@@ -19,5 +20,8 @@ function imagesHint(): HTMLElement {
 }
 
 export function recoNotes(s: Settings): (HTMLElement | null)[] {
-  return [!__FIREFOX__ && !s.thumbnailsEnabled ? imagesHint() : null];
+  return [
+    s.introDone ? null : introCard(s.statsEnabled),
+    !__FIREFOX__ && !s.thumbnailsEnabled ? imagesHint() : null,
+  ];
 }

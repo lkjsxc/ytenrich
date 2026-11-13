@@ -2,7 +2,9 @@
 import { createDisposables } from '../../shared/signal.ts';
 import type { Impression, Kind } from '../../shared/types.ts';
 import { ageOf, channelOf } from '../../youtube/extract.ts';
+import { pageMixId } from '../../youtube/route.ts';
 import type { Feature } from '../features.ts';
+import { movedShort } from './shorts.ts';
 
 const FLUSH_MS = 2000;
 const MAX_BUFFER = 500; // impressions buffered between flushes
@@ -43,6 +45,7 @@ export const stats: Feature = {
           title: item.title,
           channel: item.channel,
           age: ageOf(item.el),
+          video: item.video,
         });
         timer ??= setTimeout(flush, FLUSH_MS);
       }),
@@ -81,22 +84,32 @@ export const stats: Feature = {
     d.add(() => titleMo?.disconnect());
 
     let lastOpenedNav = 0;
+    const mixes = new Set<string>(); // bound: Mixes opened in this tab (one per click on a Mix tile)
+    const send = (req: { id: string; kind: Kind; title: string; channel: string }): void =>
+      void rt
+        .call('opened', req)
+        .catch((e: unknown) => rt.log.write('warn', 'stats', `opened: ${String(e)}`));
     const opened = (): void => {
-      const { videoId, kind, nav } = rt.page.get();
+      const { videoId, kind, nav, url } = rt.page.get();
       if (!videoId || !rt.settings.get().statsEnabled || nav === lastOpenedNav) return;
+      // The Shorts player hands over to the watch player (features/shorts.ts), which records it.
+      if (kind === 'shorts' && rt.settings.get().shortsAsVideos) return;
       lastOpenedNav = nav;
+      // A Mix counts as opened once, when it starts from a tile of it; every video it plays counts as well.
+      const mix = pageMixId(new URL(url));
+      const tile = mix ? recent.get(mix) : undefined;
+      if (mix && tile && !mixes.has(mix)) mixes.add(mix), send({ id: mix, ...tile, kind: 'mix' });
       const meta = recent.get(videoId);
+      const short = kind === 'shorts' || movedShort() === videoId;
       const req = {
         id: videoId,
-        kind: kind === 'shorts' ? 'short' : 'video',
+        kind: short ? 'short' : 'video',
         title: meta?.title ?? '',
         channel: meta?.channel ?? '',
       } as const;
       rt.suppressed.delete(videoId);
       if (!req.title) describeLater(videoId);
-      rt.call('opened', req).catch((e: unknown) =>
-        rt.log.write('warn', 'stats', `opened: ${String(e)}`),
-      );
+      send(req);
     };
     opened();
     d.add(rt.page.subscribe(opened));

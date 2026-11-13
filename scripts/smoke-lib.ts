@@ -42,15 +42,24 @@ export async function launch(settings: Record<string, unknown> = {}, opts: Launc
   );
   const sw = ctx.serviceWorkers()[0] ?? (await ctx.waitForEvent('serviceworker'));
   await sw.evaluate((s) => chrome.storage.local.set({ settings: s }), settings);
-  // First install opens the welcome (consent) page in its own tab.
-  const isWelcome = (p: Page): boolean => p.url().includes('options.html#welcome');
-  const welcome =
-    ctx.pages().find(isWelcome) ??
+  // First install opens YouTube in its own tab (the welcome card lives there); the smokes drive `page` instead.
+  const isInstall = (p: Page): boolean =>
+    p !== page && p.url().startsWith('https://www.youtube.com');
+  const installTab =
+    ctx.pages().find(isInstall) ??
     (await ctx
-      .waitForEvent('page', { predicate: isWelcome, timeout: 5000 })
+      .waitForEvent('page', { predicate: isInstall, timeout: 4000 })
       .catch(() => undefined));
+  await installTab?.close();
   await page.bringToFront(); // background tabs pause rAF, and the projector schedules with it
-  return { ctx, page, sw, errors, welcome };
+  const extId = new URL(sw.url()).host;
+  /** The welcome page, which install no longer opens (store screenshots, consent smoke). */
+  const welcome = async (): Promise<Page> => {
+    const p = await ctx.newPage();
+    await p.goto(`chrome-extension://${extId}/options.html#welcome`);
+    return p;
+  };
+  return { ctx, page, sw, errors, welcome, installed: Boolean(installTab) };
 }
 
 /** "left,top,width,height" of an element (light DOM selector, or `shadow:` prefix for the WM shadow root). */

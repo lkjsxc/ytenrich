@@ -144,13 +144,7 @@ export function mountStats(el: HTMLElement, env: ViewEnv): () => void {
 
   main.append(top, channelBox, table.el);
   el.replaceChildren(
-    h(
-      'div',
-      { class: 'stats' },
-      h('div', { class: 'stats-head' }, h('h2', null, 'Stats'), rangeBox),
-      note,
-      main,
-    ),
+    h('div', { class: 'stats' }, h('div', { class: 'stats-head' }, rangeBox), note, main),
   );
   paintRange();
   paintNote(false);

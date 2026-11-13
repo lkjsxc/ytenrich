@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { json, request, waitFor } from './store-api.ts';
 
 const notes =
-  'Open a YouTube watch page in a normal desktop window. Resize or split panes and use Alt+W to toggle the layout. Local statistics are on by default; open the Stats tab to see them. To test the Not interested shortcut, use a reviewer-controlled YouTube account and a recommendation with that native menu item.';
+  'Open a YouTube watch page in a normal desktop window. Resize or split panes and switch workspaces with the numbers in the masthead. Local statistics are on by default; open the Stats tab to see them. To test the Not interested shortcut, use a reviewer-controlled YouTube account and a recommendation with that native menu item.';
 
 function credential(name: string): string {
   const value = process.env[name];

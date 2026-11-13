@@ -15,8 +15,11 @@ import {
   META_ROW,
   META_TEXT,
   NOT_RECO,
+  SHORTS_ANCHOR,
+  SHOWN_CHANNEL_NAME,
   TITLE,
   VIDEO_ANCHOR,
+  WATCH_OWNER_NAME,
 } from './selectors.ts';
 
 export type ItemInfo = {
@@ -25,6 +28,8 @@ export type ItemInfo = {
   title: string;
   channel: string;
   anchor: HTMLAnchorElement;
+  /** Mixes: the video the list opens with. */
+  video?: string;
 };
 
 export function parseHref(href: string): { id: string; kind: Kind } | undefined {
@@ -33,6 +38,9 @@ export function parseHref(href: string): { id: string; kind: Kind } | undefined 
   const watch = /^\/watch\?(?:.*&)?v=([\w-]{6,})/.exec(href);
   return watch?.[1] ? { id: watch[1], kind: 'video' } : undefined;
 }
+
+/** The list id of a Mix link (`/watch?v=…&list=RD…`); other playlists are not items. */
+export const mixOf = (href: string): string | undefined => /[?&]list=(RD[\w-]+)/.exec(href)?.[1];
 
 export function anchorsIn(node: Element): Iterable<HTMLAnchorElement> {
   return node.matches(VIDEO_ANCHOR)
@@ -65,6 +73,7 @@ function firstText(root: Element, selectors: readonly string[]): string {
  * found without a channel is asked again when it is recorded.
  */
 export function channelOf(root: Element): string {
+  if (root.matches(LIST_TILE)) return ''; // its channel line names several channels
   const classic = clean(root.querySelector(CHANNEL_CLASSIC));
   if (classic) return classic;
   const rows = root.querySelectorAll(META_ROW);
@@ -78,9 +87,26 @@ export function channelOf(root: Element): string {
 export function extractItem(root: Element): ItemInfo | undefined {
   const anchor = root.querySelector<HTMLAnchorElement>(VIDEO_ANCHOR);
   const parsed = anchor && parseHref(anchor.getAttribute('href') ?? '');
-  // A Mix or playlist tile links to its first video, but it is a list, not that video.
-  if (!anchor || !parsed || root.matches(LIST_TILE)) return undefined;
-  return { ...parsed, anchor, title: firstText(root, TITLE), channel: channelOf(root) };
+  if (!anchor || !parsed) return undefined;
+  const title = firstText(root, TITLE);
+  if (!root.matches(LIST_TILE)) return { ...parsed, anchor, title, channel: channelOf(root) };
+  // A Mix or playlist tile links to its first video, but it is a list, not that video: a Mix is an item of its
+  // own under its list id, a playlist is none.
+  const list = mixOf(anchor.getAttribute('href') ?? '');
+  return list ? { id: list, kind: 'mix', video: parsed.id, anchor, title, channel: '' } : undefined;
+}
+
+/** The channel the current page is about ('' on pages about none, or before it has rendered). */
+export function pageChannel(kind: string): string {
+  const sel = kind === 'watch' ? WATCH_OWNER_NAME : kind === 'channel' ? SHOWN_CHANNEL_NAME : '';
+  return sel ? clean(document.querySelector(sel)) : '';
+}
+
+/** The Short a click lands on, if it is a plain link to one. */
+export function shortsLinkOf(target: EventTarget | null): string | undefined {
+  const a = (target as Element | null)?.closest?.(SHORTS_ANCHOR);
+  const parsed = parseHref(a?.getAttribute('href') ?? '');
+  return parsed?.kind === 'short' ? parsed.id : undefined;
 }
 
 export function menuHostOf(root: Element): Element | null {

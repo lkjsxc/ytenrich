@@ -4,7 +4,7 @@ import { h } from '../shared/h.ts';
 import { onStatsChanged } from '../shared/protocol.ts';
 import { dayKey, type StatsPage, type StatsQuery, type VideoStat } from '../shared/types.ts';
 import { autoMore, grow, type Keyed, keyed } from './more.ts';
-import { openVideo, videoUrl } from './open.ts';
+import { kindBadge, openVideo, thumbUrl, videoUrl } from './open.ts';
 import type { ViewEnv } from './registry.ts';
 import { dayText } from './stats/format.ts';
 
@@ -43,8 +43,8 @@ export function mountHistory(el: HTMLElement, env: ViewEnv): () => void {
       'a',
       {
         class: 'hrow',
-        href: videoUrl(v.id, v.kind),
-        onclick: (e) => openVideo(e as MouseEvent, v.id, v.kind, env),
+        href: videoUrl(v),
+        onclick: (e) => openVideo(e as MouseEvent, v, env),
       },
       h(
         'span',
@@ -60,7 +60,7 @@ export function mountHistory(el: HTMLElement, env: ViewEnv): () => void {
             class: v.kind === 'short' ? 'thumb tall' : 'thumb',
             crossorigin: 'anonymous',
             referrerpolicy: 'no-referrer',
-            src: `https://i.ytimg.com/vi/${v.id}/default.jpg`,
+            src: thumbUrl(v, 'default'),
             loading: 'lazy',
             alt: '',
           })
@@ -69,7 +69,7 @@ export function mountHistory(el: HTMLElement, env: ViewEnv): () => void {
         'span',
         { class: 'htext' },
         v.title || v.id,
-        v.kind === 'short' ? h('span', { class: 'badge' }, 'Short') : null,
+        kindBadge(v) ? h('span', { class: 'badge' }, kindBadge(v)) : null,
         v.opened > 1 ? h('span', { class: 'badge' }, `opened ${v.opened}×`) : null,
         h('div', { class: 'muted' }, v.channel),
       ),
@@ -122,11 +122,7 @@ export function mountHistory(el: HTMLElement, env: ViewEnv): () => void {
     );
   }
 
-  el.replaceChildren(
-    h('div', { class: 'stats-head' }, h('h2', null, 'History'), search),
-    list,
-    foot,
-  );
+  el.replaceChildren(h('div', { class: 'stats-head' }, search), list, foot);
   refresh();
   const offStats = onStatsChanged(refresh);
   const offSettings = env.settings.subscribe(refresh);

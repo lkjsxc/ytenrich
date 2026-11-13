@@ -3,6 +3,7 @@ import { createLog, type Log } from '../shared/log.ts';
 import { call } from '../shared/protocol.ts';
 import { DEFAULT_SETTINGS, loadSettings, onSettings, type Settings } from '../shared/settings.ts';
 import { createSignal, type Signal } from '../shared/signal.ts';
+import { pageChannel } from '../youtube/extract.ts';
 import { createRouteSignal, type Page } from './route-signal.ts';
 import { createScanner, type Scanner } from './scanner.ts';
 
@@ -10,6 +11,8 @@ export type Runtime = {
   readonly settings: Signal<Settings>;
   readonly page: Signal<Page>;
   readonly scanner: Scanner;
+  /** Name of the channel the page is about (watch owner, channel page), '' elsewhere or before it renders. */
+  readonly channel: Signal<string>;
   readonly log: Log;
   readonly call: typeof call;
   /** Ids the hide feature currently suppresses (shared with views such as Shorts). */
@@ -25,15 +28,20 @@ export function createRuntime(): Runtime {
   const offSettings = onSettings(settings.set);
   const route = createRouteSignal();
   const scanner = createScanner(route.page);
+  const channel = createSignal('');
+  const readChannel = (): void => channel.set(pageChannel(route.page.get().kind));
+  const offChannel = [scanner.onTick(readChannel), route.page.subscribe(readChannel)];
   return {
     settings,
     page: route.page,
     scanner,
+    channel,
     log: createLog(),
     call,
     hidden: createSignal(0),
     suppressed: new Set(), // bound: suppressed ids loaded from background (filtered by threshold)
     dispose() {
+      for (const off of offChannel) off();
       offSettings();
       route.dispose();
       scanner.dispose();

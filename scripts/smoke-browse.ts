@@ -1,10 +1,11 @@
 // Live smoke for tiling on non-watch pages (search, channel) and switching layout families via SPA navigation.
 import { launch, rect, tabs } from './smoke-lib.ts';
 
-const { ctx, page, sw, errors, welcome } = await launch();
-// Welcome tab: opens on install, states what is recorded, and its switch turns stats off and on again.
-const consent = { welcome: Boolean(welcome), before: false, after: false };
-if (welcome) {
+const { ctx, page, sw, errors, welcome: openWelcome, installed } = await launch();
+// Install opens YouTube. The welcome page states what is recorded, and its switch turns stats off and on again.
+const consent = { installed, before: false, after: false };
+{
+  const welcome = await openWelcome();
   await welcome.waitForLoadState();
   const on = () =>
     sw.evaluate(async () =>

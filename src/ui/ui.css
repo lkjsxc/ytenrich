@@ -164,8 +164,15 @@ td button.link:hover { background: none; text-decoration: underline; }
 .hrow .num { text-align: left; }
 .htext { overflow-wrap: anywhere; }
 .hrow:hover { background: var(--hover); }
-/* Recommended */
-.rgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 14px 10px; margin-top: 10px; }
+/* Recommended: no heading (the tab names it), only ⚙ for this tab's own settings (views/reco-panel.ts). */
+.rbar { display: flex; justify-content: flex-end; margin: -8px -10px 2px 0; }
+.rgear { width: 24px; height: 24px; border-radius: 50%; color: var(--muted); font-size: 15px; line-height: 24px; }
+.rgear:hover, .rgear.on { color: var(--fg); background: var(--raised); }
+.rpanel { display: flex; flex-direction: column; gap: 8px; margin: 0 0 10px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--raised); }
+.prow { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; }
+.prow > .muted:first-child { flex: 0 0 48px; }
+.prow input[type="text"] { flex: 1 1 160px; min-width: 0; }
+.rgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 14px 10px; margin-top: 4px; }
 .rgrid.text { grid-template-columns: 1fr; gap: 0; }
 .rcard { position: relative; display: flex; flex-direction: column; gap: 2px; min-width: 0; color: var(--fg); text-decoration: none; font-size: 12px; }
 .rcard img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; margin-bottom: 4px; border-radius: 8px; background: var(--raised); }
@@ -185,8 +192,7 @@ td button.link:hover { background: none; text-decoration: underline; }
 .rno { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; margin: -4px -4px 0 0; padding: 0; border: 0; border-radius: 50%; background: transparent; color: var(--muted); }
 .rno svg { width: 20px; height: 20px; }
 .rno:hover, .rno:focus-visible { background: var(--raised); color: var(--fg); outline: none; }
-.rchan { grid-column: 1 / -1; margin: 10px 0 0; font-size: 14px; font-weight: 600; }
-.rchan { display: flex; align-items: center; gap: 8px; }
+.rchan { grid-column: 1 / -1; display: flex; align-items: center; gap: 8px; margin: 10px 0 0; font-size: 14px; font-weight: 600; }
 .rchan img { width: 28px; height: 28px; border-radius: 50%; background: var(--raised); }
 .rchan a { color: var(--fg); text-decoration: none; }
 .rchan a:hover { color: var(--accent); }

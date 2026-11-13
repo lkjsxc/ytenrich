@@ -1,11 +1,12 @@
-// Recommended view query: the newest still-unopened recommendations, ranked by the user's own record.
-import { rankByChannel, rankVideos } from '../shared/recommend.ts';
+// Recommended view query: the newest recommendations a tab asks for, ranked by the user's own record.
+import { groupByChannel, PER_CHANNEL, rankNewest, rankVideos } from '../shared/recommend.ts';
 import { learn } from '../shared/taste.ts';
-import type { ChannelStat, RecoMode, RecoPage, VideoStat } from '../shared/types.ts';
+import type { ChannelStat, RecoPage, RecoQuery, VideoStat } from '../shared/types.ts';
 import { CHANNELS, done, openDb, VIDEOS, walk } from './db.ts';
 import type { Judge } from './suppress.ts';
 
 const POOL = 2000; // newest candidates considered per query
+const SCAN = 4000; // rows read for the taste model when a channel's own rows are the pool
 const STOCK = 1500; // fresh candidates worth holding; below it, pages are asked to collect more
 const FRESH_MS = 72 * 3600_000;
 
@@ -13,45 +14,58 @@ const TASTE_TITLES = 400; // titles per class the taste model learns from
 
 type Ranking = { ranked: VideoStat[]; channels: Map<string, ChannelStat> };
 
-async function rankAll(mode: RecoMode, sup: Judge): Promise<Ranking> {
+async function rankAll(q: RecoQuery, sup: Judge): Promise<Ranking> {
   const tx = (await openDb()).transaction([VIDEOS, CHANNELS]);
   const videos = tx.objectStore(VIDEOS);
-  const pool: VideoStat[] = []; // bound: POOL
+  // Opened ones only when asked; over-exposed and dismissed ones never.
+  const fits = (s: VideoStat): boolean =>
+    q.kinds.includes(s.kind) && !s.dismissedAt && (s.opened ? q.opened : !sup(s));
+  let pool: VideoStat[] = []; // bound: POOL, or one channel's rows
   const dismissed: string[] = []; // bound: TASTE_TITLES
+  const ignored: string[] = []; // bound: TASTE_TITLES; on screen at least twice and still unopened
+  let scanned = 0;
   await walk(videos.index('lastSeen'), null, 'prev', (c) => {
     const s = c.value as VideoStat;
-    const kind = mode === 'channel' || s.kind === mode;
     if (s.dismissedAt && dismissed.length < TASTE_TITLES) dismissed.push(s.title);
-    if (kind && !s.opened && !s.dismissedAt && !sup(s)) pool.push(s);
-    return pool.length < POOL;
+    if (!s.opened && s.seen > 1 && ignored.length < TASTE_TITLES) ignored.push(s.title);
+    if (!q.channel && fits(s)) pool.push(s);
+    return q.channel ? ++scanned < SCAN : pool.length < POOL;
   });
+  if (q.channel)
+    pool = (await done<VideoStat[]>(videos.index('channel').getAll(q.channel))).filter(fits);
   const opened: string[] = []; // bound: TASTE_TITLES
   await walk(videos.index('openedAt'), IDBKeyRange.lowerBound(1), 'prev', (c) => {
     return opened.push((c.value as VideoStat).title) < TASTE_TITLES;
   });
-  // Passed over: on screen at least twice and still unopened.
-  const ignored = pool.filter((v) => v.seen > 1).map((v) => v.title);
-  const taste = learn(opened, ignored.slice(0, TASTE_TITLES), dismissed);
+  const taste = learn(opened, ignored, dismissed);
   const names = [...new Set(pool.map((v) => v.channel).filter(Boolean))];
   const store = tx.objectStore(CHANNELS);
   const stats = await Promise.all(names.map((n) => done<ChannelStat | undefined>(store.get(n))));
   const channels = new Map(stats.flatMap((c) => (c ? [[c.name, c] as const] : []))); // bound: ≤ POOL
-  const rank = mode === 'channel' ? rankByChannel : rankVideos;
-  return { ranked: rank(pool, channels, Date.now(), taste), channels };
+  const ordered =
+    q.order === 'newest'
+      ? rankNewest(pool)
+      : rankVideos(pool, channels, Date.now(), taste, !q.channel);
+  const ranked = q.group ? groupByChannel(ordered, q.channel ? Infinity : PER_CHANNEL) : ordered;
+  return { ranked, channels };
 }
 
-// The last ranking per mode is kept until the record changes (or a minute passes, since freshness moves the
-// order): the view's refreshes and its "load more" pages then cost one slice. Bound: 3 modes × POOL rows.
+// The last rankings are kept until the record changes (or a minute passes, since freshness moves the order): a
+// tab's refreshes and its "load more" pages then cost one slice. Bound: MEMO_MAX queries × POOL rows.
 const MEMO_MS = 60_000;
-const memo = new Map<RecoMode, { at: number; ranking: Ranking }>();
+const MEMO_MAX = 8;
+const memo = new Map<string, { at: number; ranking: Ranking }>();
 /** The record or the settings changed: rankings are stale. */
 export const touch = (): void => memo.clear();
 
-export async function recommend(mode: RecoMode, limit: number, sup: Judge): Promise<RecoPage> {
-  let hit = memo.get(mode);
+export async function recommend(q: RecoQuery, limit: number, sup: Judge): Promise<RecoPage> {
+  const key = JSON.stringify(q);
+  let hit = memo.get(key);
   if (!hit || Date.now() - hit.at > MEMO_MS) {
-    hit = { at: Date.now(), ranking: await rankAll(mode, sup) };
-    memo.set(mode, hit);
+    hit = { at: Date.now(), ranking: await rankAll(q, sup) };
+    memo.delete(key);
+    memo.set(key, hit);
+    for (const old of memo.keys()) if (memo.size > MEMO_MAX) memo.delete(old);
   }
   const { ranked, channels } = hit.ranking;
   const rows = ranked.slice(0, limit);
@@ -60,7 +74,7 @@ export async function recommend(mode: RecoMode, limit: number, sup: Judge): Prom
     rows,
     more: ranked.length > limit,
     suppressed: [],
-    channels: mode === 'channel' ? [...channels.values()].filter((c) => shown.has(c.name)) : [],
+    channels: q.group ? [...channels.values()].filter((c) => shown.has(c.name)) : [],
   };
 }
 

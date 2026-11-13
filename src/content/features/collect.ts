@@ -57,8 +57,8 @@ export const collect: Feature = {
       rt.scanner.onItem((item) => {
         if (mode() === 'shown' || offered.has(item.id) || buffer.length >= MAX_BUFFER) return;
         offered.add(item.id);
-        const { id, kind, surface, title, channel } = item;
-        buffer.push({ item: { id, kind, surface, title, channel }, el: item.el });
+        const { id, kind, surface, title, channel, video } = item;
+        buffer.push({ item: { id, kind, surface, title, channel, video }, el: item.el });
         timer ??= setTimeout(flush, FLUSH_MS);
         if (offered.size >= MIN_PER_PAGE) steer();
       }),

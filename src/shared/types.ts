@@ -1,9 +1,10 @@
-export type Kind = 'video' | 'short';
+/** `mix`: a Mix tile (YouTube's endless radio list), keyed by its list id; `video` names the video it opens with. */
+export type Kind = 'video' | 'short' | 'mix';
 export type Surface = 'home' | 'watch' | 'search' | 'channel' | 'subs' | 'shorts' | 'other';
 export type PageKind = Surface;
-/** Tiling layout family: watch pages, the Shorts player, or every other page (the last two are projected
- * whole as the `page` view). Each family keeps its own saved layout. */
-export type WmFamily = 'watch' | 'browse' | 'home' | 'shorts';
+/** Tiling layout family: watch pages, home, channel pages, the Shorts player, or every other page (the page
+ * itself is projected whole as the `page` view outside watch pages). Each family keeps its own saved layouts. */
+export type WmFamily = 'watch' | 'browse' | 'home' | 'channel' | 'shorts';
 
 export type Impression = {
   readonly id: string;
@@ -15,6 +16,8 @@ export type Impression = {
   readonly age?: string;
   /** Address of the channel's avatar image, when the tile shows one. */
   readonly icon?: string;
+  /** Mixes: the video the list opens with. */
+  readonly video?: string;
 };
 
 export type VideoStat = {
@@ -36,6 +39,8 @@ export type VideoStat = {
   /** Kind of page that last offered or showed it. */
   via: Surface | '';
   surfaces: Partial<Record<Surface, number>>;
+  /** Mixes: the video the list opens with ('' otherwise; absent in rows from before mixes). */
+  video: string;
 };
 
 /** One local calendar day. `hours` holds 24 impression counts by local hour. */
@@ -86,9 +91,18 @@ export type StatsQuery = {
 };
 /** `suppressed`: ids among `rows` that count as over-exposed right now. */
 export type StatsPage = { rows: VideoStat[]; more: boolean; suppressed: string[] };
-/** Recommended view: videos, Shorts, or both grouped under the channels the user likes most. */
-export type RecoMode = 'video' | 'short' | 'channel';
-/** `channels`: stats of the channels in `rows` (channel mode only). */
+/** `ranked`: by the user's own record (`shared/recommend.ts`); `newest`: by upload time. */
+export type RecoOrder = 'ranked' | 'newest';
+/** What one Recommended tab asks for (its settings, `views/reco-spec.ts`, with the channel resolved).
+ * `channel`: exact name, '' for every channel. `group`: under channel headings. `opened`: also opened ones. */
+export type RecoQuery = {
+  readonly kinds: readonly Kind[];
+  readonly channel: string;
+  readonly group: boolean;
+  readonly opened: boolean;
+  readonly order: RecoOrder;
+};
+/** `channels`: stats of the channels in `rows` (grouped queries only). */
 export type RecoPage = StatsPage & { channels: ChannelStat[] };
 /** `days` is newest first and sparse (days without activity are absent), at most OVERVIEW_DAYS long (in effect all). */
 export type Overview = { videos: number; channels: number; suppressed: number; days: DayStat[] };

@@ -46,6 +46,7 @@ export function emptyStat(id: string, now: number): VideoStat {
     published: 0,
     via: '',
     surfaces: {},
+    video: '',
   };
 }
 
@@ -71,6 +72,7 @@ export function applyImpression(
     via: item.surface,
     seen: s.seen + 1,
     surfaces: { ...s.surfaces, [item.surface]: (s.surfaces[item.surface] ?? 0) + 1 },
+    video: item.video || s.video || '',
   };
 }
 
@@ -86,6 +88,7 @@ export function applyOffer(prev: VideoStat | undefined, item: Impression, now: n
     offers: s.offers + 1,
     published: publishedAt(s, item, now),
     via: item.surface,
+    video: s.video || item.video || '',
   };
 }
 

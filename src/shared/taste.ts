@@ -29,9 +29,13 @@ function counts(titles: readonly string[]): Map<string, number> {
   return m;
 }
 
+const CONFIDENT = 15; // opened titles after which the taste counts for half its full weight
+
 /**
  * Weight per token: the smoothed log-odds of it appearing in an opened title against a passed-over one
  * (shown or dismissed, never opened). Dismissed titles count three times. Positive means "this person opens these".
+ * Scaled by how many opens it rests on: a new user's one or two opens would otherwise make every word of those
+ * titles a strong signal, and the list would fill with look-alikes.
  */
 export function learn(
   opened: readonly string[],
@@ -44,11 +48,12 @@ export function learn(
   const yesAll = opened.length + 1;
   const noAll = ignored.length + 3 * dismissed.length + 1;
   const taste = new Map<string, number>(); // bound: tokens of the titles passed in
+  const trust = opened.length / (opened.length + CONFIDENT);
   for (const k of new Set([...yes.keys(), ...no.keys()])) {
     const y = yes.get(k) ?? 0;
     const n = no.get(k) ?? 0;
     if (y + n < 2) continue; // one sighting says nothing
-    taste.set(k, Math.log((y + 0.5) / yesAll) - Math.log((n + 0.5) / noAll));
+    taste.set(k, trust * (Math.log((y + 0.5) / yesAll) - Math.log((n + 0.5) / noAll)));
   }
   return taste;
 }

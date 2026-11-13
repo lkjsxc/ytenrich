@@ -17,5 +17,13 @@ export function pageVideoId(url: URL): string | undefined {
   return /^\/(?:shorts|live)\/([\w-]{6,})/.exec(url.pathname)?.[1];
 }
 
+/** The Mix a watch page plays (`list=RD…`), if any. */
+export function pageMixId(url: URL): string | undefined {
+  const list = url.pathname === '/watch' ? url.searchParams.get('list') : null;
+  return list?.startsWith('RD') ? list : undefined;
+}
+
+export const watchUrl = (id: string): string => `https://www.youtube.com/watch?v=${id}`;
+
 /** Fired by YouTube's SPA router after every in-app navigation. */
 export const NAV_EVENT = 'yt-navigate-finish';

@@ -12,6 +12,8 @@ export type RecoItem = {
   readonly surface: Surface;
   readonly title: string;
   readonly channel: string;
+  /** Mixes: the video the list opens with. */
+  readonly video?: string;
 };
 type Listener = (item: RecoItem) => void;
 

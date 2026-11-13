@@ -86,7 +86,7 @@ export async function offer(items: readonly Impression[]): Promise<void> {
     const next = applyOffer(await done<VideoStat | undefined>(videos.get(item.id)), item, now);
     videos.put(next);
     track(next);
-    if (item.icon && next.channel === item.channel && isAvatarUrl(item.icon))
+    if (item.icon && item.channel && next.channel === item.channel && isAvatarUrl(item.icon))
       icons.set(item.channel, item.icon);
   }
   for (const [name, icon] of icons) {
@@ -121,7 +121,7 @@ export function opened(req: Pick<VideoStat, 'id' | 'kind' | 'title' | 'channel'>
     req.id,
     (s) => ({
       ...s,
-      kind: req.kind,
+      kind: s.seen || s.offers ? s.kind : req.kind, // a Short played in the watch player stays a Short
       title: req.title || s.title,
       channel: req.channel || s.channel,
       opened: s.opened + 1,

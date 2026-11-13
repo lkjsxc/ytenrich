@@ -106,7 +106,7 @@ All store listings are English only. Keep English as the default and remove othe
   - Website content: video titles and channel names.
   - User activity: opens and "Not interested" clicks.
   - Certify all three: no sale, no use unrelated to the single purpose, no creditworthiness use.
-- **Disclosure:** stats are the extension's prominently described purpose (listing summary and description, welcome page), so they are on by default. The welcome page that opens on install states what is recorded and has **Turn stats off**; Settings has the same switch (`src/views/consent.ts`). Keep the listing's first lines about the statistics, since that is what makes default-on acceptable under the store's disclosure rule.
+- **Disclosure:** stats are the extension's prominently described purpose (listing summary and description, welcome card), so they are on by default. Install opens YouTube, where the welcome card above the recommended lists states what is recorded and has **Turn stats off** until acknowledged; Settings has the same switch (`src/views/consent.ts`). Keep the listing's first lines about the statistics, since that is what makes default-on acceptable under the store's disclosure rule.
 - **Privacy practices answers to keep true:** images (thumbnails, avatars) are loaded from YouTube's image servers by default in the Chromium build; nothing goes to the developer.
 
 ## Firefox (addons.mozilla.org)

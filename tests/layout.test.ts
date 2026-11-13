@@ -5,6 +5,7 @@ import { addEdge } from '../src/wm/layout-edge.ts';
 import { parseLayout } from '../src/wm/layout-parse.ts';
 import {
   browsePreset,
+  channelPreset,
   familyOf,
   homePreset,
   shortsPreset,
@@ -17,7 +18,10 @@ const shape = (n: L.LayoutNode): unknown =>
 
 /** The watch preset as these tests were written: no Playlist tab, Videos for Recommended, History beside it. */
 const watch = (): L.LayoutNode => {
-  const base = L.removeView(watchPreset(), 'playlist') as L.LayoutNode;
+  const base = L.removeView(
+    L.removeView(watchPreset(), 'playlist') as L.LayoutNode,
+    'channel-videos',
+  ) as L.LayoutNode;
   const old = L.replaceView(base, 'recommended', 'videos');
   return L.moveView(old, 'history', L.paneOfView(old, 'videos')?.id ?? '', 'center', 2);
 };
@@ -37,6 +41,7 @@ describe('layout', () => {
     expect(b.sizes[0]).toBeCloseTo(0.15);
     for (const [family, preset] of [
       ['browse', b],
+      ['channel', channelPreset(1600)],
       ['shorts', shortsPreset()],
       ['home', homePreset(1600)],
       ['watch', watch()],
@@ -54,7 +59,7 @@ describe('layout', () => {
       ['watch', 'home', 'search', 'channel', 'subs', 'other', 'shorts'].map((k) =>
         familyOf(k as never),
       ),
-    ).toEqual(['watch', 'home', 'browse', 'browse', 'browse', 'browse', 'shorts']);
+    ).toEqual(['watch', 'home', 'browse', 'channel', 'browse', 'browse', 'shorts']);
   });
   it('moves a tab to a pane edge, splitting it, and flattens same-direction splits', () => {
     const root = watch();
@@ -177,7 +182,7 @@ describe('layout', () => {
     expect(shape(watchPreset())).toEqual({
       row: [
         { col: ['player', { row: ['details', 'comments|chat', 'history'] }] },
-        'playlist|recommended|stats|settings|log',
+        'playlist|recommended|channel-videos|stats|settings|log',
       ],
     });
     expect(viewsOf('watch').find((v) => v.id === 'playlist')?.optional).toBe(true);

@@ -13,7 +13,6 @@ const row = (e: LogEntry): HTMLElement =>
 export function mountLog(el: HTMLElement, env: ViewEnv): () => void {
   const render = (entries: readonly LogEntry[]): void =>
     el.replaceChildren(
-      h('h2', null, 'Log'),
       ...(entries.length
         ? [...entries].reverse().map(row)
         : [h('p', { class: 'muted' }, 'No events yet.')]),

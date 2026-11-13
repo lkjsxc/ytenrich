@@ -1,11 +1,11 @@
 // Tiling WM on every page: a layout family per page kind, nine workspaces per family (the chips in the masthead,
-// or Alt+Shift+1…9). Alt+W toggles tiling. Unmounts during fullscreen.
+// or Alt+Shift+1…9). Unmounts during fullscreen.
 import { spacesKey } from '../../shared/layout-store.ts';
-import { patchSettings } from '../../shared/settings.ts';
 import { createDisposables } from '../../shared/signal.ts';
 import type { WmFamily } from '../../shared/types.ts';
 import { createWmController, type Wm } from '../../wm/controller.ts';
 import { familyOf } from '../../wm/presets.ts';
+import { createProjector } from '../../wm/projector.ts';
 import { parseActive } from '../../wm/spaces.ts';
 import { createSpacesBar } from '../../wm/spaces-bar.ts';
 import { createWmStore } from '../../wm/store.ts';
@@ -18,6 +18,7 @@ export const wm: Feature = {
   start(rt) {
     const d = createDisposables();
     const store = createWmStore();
+    const projector = createProjector(rt.log); // shared by every controller of this tab
     let ready = false; // nothing is drawn before the stored layouts are known, so no default flashes first
     let ctl: Wm | undefined;
     let shown = 0; // the workspace `ctl` shows
@@ -40,18 +41,20 @@ export const wm: Feature = {
       const n = family ? active(family) : 0;
       document.documentElement.toggleAttribute('ytenrich-wm', family !== null);
       if (ctl && (ctl.family !== family || shown !== n)) ctl.dispose(), (ctl = undefined);
-      if (family && !ctl) ctl = createWmController(rt, family, store.space(family, (shown = n)));
+      // The next controller takes the projected elements over in the same task, before a frame is drawn.
+      if (family && !ctl)
+        ctl = createWmController(rt, family, store.space(family, (shown = n)), projector);
       else ctl?.refresh();
+      if (!family) projector.release();
       placeInMasthead(bar.el);
       bar.show(n);
     }
     const onKey = (e: KeyboardEvent): void => {
-      if (!e.altKey || e.ctrlKey || e.metaKey) return;
-      const digit = e.shiftKey ? /^Digit([1-9])$/.exec(e.code)?.[1] : undefined;
-      if (!digit && e.code !== 'KeyW') return;
+      if (!e.altKey || !e.shiftKey || e.ctrlKey || e.metaKey) return;
+      const digit = /^Digit([1-9])$/.exec(e.code)?.[1];
+      if (!digit) return;
       e.preventDefault();
-      if (digit) pick(Number(digit));
-      else void patchSettings({ wmEnabled: !rt.settings.get().wmEnabled });
+      pick(Number(digit));
     };
     void store.ready.then(() => {
       ready = true;
@@ -66,8 +69,9 @@ export const wm: Feature = {
       document.removeEventListener('fullscreenchange', update);
       window.removeEventListener('keydown', onKey, true);
       ctl?.dispose();
+      projector.dispose();
       store.dispose();
-      bar.el.remove();
+      bar.dispose();
     });
     return d.dispose;
   },

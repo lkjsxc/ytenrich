@@ -2,7 +2,7 @@
 import { h } from '../../shared/h.ts';
 import type { StatsPage, StatsQuery, VideoStat } from '../../shared/types.ts';
 import { autoMore, grow, keyed } from '../more.ts';
-import { openVideo, videoUrl } from '../open.ts';
+import { kindBadge, openVideo, thumbUrl, videoUrl } from '../open.ts';
 import type { ViewEnv } from '../registry.ts';
 import { ago, num } from './format.ts';
 import { choice } from './parts.ts';
@@ -93,7 +93,7 @@ export function createVideoTable(env: ViewEnv, q: StatsQuery, refresh: () => voi
               class: v.kind === 'short' ? 'thumb tall' : 'thumb',
               crossorigin: 'anonymous',
               referrerpolicy: 'no-referrer',
-              src: `https://i.ytimg.com/vi/${v.id}/default.jpg`,
+              src: thumbUrl(v, 'default'),
               loading: 'lazy',
               alt: '',
             })
@@ -105,12 +105,12 @@ export function createVideoTable(env: ViewEnv, q: StatsQuery, refresh: () => voi
         h(
           'a',
           {
-            href: videoUrl(v.id, v.kind),
-            onclick: (e) => openVideo(e as MouseEvent, v.id, v.kind, env),
+            href: videoUrl(v),
+            onclick: (e) => openVideo(e as MouseEvent, v, env),
           },
           v.title || v.id,
         ),
-        v.kind === 'short' ? h('span', { class: 'badge' }, 'Short') : null,
+        kindBadge(v) ? h('span', { class: 'badge' }, kindBadge(v)) : null,
         state ? h('span', { class: 'badge' }, state) : null,
         v.channel
           ? h(

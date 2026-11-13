@@ -10,6 +10,7 @@ import type { WmFamily } from '../shared/types.ts';
 import type { NativeSlot } from '../youtube/selectors.ts';
 import { mountHistory } from './history.ts';
 import { mountLog } from './log.ts';
+import { recoSpec } from './reco-spec.ts';
 import { mountRecommended } from './recommended.ts';
 import { mountSettings } from './settings.ts';
 import { mountStats } from './stats/index.ts';
@@ -22,6 +23,8 @@ export type ViewEnv = {
   readonly scanner?: Scanner;
   /** The page being shown, inside YouTube only: it changes on every in-app navigation. */
   readonly page?: Pick<Signal<Page>, 'get' | 'subscribe'>;
+  /** The channel the page is about ('' if none), inside YouTube only. */
+  readonly channel?: Pick<Signal<string>, 'get' | 'subscribe'>;
   /** Unique name of this tab (`<host>:<view id>`): the key of its saved state (`shared/view-state.ts`). */
   readonly instance: string;
   /** Renames this tab (the WM strip only). */
@@ -53,7 +56,7 @@ export const VIEWS: readonly ViewDef[] = [
     title: 'Page',
     hint: 'The YouTube page itself',
     slot: 'page',
-    families: ['browse', 'shorts'],
+    families: ['browse', 'channel', 'shorts'],
   },
   {
     id: 'home-videos',
@@ -113,20 +116,34 @@ export const VIEWS: readonly ViewDef[] = [
   {
     id: 'recommended',
     title: 'Videos',
-    hint: 'Recommended videos you have not opened, in your order',
-    mount: (el, env) => mountRecommended(el, env, 'video'),
+    hint: 'Recommended videos you have not opened, in your order (⚙ sets what it lists)',
+    mount: (el, env) => mountRecommended(el, env, recoSpec()),
   },
   {
     id: 'recommended-shorts',
     title: 'Shorts',
     hint: 'Recommended Shorts you have not opened',
-    mount: (el, env) => mountRecommended(el, env, 'short'),
+    mount: (el, env) => mountRecommended(el, env, recoSpec({ kinds: ['short'] })),
+  },
+  {
+    id: 'recommended-mixes',
+    title: 'Mixes',
+    hint: 'Recommended Mixes (YouTube’s endless radio lists) you have not opened',
+    mount: (el, env) => mountRecommended(el, env, recoSpec({ kinds: ['mix'] })),
   },
   {
     id: 'recommended-channels',
     title: 'Channels',
     hint: 'Recommendations grouped by the channels you like most',
-    mount: (el, env) => mountRecommended(el, env, 'channel'),
+    mount: (el, env) =>
+      mountRecommended(el, env, recoSpec({ kinds: ['video', 'short'], group: true })),
+  },
+  {
+    id: 'channel-videos',
+    title: 'This channel',
+    hint: 'Unopened videos of the channel of this page: the video’s owner, or the channel page',
+    mount: (el, env) =>
+      mountRecommended(el, env, recoSpec({ kinds: ['video', 'short'], scope: 'page' })),
   },
   {
     id: 'stats',

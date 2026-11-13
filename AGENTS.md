@@ -4,7 +4,7 @@ MV3 browser extension (Chromium + Firefox ≥140) that enriches youtube.com:
 - recommendation impression stats
 - hiding over-exposed unopened videos
 - a one-click "Not interested" button
-- a tiling window manager (WM) on every page (layout families `watch`, `home`, `shorts` and `browse`, each with nine workspaces switched from the masthead; home defaults to ytenrich's recommended Videos and Shorts; the Shorts player and unknown page types tile as `page`), with ytenrich's own views (recommended Videos/Shorts/Channels, Stats/History/Settings/Log) as WM tabs. YouTube's own lists are the views titled "Default · …"
+- a tiling window manager (WM) on every page (layout families `watch`, `home`, `channel`, `shorts` and `browse`, each with nine workspaces switched from the masthead; home defaults to ytenrich's recommended Videos and Shorts; channel pages add This channel beside the page; Shorts open in the watch player; unknown page types tile as `page`), with ytenrich's own views (recommended Videos/Shorts/Mixes/Channels/This channel, each with its own ⚙ settings, Stats/History/Settings/Log) as WM tabs. YouTube's own lists are the views titled "Default · …"
 
 AI-first repo: no human ergonomics, no backward compatibility, no migrations. Move fast.
 
@@ -38,8 +38,8 @@ AI-first repo: no human ergonomics, no backward compatibility, no migrations. Mo
   - `own-views.ts`: own-view tabs (any number per view). `launcher.ts`: the New tab page behind `+`.
   - `spaces.ts`: workspaces (nine layouts per family). `spaces-bar.ts`: their chips in the masthead. `store.ts`: in-memory mirror of the stored layouts.
   - `render`, `resize`, `tab-drag`, `menus`, `host`, `presets`, `layout-edge`.
-- `src/views/`: `registry.ts` lists every tab view. Native views set `slot`; own views set `mount(el, env)`. Own views run in both the WM and the options page. `views/stats/` is the Stats view (pure period math in `period.ts`; charts are plain flex DOM in `parts.ts`).
-- `src/shared/`: h, signal, settings (schema-driven UI), stats-rules, types, log.
+- `src/views/`: `registry.ts` lists every tab view. Recommended is one mount (`recommended.ts`) with a per-tab spec (`reco-spec.ts`, ⚙ `reco-panel.ts`). Native views set `slot`; own views set `mount(el, env)`. Own views run in both the WM and the options page. `views/stats/` is the Stats view (pure period math in `period.ts`; charts are plain flex DOM in `parts.ts`).
+- `src/shared/`: h, signal, settings (schema-driven UI), stats-rules, types, log; the ranking in `recommend.ts` + `diversify.ts` + `taste.ts`.
 - `docs/architecture.md`: data flow and invariants. `docs/youtube-dom.md`: DOM knowledge and quirks. `docs/features.md`: recipes. `docs/roadmap.md`: next work. `docs/store.md`: store dashboard answers (keep in sync with `PRIVACY.md`).
 
 ## Images

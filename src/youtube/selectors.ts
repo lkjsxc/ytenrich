@@ -39,6 +39,14 @@ export const META_COUNT_ICON = '.ytContentMetadataViewModelLeadingIcon';
 export const CHANNEL_PAGE = 'ytd-browse[page-subtype="channels"]';
 export const CHANNEL_TAB_TILE = `${CHANNEL_PAGE} ytd-rich-grid-renderer > #contents > ytd-rich-item-renderer`;
 export const CHANNEL_PAGE_NAME = 'yt-page-header-view-model h1';
+/** The channel a page is about: the watch page's owner, or the header of the channel page on screen. */
+export const WATCH_OWNER_NAME = 'ytd-watch-flexy ytd-watch-metadata #owner ytd-channel-name #text';
+export const SHOWN_CHANNEL_NAME = `${CHANNEL_PAGE}:not([hidden]) ${CHANNEL_PAGE_NAME}`;
+/** The watch page's description box and its "…more" button. */
+export const DESCRIPTION =
+  'ytd-watch-flexy ytd-watch-metadata ytd-text-inline-expander#description-inline-expander';
+export const DESCRIPTION_MORE = '#expand';
+export const SHORTS_ANCHOR = 'a[href^="/shorts/"]';
 
 /** The native 3-dot button. Our dismiss button lives in the same containers, so it is excluded. */
 export const MENU_BUTTON = [

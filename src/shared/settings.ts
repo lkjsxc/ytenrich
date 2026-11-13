@@ -17,6 +17,9 @@ export const DEFAULT_SETTINGS = {
   tabScale: 1.2, // tab bars, on top of uiScale
   closeClicks: 3, // clicks on × that close a tab (1 = at once)
   recoMeta: false, // Recommended: how often and where each video appeared
+  expandDetails: true, // watch pages open with the description expanded
+  shortsAsVideos: true, // Shorts play in the watch player, tiled like any video
+  introDone: false, // the welcome card above the Recommended lists was acknowledged (not in the schema)
 };
 export type Settings = typeof DEFAULT_SETTINGS;
 export type SettingKey = keyof Settings;
@@ -38,10 +41,17 @@ const num = (min: number, max: number, step?: number): Kind =>
   step ? { type: 'number', min, max, step } : { type: 'number', min, max };
 
 const SCHEMA: readonly SettingField[] = [
+  field('wmEnabled', 'Layout: Tiling', 'Tile every YouTube page into panes.', BOOL),
   field(
-    'wmEnabled',
-    'Layout: Tiling',
-    'Tile every YouTube page into panes. Alt+W switches it off and on.',
+    'shortsAsVideos',
+    'Layout: Shorts in the watch player',
+    'Open Shorts in the regular watch page, tiled like every other video, instead of the Shorts player.',
+    BOOL,
+  ),
+  field(
+    'expandDetails',
+    'Layout: Expand details',
+    'Open every video with its description expanded.',
     BOOL,
   ),
   field(

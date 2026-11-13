@@ -13,14 +13,10 @@ import * as read from './stats-read.ts';
 import * as repo from './stats-repo.ts';
 import { judge, suppressedIds } from './suppress.ts';
 
-// The welcome page says what is recorded and holds the switch. It opens on install, and once on the update
-// that turned stats on by default (versions are one counter: 0.2.5 reads as 205).
-const STATS_ON_SINCE = 206;
-const counter = (v = ''): number =>
-  v.split('.').reduce((n, part) => n * 100 + Number(part), 0) % 1e6;
-chrome.runtime.onInstalled.addListener(({ reason, previousVersion }) => {
-  if (reason === 'install' || (reason === 'update' && counter(previousVersion) < STATS_ON_SINCE))
-    void chrome.tabs.create({ url: chrome.runtime.getURL('options.html#welcome') });
+// Installing opens YouTube itself: the welcome card above the Recommended lists says what is recorded and holds
+// the switch (views/consent.ts `introCard`).
+chrome.runtime.onInstalled.addListener(({ reason }) => {
+  if (reason === 'install') void chrome.tabs.create({ url: 'https://www.youtube.com/' });
 });
 
 // With hiding off nothing counts as over-exposed, so nothing is held back from Recommended either.
@@ -76,7 +72,7 @@ const handlers: Handlers = {
   dismissed: ({ id }) => repo.dismissed(id).then(() => null),
   suppressed: async () => [...(await suppressedIds(threshold))],
   query: (q) => read.query(q, threshold),
-  recommend: async ({ mode, limit }) => recommend(mode, limit, await judge(threshold)),
+  recommend: async ({ query, limit }) => recommend(query, limit, await judge(threshold)),
   overview: () => read.overview(threshold),
   channels: ({ sort, limit }) => read.channels(sort, limit),
   clear: () => repo.clear().then(() => null),
