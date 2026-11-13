@@ -76,6 +76,12 @@ const SHELVES = 'grid-shelf-view-model, ytd-reel-shelf-renderer, ytd-rich-shelf-
 /** The watch page's playlist / mix / queue panel: always in the DOM, `[hidden]` while there is none. */
 export const PLAYLIST_PANEL = 'ytd-watch-flexy ytd-playlist-panel-renderer#playlist';
 
+/** The watch page's engagement panels (chapters, transcript, …) and its chapter list among them. YouTube keeps two
+ * chapter panels; the first is the one it opens. A panel is `display: none` until its `visibility` is EXPANDED. */
+export const PANELS = 'ytd-watch-flexy #panels';
+export const CHAPTERS_PANEL = `${PANELS} ytd-engagement-panel-section-list-renderer[target-id="engagement-panel-macro-markers-description-chapters"]`;
+export const PANEL_EXPANDED = 'ENGAGEMENT_PANEL_VISIBILITY_EXPANDED';
+
 /** Native slots projected into WM panes. `page` is the whole current non-watch page (home, search, channel, feeds, Shorts, anything new);
  * `shorts` is the first Shorts shelf of the watch page's recommendations. */
 export const NATIVE_SLOTS = {
@@ -86,6 +92,7 @@ export const NATIVE_SLOTS = {
   videos: 'ytd-watch-flexy #related',
   playlist: `${PLAYLIST_PANEL}:not([hidden])`,
   chat: 'ytd-watch-flexy #chat-container',
+  chapters: CHAPTERS_PANEL,
   shorts: `ytd-watch-flexy #related :is(${SHELVES}):has(a[href^="/shorts/"])`,
   guide: 'tp-yt-app-drawer#guide #guide-inner-content',
 } as const;

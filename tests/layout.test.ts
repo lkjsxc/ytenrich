@@ -18,10 +18,10 @@ const shape = (n: L.LayoutNode): unknown =>
 
 /** The watch preset as these tests were written: no Playlist tab, Videos for Recommended, History beside it. */
 const watch = (): L.LayoutNode => {
-  const base = L.removeView(
-    L.removeView(watchPreset(), 'playlist') as L.LayoutNode,
-    'channel-videos',
-  ) as L.LayoutNode;
+  const base = ['playlist', 'channel-videos', 'chapters'].reduce(
+    (n, v) => L.removeView(n, v) as L.LayoutNode,
+    watchPreset(),
+  );
   const old = L.replaceView(base, 'recommended', 'videos');
   return L.moveView(old, 'history', L.paneOfView(old, 'videos')?.id ?? '', 'center', 2);
 };
@@ -181,7 +181,7 @@ describe('layout', () => {
     expect(L.paneOfView(watchPreset(), 'videos')).toBeUndefined();
     expect(shape(watchPreset())).toEqual({
       row: [
-        { col: ['player', { row: ['details', 'comments|chat', 'history'] }] },
+        { col: ['player', { row: ['details|chapters', 'comments|chat', 'history'] }] },
         'playlist|recommended|channel-videos|stats|settings|log',
       ],
     });

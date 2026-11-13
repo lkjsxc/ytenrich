@@ -36,6 +36,7 @@ All names live in `src/youtube/selectors.ts` and `src/youtube/youtube.css`. Fixt
 
 ## Watch page
 - Description: `ytd-watch-metadata ytd-text-inline-expander#description-inline-expander` gets `[is-expanded]` once open; its `#expand` ("…more") opens it. Owner name: `ytd-watch-metadata #owner ytd-channel-name #text`. Verified 2026-11-13.
+- Chapters: engagement panels live in `ytd-watch-flexy #panels` (hidden with the column while tiling). The chapter list is `ytd-engagement-panel-section-list-renderer[target-id="engagement-panel-macro-markers-description-chapters"]`, present twice (the first is the one YouTube opens), with `ytd-macro-markers-list-item-renderer` rows rendered even while closed. Closed it is `display: none` with `visibility="ENGAGEMENT_PANEL_VISIBILITY_HIDDEN"`; the player's `.ytp-chapter-title` and the description's "View all" set `…_EXPANDED`. Videos without chapters have no such panel. Verified 2026-11-13 (seeking from the projected list unverified: pre-roll ads in headless runs).
 - A Short plays in the regular player at `/watch?v=<id>` (pillarboxed); `features/shorts.ts` relies on it.
 - Chain: `ytd-watch-flexy > #columns > #primary > #primary-inner > #player > #player-container-outer > #player-container-inner > #player-container > ytd-player > #movie_player`.
 - Projecting `#player-container` works. YouTube refits the video on window `resize`.

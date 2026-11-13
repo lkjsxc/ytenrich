@@ -83,6 +83,14 @@ export const VIEWS: readonly ViewDef[] = [
     families: W,
   },
   {
+    id: 'chapters',
+    title: 'Chapters',
+    hint: 'Chapters of this video, shown when it has some: a click jumps there',
+    slot: 'chapters',
+    optional: true,
+    families: W,
+  },
+  {
     id: 'comments',
     title: 'Comments',
     hint: 'Comments on this video',

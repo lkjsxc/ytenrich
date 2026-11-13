@@ -3,7 +3,7 @@ import type { Runtime } from '../content/runtime.ts';
 import type { WmFamily } from '../shared/types.ts';
 import { kindOf, viewOf, viewsOf } from '../views/registry.ts';
 import { onGuideButton } from '../youtube/guide.ts';
-import { mastheadHeight, resetPageScroll } from '../youtube/slots.ts';
+import { mastheadHeight, onChaptersOpen, resetPageScroll } from '../youtube/slots.ts';
 import { createHost } from './host.ts';
 import { NEW_TAB } from './launcher.ts';
 import * as L from './layout.ts';
@@ -135,7 +135,7 @@ export function createWmController(
     projector.sync(entries);
   }
 
-  const optional = createOptional(VIEWS, () => render());
+  const optional = createOptional(VIEWS, () => render(), rt.scanner.onTick);
 
   // Follow layout changes made elsewhere (a reset from Settings, an edit in another tab).
   const offStore = at.watch((value) => {
@@ -151,6 +151,16 @@ export function createWmController(
     else set(L.removeView(root, 'guide'));
   });
 
+  // Opening chapters in YouTube brings the Chapters tab to the front (beside Details if it has none yet).
+  const offChapters = onChaptersOpen(() => {
+    const p = L.paneOfView(root, 'chapters') ?? L.paneOfView(root, 'details');
+    if (p && kinds.has('chapters'))
+      set(
+        p.tabs.includes('chapters')
+          ? L.activate(root, 'chapters')
+          : L.addView(root, p.id, 'chapters', 'center'),
+      );
+  });
   const offLook = rt.settings.subscribe(host.look);
   host.look(rt.settings.get());
   render();
@@ -176,6 +186,7 @@ export function createWmController(
       disposed = true;
       offStore();
       offGuide();
+      offChapters();
       optional.dispose();
       offLook();
       offPage();

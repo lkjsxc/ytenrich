@@ -22,7 +22,11 @@ export function watchPreset(): LayoutNode {
         'col',
         [
           pane(['player']),
-          split('row', [pane(['details']), pane(['comments', 'chat']), pane(['history'])]),
+          split('row', [
+            pane(['details', 'chapters']),
+            pane(['comments', 'chat']),
+            pane(['history']),
+          ]),
         ],
         [0.7, 0.3],
       ),
@@ -89,14 +93,17 @@ const wide = (): LayoutNode =>
     'col',
     [
       pane(['player']),
-      split('row', [pane(['details']), pane(['playlist', 'recommended', 'channel-videos'])]),
+      split('row', [
+        pane(['details', 'chapters']),
+        pane(['playlist', 'recommended', 'channel-videos']),
+      ]),
     ],
     [0.68, 0.32],
   );
 /** Watch workspaces by number: 1 the default, 2 details, 3 comments, 4 history, 5 the wide player. */
 const WATCH: readonly (() => LayoutNode)[] = [
   watchPreset,
-  () => beside(['details']),
+  () => beside(['details', 'chapters']),
   () => beside(['comments', 'chat']),
   () => beside(['history']),
   wide,

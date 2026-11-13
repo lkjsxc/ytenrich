@@ -44,6 +44,10 @@ html[ytenrich-guide-wake] tp-yt-app-drawer#guide { visibility: hidden !important
 html[ytenrich-wm] tp-yt-app-drawer#guide:not(:has([ytenrich-slot])), html[ytenrich-wm] ytd-mini-guide-renderer { visibility: hidden !important; }
 /* The hidden drawer keeps a 20px swipe strip along the left window edge that would swallow clicks on our tab bar. */
 html[ytenrich-wm] tp-yt-app-drawer#guide:not(:has([ytenrich-slot])), html[ytenrich-wm] tp-yt-app-drawer#guide:not(:has([ytenrich-slot])) * { pointer-events: none !important; }
+/* Chapters tile: the chapter panel shows whole even while YouTube calls it hidden, without its header (the tab
+   names it; its × would only hide it). A click on a chapter seeks the player. */
+html[ytenrich-wm] [ytenrich-slot="chapters"] { display: block !important; padding: 0 !important; }
+html[ytenrich-wm] [ytenrich-slot="chapters"] > #header { display: none !important; }
 /* Details tile: the channel row (subscribe, bell, actions) wraps instead of pushing the tile wider than its pane. */
 html[ytenrich-wm] [ytenrich-slot="details"] { overflow-x: hidden !important; }
 html[ytenrich-wm] [ytenrich-slot="details"] :is(#top-row, #owner, #actions, #actions-inner, #menu, #top-level-buttons-computed, #subscribe-button) { flex-wrap: wrap !important; min-width: 0 !important; max-width: 100% !important; row-gap: 8px; }

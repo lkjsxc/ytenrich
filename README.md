@@ -9,7 +9,7 @@ A browser extension that makes YouTube more personal and more comfortable to use
 ## Features
 - **Tiling everywhere**: every page is a tiling layout, and each pane scrolls on its own. Shorts open in the regular watch player, tiled like any video (Settings → Layout can switch this off).
   - Watch pages: the player sits above Details | Comments side by side, with recommendations on the right, all in resizable panes.
-  - The description opens expanded on every video (Settings → Layout: Expand details).
+  - The description opens expanded on every video (Settings → Layout: Expand details), and a video with chapters gets a **Chapters** tab beside Details; clicking the chapter name in the player brings it to the front.
   - Channel pages: the guide, the channel page itself, and **This channel** beside it: the channel's videos YouTube showed you that you have not opened, ranked for you. On watch pages the same tab follows the video's channel.
   - Home, search, playlists and feeds: the guide sits on the left and the page itself is a tab next to Stats/Settings/Log.
   - Watch pages and the other pages each keep their own saved layout.

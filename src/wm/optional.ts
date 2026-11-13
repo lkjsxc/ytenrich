@@ -1,14 +1,16 @@
-// Optional native views: their tab shows only while YouTube has the element (the playlist panel), and a view
+// Optional native views: their tab shows only while YouTube has the element (playlist, chapters), and a view
 // that is new to the defaults is added once to layouts saved before it existed.
 import type { ViewDef } from '../views/registry.ts';
 import { onPlaylistToggle, resolveSlot } from '../youtube/slots.ts';
 import * as L from './layout.ts';
 
 const INTRODUCED_KEY = 'introduced';
-/** Views added to the presets after layouts could already be saved: [view, the view whose pane it joins]. */
-const LATE: readonly (readonly [string, string])[] = [
+/** Views added to the presets after layouts could already be saved: [view, the view whose pane it joins, behind
+ * it (instead of in front of the pane's tabs)]. */
+const LATE: readonly (readonly [string, string, boolean?])[] = [
   ['recommended', 'videos'],
   ['playlist', 'recommended'],
+  ['chapters', 'details', true],
 ];
 
 export type Optional = {
@@ -19,16 +21,20 @@ export type Optional = {
   dispose(): void;
 };
 
-export function createOptional(views: readonly ViewDef[], onChange: () => void): Optional {
+/** `ticks`: the scanner's DOM ticks, which see a chapter panel come and go (the playlist only flips `hidden`). */
+export function createOptional(
+  views: readonly ViewDef[],
+  onChange: () => void,
+  ticks: (fn: () => void) => () => void,
+): Optional {
   const optional = views.filter((v) => v.optional && v.slot);
   let absent = '';
   const missing = (): string[] =>
     optional.filter((v) => v.slot && !resolveSlot(v.slot)).map((v) => v.id);
-  const off = optional.length
-    ? onPlaylistToggle(() => {
-        if (missing().join() !== absent) onChange();
-      })
-    : () => undefined;
+  const check = (): void => {
+    if (missing().join() !== absent) onChange();
+  };
+  const offs = optional.length ? [onPlaylistToggle(check), ticks(check)] : [];
   return {
     visible(root) {
       const gone = missing();
@@ -41,13 +47,16 @@ export function createOptional(views: readonly ViewDef[], onChange: () => void):
       if (!late.length) return root;
       void chrome.storage.local.set({ [INTRODUCED_KEY]: [...had, ...late.map(([v]) => v)] });
       let next = root;
-      for (const [view, beside] of late) {
+      for (const [view, beside, behind] of late) {
         const pane = L.paneOfView(next, beside);
-        if (pane && !L.paneOfView(next, view)) next = L.moveView(next, view, pane.id, 'center', 0);
+        if (!pane || L.paneOfView(next, view)) continue;
+        const at = behind ? pane.tabs.indexOf(beside) + 1 : 0;
+        next = L.moveView(next, view, pane.id, 'center', at);
+        if (behind) next = L.activate(next, pane.active);
       }
       return next;
     },
-    dispose: off,
+    dispose: () => offs.forEach((off) => off()),
   };
 }
 export { INTRODUCED_KEY };
