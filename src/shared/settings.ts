@@ -21,88 +21,101 @@ export const DEFAULT_SETTINGS = {
 export type Settings = typeof DEFAULT_SETTINGS;
 export type SettingKey = keyof Settings;
 
-export type SettingField =
-  | { key: SettingKey; label: string; type: 'bool' }
-  | { key: SettingKey; label: string; type: 'number'; min: number; max: number; step?: number }
-  | { key: SettingKey; label: string; type: 'enum'; options: readonly string[] }
-  | { key: SettingKey; label: string; type: 'text'; placeholder: string };
+type Kind =
+  | { type: 'bool' }
+  | { type: 'number'; min: number; max: number; step?: number }
+  | { type: 'enum'; options: readonly string[] }
+  | { type: 'text'; placeholder: string };
+/** `group` and `title` read as "Group: Title" in the Settings view; all three texts are searched. */
+export type SettingField = { key: SettingKey; group: string; title: string; desc: string } & Kind;
+
+const field = (key: SettingKey, name: string, desc: string, kind: Kind): SettingField => {
+  const [group = '', title = ''] = name.split(': ');
+  return { key, group, title, desc, ...kind };
+};
+const BOOL: Kind = { type: 'bool' };
+const num = (min: number, max: number, step?: number): Kind =>
+  step ? { type: 'number', min, max, step } : { type: 'number', min, max };
 
 const SCHEMA: readonly SettingField[] = [
-  { key: 'wmEnabled', label: 'Tiling layout (Alt+W)', type: 'bool' },
-  {
-    key: 'statsEnabled',
-    label: 'Stats: count recommendations shown and videos opened, on this device only',
-    type: 'bool',
-  },
-  {
-    key: 'thumbnailsEnabled',
-    label:
-      'Show images in Stats, History and Recommended by requesting video IDs from YouTube’s image server',
-    type: 'bool',
-  },
-  {
-    key: 'collect',
-    label:
-      'Collect for Recommended: more = also load more of YouTube’s hidden lists, page = everything on the page, shown = only what was on screen',
-    type: 'enum',
-    options: ['more', 'page', 'shown'],
-  },
-  {
-    key: 'hideMode',
-    label:
-      'Over-exposed videos (recommended again and again over more than a day, never opened; channels you open get more patience)',
-    type: 'enum',
-    options: ['off', 'dim', 'hide'],
-  },
-  {
-    key: 'hideThreshold',
-    label: 'Over-exposed after N impressions (3 × N for channels you open)',
-    type: 'number',
-    min: 2,
-    max: 100,
-  },
-  {
-    key: 'tabWidth',
-    label: 'Tab width in px (0 = fit the title)',
-    type: 'number',
-    min: 0,
-    max: 400,
-  },
-  {
-    key: 'uiScale',
-    label: 'Scale of ytenrich’s own UI (1.00 = normal)',
-    type: 'number',
-    min: 0.5,
-    max: 2,
-    step: 0.05,
-  },
-  {
-    key: 'tabScale',
-    label: 'Scale of the tab bars (1.00 = same as the rest)',
-    type: 'number',
-    min: 0.8,
-    max: 2,
-    step: 0.05,
-  },
-  {
-    key: 'closeClicks',
-    label: 'Clicks on × needed to close a tab (1 = close at once)',
-    type: 'number',
-    min: 1,
-    max: 5,
-  },
-  {
-    key: 'recoMeta',
-    label: 'Recommended: show how often and where each video appeared',
-    type: 'bool',
-  },
-  { key: 'dismissEnabled', label: 'One-click "Not interested" button', type: 'bool' },
-  {
-    key: 'dismissLabel',
-    label: 'Extra "Not interested" menu label',
-    type: 'text',
-    placeholder: 'exact menu text',
-  },
+  field(
+    'wmEnabled',
+    'Layout: Tiling',
+    'Tile every YouTube page into panes. Alt+W switches it off and on.',
+    BOOL,
+  ),
+  field(
+    'tabWidth',
+    'Layout: Tab width',
+    'Width of a tab in px. 0 fits each tab to its title.',
+    num(0, 400),
+  ),
+  field(
+    'uiScale',
+    'Layout: UI scale',
+    'Size of ytenrich’s own UI. 1.00 is normal.',
+    num(0.5, 2, 0.05),
+  ),
+  field(
+    'tabScale',
+    'Layout: Tab bar scale',
+    'Size of the tab bars on top of the UI scale. 1.00 is the same as the rest.',
+    num(0.8, 2, 0.05),
+  ),
+  field(
+    'closeClicks',
+    'Layout: Clicks to close a tab',
+    'Clicks on × that close a tab. 1 closes at once.',
+    num(1, 5),
+  ),
+  field(
+    'statsEnabled',
+    'Stats: Enable stats',
+    'Count recommendations shown and videos opened, on this device only.',
+    BOOL,
+  ),
+  field(
+    'thumbnailsEnabled',
+    'Stats: Images',
+    'Show images in Stats, History and Recommended by requesting video IDs from YouTube’s image server.',
+    BOOL,
+  ),
+  field(
+    'collect',
+    'Recommended: Collect',
+    'What feeds the list. more: also load more of YouTube’s hidden lists. page: everything on the page. shown: only what was on screen.',
+    { type: 'enum', options: ['more', 'page', 'shown'] },
+  ),
+  field(
+    'recoMeta',
+    'Recommended: Exposure line',
+    'Show how often and where each video appeared.',
+    BOOL,
+  ),
+  field(
+    'hideMode',
+    'Over-exposed videos: Mode',
+    'What happens to videos recommended again and again over more than a day and never opened. Channels you open get more patience.',
+    { type: 'enum', options: ['off', 'dim', 'hide'] },
+  ),
+  field(
+    'hideThreshold',
+    'Over-exposed videos: Impressions',
+    'A video is over-exposed after this many impressions (three times as many for channels you open).',
+    num(2, 100),
+  ),
+  field(
+    'dismissEnabled',
+    'Not interested: One-click button',
+    'Put ⊘ next to every recommendation’s ⋮ menu.',
+    BOOL,
+  ),
+  field(
+    'dismissLabel',
+    'Not interested: Extra menu label',
+    'Another exact menu text to treat as “Not interested”, for a YouTube language ytenrich does not know.',
+    { type: 'text', placeholder: 'exact menu text' },
+  ),
 ];
 
 /**

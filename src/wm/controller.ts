@@ -18,20 +18,22 @@ import { GUIDE_PX, presetOf } from './presets.ts';
 import { createProjector } from './projector.ts';
 import { type Rendered, renderLayout } from './render.ts';
 import { startResize } from './resize.ts';
+import type { Space } from './spaces.ts';
 import { startTabDrag } from './tab-drag.ts';
 
 const SAVE_MS = 400;
 
 export type Wm = { readonly family: WmFamily; refresh(): void; dispose(): void };
 
-export function createWmController(rt: Runtime, family: WmFamily): Wm {
-  const KEY = layoutKey(family);
-  const preset = (): L.LayoutNode => presetOf(family);
+export function createWmController(rt: Runtime, family: WmFamily, at: Space): Wm {
+  const KEY = layoutKey(family, at.index);
+  const preset = (): L.LayoutNode => presetOf(family, at.index);
   const VIEWS = viewsOf(family);
   const host = createHost();
   host.setTop(mastheadHeight());
   const projector = createProjector(rt.log);
-  const env = { call: rt.call, log: rt.log, settings: rt.settings, scanner: rt.scanner };
+  const { call, log, settings, scanner, page } = rt;
+  const env = { call, log, settings, scanner, page };
   const kinds = new Set(VIEWS.map((v) => v.id));
   /** Tabs this family can show: its views (own ones in any number) and New tab pages. */
   const known = {
@@ -97,6 +99,7 @@ export function createWmController(rt: Runtime, family: WmFamily): Wm {
         { label: 'Split down', run: splitTo('bottom'), disabled: p.tabs.length < 2 },
         { label: 'Close pane', run: () => set(L.closePane(root, p.id)) },
         { label: 'Reset layout', run: () => set(preset()) },
+        ...at.menu,
         { label: 'Turn off tiling (Alt+W)', run: () => void patchSettings({ wmEnabled: false }) },
       ]);
     },

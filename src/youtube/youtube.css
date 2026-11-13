@@ -81,3 +81,10 @@ html[ytenrich-wm] ytd-app #frosted-glass { display: none !important; }
 /* Collector (content/features/collect.ts): a list the WM is not drawing keeps its loader inside the viewport, so
    YouTube loads the next page of it; each new page brings a new loader until the attribute is removed. */
 html[ytenrich-wm][ytenrich-harvest] :is(ytd-watch-flexy #related, ytd-page-manager > ytd-browse):is(:not([ytenrich-slot]), [ytenrich-slot-inactive]) ytd-continuation-item-renderer { position: fixed !important; top: 0 !important; left: 0 !important; width: 10px !important; height: 10px !important; overflow: hidden !important; visibility: hidden !important; pointer-events: none !important; }
+/* Workspace switcher in the masthead, after the logo (wm/spaces-bar.ts). It is ours, so it carries no gate. */
+ytenrich-spaces { display: flex; align-items: center; gap: 2px; margin-left: 16px; }
+ytenrich-spaces button { min-width: 26px; height: 26px; padding: 0 6px; border: 0; border-radius: 6px; background: none; color: #0f0f0f; opacity: 0.55; font: 500 13px Roboto, Arial, sans-serif; cursor: pointer; }
+html[dark] ytenrich-spaces button { color: #f1f1f1; }
+ytenrich-spaces button:hover { background: rgba(128, 128, 128, 0.25); opacity: 1; }
+ytenrich-spaces button.on { background: #0f0f0f; color: #fff; opacity: 1; }
+html[dark] ytenrich-spaces button.on { background: #f1f1f1; color: #0f0f0f; }

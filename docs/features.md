@@ -4,7 +4,7 @@
 1. Create `src/content/features/<id>.ts` exporting `const <id>: Feature = { id, start(rt) { …; return dispose } }`.
 2. Register it in `FEATURES` (`src/content/features.ts`).
 3. Use `rt.scanner.onItem` for per-recommendation decoration (it must be idempotent: elements are recycled), `rt.scanner.onSeen` for impressions, `rt.page` for navigation, `rt.settings` for config, and `rt.call` for background data.
-4. Add settings to `DEFAULT_SETTINGS` and `SETTINGS_SCHEMA` (`src/shared/settings.ts`). The Settings view renders them automatically.
+4. Add settings to `DEFAULT_SETTINGS` and `SETTINGS_SCHEMA` (`src/shared/settings.ts`). Name each `Group: Title` with a description; the Settings view lists and searches them automatically.
 5. Put new YouTube selectors and CSS in `src/youtube/` only.
 
 ## Add a WM view (tab)

@@ -1,7 +1,7 @@
 // Impression recording (seen once per navigation) and "opened" tracking.
 import { createDisposables } from '../../shared/signal.ts';
 import type { Impression, Kind } from '../../shared/types.ts';
-import { ageOf } from '../../youtube/extract.ts';
+import { ageOf, channelOf } from '../../youtube/extract.ts';
 import type { Feature } from '../features.ts';
 
 const FLUSH_MS = 2000;
@@ -30,7 +30,8 @@ export const stats: Feature = {
       );
     };
     d.add(
-      rt.scanner.onSeen((item) => {
+      rt.scanner.onSeen((found) => {
+        const item = found.channel ? found : { ...found, channel: channelOf(found.el) };
         recent.delete(item.id);
         recent.set(item.id, item);
         if (recent.size > RECENT_MAX) recent.delete(recent.keys().next().value as string);

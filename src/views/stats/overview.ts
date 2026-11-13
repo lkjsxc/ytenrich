@@ -1,7 +1,7 @@
 // Period sections of the Stats view: headline tiles, the daily chart and the where/when breakdowns.
 import { h } from '../../shared/h.ts';
 import type { DayStat, Overview, Surface } from '../../shared/types.ts';
-import { dayLong, dayShort, num, pct } from './format.ts';
+import { dayLong, dayText, num, pct } from './format.ts';
 import { card, columns, hbars, legend } from './parts.ts';
 import { change, ratio, type Totals } from './period.ts';
 
@@ -58,7 +58,7 @@ export function dailyCard(list: readonly DayStat[]): HTMLElement {
       ` · ${num(d.opened)} opened · ${num(d.hidden)} hidden`,
   }));
   const mid = list[Math.floor(list.length / 2)];
-  const labels = [list[0], mid, list[list.length - 1]].map((d) => (d ? dayShort(d.day) : ''));
+  const labels = [list[0], mid, list[list.length - 1]].map((d) => (d ? dayText(d.day) : ''));
   return card(
     [
       'Recommendations per day',

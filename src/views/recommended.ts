@@ -12,6 +12,7 @@ import { shownLine, since } from './stats/format.ts';
 import { choice } from './stats/parts.ts';
 
 const STEP = 40;
+const SETTLE_MS = 3000; // after a navigation the list still takes in what arrives (the opened video, new offers)
 const IMG = { crossorigin: 'anonymous', referrerpolicy: 'no-referrer', loading: 'lazy', alt: '' };
 const NO_HINT = 'Not interested: hides it here and ranks its channel lower. YouTube is not told.';
 const MODES: readonly (readonly [RecoMode, string])[] = [
@@ -35,6 +36,7 @@ export function mountRecommended(el: HTMLElement, env: ViewEnv, initial: RecoMod
   let sig = '';
   let visible = false;
   let dirty = false;
+  let settleUntil = 0;
   const head = h('div');
   const cards = h('div');
   const foot = h('div');
@@ -155,14 +157,21 @@ export function mountRecommended(el: HTMLElement, env: ViewEnv, initial: RecoMod
     );
   }
 
-  // The order shifts as recommendations arrive, so a visible, filled list waits until it is shown again.
+  // One list per page view: every navigation reloads it from the top. After it settles the order holds while it
+  // is on screen (it shifts as recommendations arrive) and catches up when it is shown again.
   const io = new IntersectionObserver((entries) => {
     visible = entries.some((e) => e.isIntersecting);
     if (visible && dirty) refresh();
   });
   io.observe(el);
+  const offPage = env.page?.subscribe(() => {
+    settleUntil = Date.now() + SETTLE_MS;
+    limit = STEP;
+    el.closest('.body')?.scrollTo({ top: 0 });
+    refresh();
+  });
   const offStats = onStatsChanged(() => {
-    if (visible && cards.childElementCount) dirty = true;
+    if (visible && cards.childElementCount && Date.now() > settleUntil) dirty = true;
     else refresh();
   });
   const offSettings = env.settings.subscribe(() => {
@@ -182,6 +191,7 @@ export function mountRecommended(el: HTMLElement, env: ViewEnv, initial: RecoMod
   return () => {
     io.disconnect();
     offStats();
+    offPage?.();
     offSettings();
     token = -1;
   };

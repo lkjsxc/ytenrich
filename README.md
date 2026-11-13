@@ -11,14 +11,16 @@ A browser extension that makes YouTube more personal and more comfortable to use
   - Watch pages: the player sits above Details | Comments side by side, with recommendations on the right, all in resizable panes.
   - Home, search, channels, playlists and feeds: the guide sits on the left and the page itself is a tab next to Stats/Settings/Log.
   - Watch pages and the other pages each keep their own saved layout.
+  - **Workspaces**: each kind of page holds several layouts and shows one, like virtual desktops. The numbered chips next to the YouTube logo switch between them, as does `Alt+Shift+1`…`9`. Watch pages start with two: the player over Details | Comments, and the player beside Details and Comments at full height. `+` adds a copy of the one showing; a pane's `…` menu removes it.
   - Drag a tab to a pane edge to split that pane, onto a pane to join its tabs, or between tabs of a strip to reorder.
   - The ☰ button toggles YouTube's guide (sidebar) as a tile on the left instead of an overlay drawer.
   - On watch pages, Chat sits next to Comments, and the Shorts shelf of the recommendations can become its own tile (pane `+` menu → Shorts).
   - The Shorts player page is a tile too, with a **Recommended** tile beside it: videos YouTube recommended recently that you have not opened yet (from ytenrich's own stats).
   - Stats, History, Settings, Log and the recommended Videos, Shorts and Channels lists open as tabs inside the panes (YouTube's own lists are the "Default · …" tabs). Closing a tab takes three clicks on × by default, so a slip does not lose it. Settings can reset the layout.
+  - Settings is one searchable list: type to filter, changed entries carry a bar and a Reset link, and `@modified` shows only those.
   - `Alt+W` turns tiling off and on.
 - **Recommendation stats**: each recommendation counts as seen once it is at least half visible, at most once per page view. The Stats view updates live; clicking a video opens it in the same tab.
-- **Recommended**: ytenrich's own list of what YouTube recommended and you have not opened, ranked by what you actually open: the channels you return to, the title words of videos you open against those you pass over or dismiss, freshness, and how persistently YouTube offers it. It collects every recommendation YouTube puts on a page, including lists your layout hides, and lets those hidden lists load more until it holds enough (Settings → Collect for Recommended).
+- **Recommended**: ytenrich's own list of what YouTube recommended and you have not opened, ranked by what you actually open: the channels you return to, the title words of videos you open against those you pass over or dismiss, freshness, and how persistently YouTube offers it. It collects every recommendation YouTube puts on a page, including lists your layout hides, and lets those hidden lists load more until it holds enough (Settings → Recommended: Collect). On a watch page the list reloads from the top with every video you move to, then holds its order while you look at it.
 - **Hide over-exposed videos** (off by default): a video YouTube keeps showing over more than a day that you never open can be hidden or dimmed. You choose how many impressions it takes; channels you open get three times the patience, and a video YouTube stops pushing is forgiven.
 - **One-click "Not interested"**: an always-visible ⊘ button right next to every recommendation's ⋮ menu. On success the item collapses at once; on failure ⊘ turns red and its tooltip (and the Log) lists the menu entries YouTube offered.
 

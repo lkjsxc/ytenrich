@@ -16,7 +16,8 @@ export const ITEM_ROOT_INNER = [
 export const LIST_TILE =
   ':is(ytd-radio-renderer, ytd-compact-radio-renderer, ytd-playlist-renderer, ytd-compact-playlist-renderer, :has(yt-collection-thumbnail-view-model, yt-collections-stack))';
 /** Metadata texts of a tile; one of them is the upload age ("3 months ago"). */
-export const AGE_TEXT = '.ytContentMetadataViewModelMetadataText, #metadata-line span';
+export const META_TEXT = '.ytContentMetadataViewModelMetadataText';
+export const AGE_TEXT = `${META_TEXT}, #metadata-line span`;
 /** The channel avatar inside a tile: the only image a tile loads from YouTube's avatar host. */
 export const AVATAR = 'img[src^="https://yt3."]';
 export const NOT_RECO =
@@ -28,10 +29,16 @@ export const TITLE = [
   '#video-title',
   'h3',
 ] as const;
-export const CHANNEL = [
-  'ytd-channel-name #text',
-  '.ytContentMetadataViewModelMetadataRow:first-child .ytContentMetadataViewModelMetadataText',
-] as const;
+/** Classic renderers name the channel here (empty on a channel's own page). */
+export const CHANNEL_CLASSIC = 'ytd-channel-name #text';
+/** Lockup metadata rows that carry text (a badge row such as "CC" does not). The channel row comes first and the
+ * counter row ("121K · 4mo ago" behind an icon, or "541 watching") second; a channel's own tabs show only the latter. */
+export const META_ROW = `.ytContentMetadataViewModelMetadataRow:has(${META_TEXT})`;
+export const META_COUNT_ICON = '.ytContentMetadataViewModelLeadingIcon';
+/** A tile in the grid of a channel's own tab (Videos, Shorts, Live): it shows no channel, the page header names it. */
+export const CHANNEL_PAGE = 'ytd-browse[page-subtype="channels"]';
+export const CHANNEL_TAB_TILE = `${CHANNEL_PAGE} ytd-rich-grid-renderer > #contents > ytd-rich-item-renderer`;
+export const CHANNEL_PAGE_NAME = 'yt-page-header-view-model h1';
 
 /** The native 3-dot button. Our dismiss button lives in the same containers, so it is excluded. */
 export const MENU_BUTTON = [
@@ -77,6 +84,8 @@ export const NATIVE_SLOTS = {
 export type NativeSlot = keyof typeof NATIVE_SLOTS;
 
 export const MASTHEAD = '#masthead-container';
+/** The masthead's left section (hamburger, logo): the workspace switcher sits at its end. */
+export const MASTHEAD_START = 'ytd-masthead #start';
 export const GUIDE_BUTTON = 'ytd-masthead #guide-button';
 export const GUIDE_DRAWER = 'tp-yt-app-drawer#guide';
 export const GUIDE_RENDERER = 'tp-yt-app-drawer#guide ytd-guide-renderer';

@@ -1,5 +1,5 @@
 // Backup of the stats DB: paged reads of whole stores, and writes of rows repaired to the current shape.
-import { emptyDay, emptyStat, normDay } from '../shared/stats-rules.ts';
+import { emptyDay, emptyStat, isCountName, normDay } from '../shared/stats-rules.ts';
 import type { ChannelStat, StoreName } from '../shared/types.ts';
 import { complete, openDb, walk } from './db.ts';
 import { forget, prune } from './stats-repo.ts';
@@ -46,9 +46,11 @@ export async function restore(store: StoreName, rows: readonly unknown[]): Promi
     const raw = row as Record<string, unknown>;
     const key = raw[KEY[store]];
     if (typeof key !== 'string' || !key) continue;
-    if (store === 'videos') target.put(repair(emptyStat(key, 0), raw));
-    else if (store === 'days') target.put(normDay(repair(emptyDay(key), raw)));
-    else target.put(repair({ ...CHANNEL, name: key }, raw));
+    if (store === 'videos') {
+      const v = repair(emptyStat(key, 0), raw);
+      target.put(isCountName(v.channel) ? { ...v, channel: '' } : v); // a backup from before 0.2.9 (db.ts `scrub`)
+    } else if (store === 'days') target.put(normDay(repair(emptyDay(key), raw)));
+    else if (!isCountName(key)) target.put(repair({ ...CHANNEL, name: key }, raw));
   }
   await complete(tx);
   forget();

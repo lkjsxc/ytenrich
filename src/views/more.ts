@@ -8,8 +8,9 @@ export const MAX_ROWS = 1000;
 export const grow = (limit: number, step: number): number => Math.min(MAX_ROWS, limit + step);
 
 /**
- * Sentinel for the end of a list: asks for the next page once it scrolls into view. A hidden tab never
- * intersects, so background tabs load nothing; each sentinel fires once and the repaint adds the next.
+ * Sentinel for the end of a list: asks for the next page while the end is still a few screens away (its
+ * `.ahead` probe reaches that far up the list). A hidden tab never intersects, so background tabs load
+ * nothing; each sentinel fires once and the repaint adds the next.
  */
 export function autoMore(more: boolean, limit: number, load: () => void): HTMLElement | null {
   if (!more) return null;
@@ -19,13 +20,14 @@ export function autoMore(more: boolean, limit: number, load: () => void): HTMLEl
       { class: 'muted more' },
       `Showing the first ${MAX_ROWS}. Search or filter to narrow.`,
     );
-  const el = h('div', { class: 'muted more' }, 'Loading more…');
+  const probe = h('span', { class: 'ahead' });
+  const el = h('div', { class: 'muted more' }, 'Loading more…', probe);
   const io = new IntersectionObserver((entries) => {
     if (!entries.some((e) => e.isIntersecting)) return;
     io.disconnect();
     load();
   });
-  io.observe(el);
+  io.observe(probe);
   return el;
 }
 

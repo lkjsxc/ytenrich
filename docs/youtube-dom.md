@@ -9,7 +9,7 @@ All names live in `src/youtube/selectors.ts` and `src/youtube/youtube.css`. Fixt
 - Search uses classic `ytd-video-renderer` (`#video-title`, `ytd-channel-name`) plus shorts grid shelves.
 - Home grid cells are `ytd-rich-item-renderer`, which wins as the item root so hiding removes the whole cell.
 - Ids come from the href only (`/watch?v=ID`, `/shorts/ID`). Mix links carry `&list=RD…&start_radio=1`, but the id is still `v`.
-- Lockup title is `h3[title]`. Channel is the first `.ytContentMetadataViewModelMetadataRow` text. The thumbnail box is `yt-thumbnail-view-model` .
+- Lockup title is `h3[title]`. Channel is the text of the first `.ytContentMetadataViewModelMetadataRow`, but only when a second text row follows and the first has no `.ytContentMetadataViewModelLeadingIcon`: the counter row ("121K · 4mo ago" behind an icon, or "541 watching") comes second, and on a channel's own tabs (Videos, Shorts, Live) it is the only row. Those tiles (`ytd-browse[page-subtype="channels"] ytd-rich-grid-renderer > #contents > ytd-rich-item-renderer`) take the channel from `yt-page-header-view-model h1`, which can render after the first tiles, so it is read again when the tile is recorded. Verified 2026-11-13, also across an in-app move from one channel to another. The thumbnail box is `yt-thumbnail-view-model` .
 - `#movie_player` contains end-screen `/watch` anchors, which are excluded via `NOT_RECO`.
 
 ## Playlist panel (watch page)
@@ -72,3 +72,6 @@ All names live in `src/youtube/selectors.ts` and `src/youtube/youtube.css`. Fixt
 - Hidden guide drawer: `tp-yt-app-drawer#guide #contentContainer` keeps a 20px swipe strip along the left window edge that takes clicks; while tiling without the Guide tile it gets `pointer-events: none`.
 - Details tile: `#bottom-row > #description` is sized from the window column and overflowed the pane; `youtube.css` caps the description chain at the tile width and wraps the owner/actions rows.
 - Channel avatar in a tile: the only `img` from `https://yt3.…`. It is lazy, so it has no `src` until the tile nears the viewport (watch-page related tiles have none at all).
+
+## Masthead
+- `ytd-masthead #start` holds the hamburger and the logo. The workspace chips (`<ytenrich-spaces>`) are appended to it, so they sit in the masthead's own flow, left of the search box. YouTube keeps foreign children there across navigations; `placeInMasthead` puts the element back if it ever leaves the document. YouTube's `--yt-spec-*` colour variables are not defined on the masthead, so the chips are themed by `html[dark]`. Verified 2026-11-13.

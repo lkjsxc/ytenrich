@@ -21,7 +21,7 @@ export function watchPreset(): LayoutNode {
           pane(['player']),
           split('row', [pane(['details']), pane(['comments', 'chat']), pane(['history'])]),
         ],
-        [0.62, 0.38],
+        [0.7, 0.3],
       ),
       pane(['playlist', 'recommended', 'stats', 'settings', 'log']),
     ],
@@ -54,10 +54,33 @@ export function shortsPreset(): LayoutNode {
   );
 }
 
+/** Second watch workspace, for reading along: details over comments at full height beside the player. */
+function readPreset(): LayoutNode {
+  return split(
+    'row',
+    [
+      split(
+        'col',
+        [
+          pane(['player']),
+          pane(['playlist', 'recommended', 'history', 'stats', 'settings', 'log']),
+        ],
+        [0.6, 0.4],
+      ),
+      split('col', [pane(['details']), pane(['comments', 'chat'])], [0.5, 0.5]),
+    ],
+    [0.58, 0.42],
+  );
+}
+
+/** Workspaces a family starts with (more are added from the masthead as copies of the one showing). */
+export const DEFAULT_SPACES: Record<WmFamily, number> = { watch: 2, browse: 1, home: 1, shorts: 1 };
+
 const PRESETS: Record<WmFamily, () => LayoutNode> = {
   watch: watchPreset,
   browse: browsePreset,
   home: homePreset,
   shorts: shortsPreset,
 };
-export const presetOf = (family: WmFamily): LayoutNode => PRESETS[family]();
+export const presetOf = (family: WmFamily, space = 1): LayoutNode =>
+  family === 'watch' && space === 2 ? readPreset() : PRESETS[family]();

@@ -4,7 +4,7 @@ MV3 browser extension (Chromium + Firefox ≥140) that enriches youtube.com:
 - recommendation impression stats
 - hiding over-exposed unopened videos
 - a one-click "Not interested" button
-- a tiling window manager (WM) on every page (layout families `watch`, `home`, `shorts` and `browse`; home defaults to ytenrich's recommended Videos and Shorts; the Shorts player and unknown page types tile as `page`), with ytenrich's own views (recommended Videos/Shorts/Channels, Stats/History/Settings/Log) as WM tabs. YouTube's own lists are the views titled "Default · …"
+- a tiling window manager (WM) on every page (layout families `watch`, `home`, `shorts` and `browse`, each with several workspaces switched from the masthead; home defaults to ytenrich's recommended Videos and Shorts; the Shorts player and unknown page types tile as `page`), with ytenrich's own views (recommended Videos/Shorts/Channels, Stats/History/Settings/Log) as WM tabs. YouTube's own lists are the views titled "Default · …"
 
 AI-first repo: no human ergonomics, no backward compatibility, no migrations. Move fast.
 
@@ -36,6 +36,7 @@ AI-first repo: no human ergonomics, no backward compatibility, no migrations. Mo
   - `controller.ts`: state, render, persistence.
   - `projector.ts`: native slot positioning.
   - `own-views.ts`: own-view tabs (any number per view). `launcher.ts`: the New tab page behind `+`.
+  - `spaces.ts`: workspaces (several layouts per family). `spaces-bar.ts`: their chips in the masthead.
   - `render`, `resize`, `tab-drag`, `menus`, `host`, `presets`, `layout-edge`.
 - `src/views/`: `registry.ts` lists every tab view. Native views set `slot`; own views set `mount(el, env)`. Own views run in both the WM and the options page. `views/stats/` is the Stats view (pure period math in `period.ts`; charts are plain flex DOM in `parts.ts`).
 - `src/shared/`: h, signal, settings (schema-driven UI), stats-rules, types, log.

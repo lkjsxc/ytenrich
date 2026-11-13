@@ -11,11 +11,10 @@ export const ago = (t: number): string => {
   return m < 60 ? `${m}m` : m < 1440 ? `${Math.round(m / 60)}h` : `${Math.round(m / 1440)}d`;
 };
 
-const date = (key: string, opts: Intl.DateTimeFormatOptions): string =>
-  new Date(`${key}T12:00`).toLocaleDateString('en', opts);
+/** Dates read yyyy/mm/dd everywhere. Day keys stay ISO (yyyy-mm-dd): they sort, and name backup files. */
+export const dayText = (key: string): string => key.replaceAll('-', '/');
 export const dayLong = (key: string): string =>
-  date(key, { weekday: 'short', month: 'short', day: 'numeric' });
-export const dayShort = (key: string): string => date(key, { month: 'short', day: 'numeric' });
+  `${dayText(key)} ${new Date(`${key}T12:00`).toLocaleDateString('en', { weekday: 'short' })}`;
 /** A candidate's exposure: collected without ever being on screen reads as not shown yet. */
 export const shownLine = (v: { seen: number; lastSeen: number; via: string }): string =>
   `${v.seen ? `shown ${v.seen}×` : 'not shown yet'}${v.via ? ` · from ${v.via}` : ''} · ${ago(v.lastSeen)} ago`;

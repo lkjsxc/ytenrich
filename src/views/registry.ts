@@ -1,5 +1,6 @@
 // View registry: every tab a WM pane (or the options page) can show.
 
+import type { Page } from '../content/route-signal.ts';
 import type { Scanner } from '../content/scanner.ts';
 import type { Log } from '../shared/log.ts';
 import type { call } from '../shared/protocol.ts';
@@ -19,6 +20,8 @@ export type ViewEnv = {
   readonly settings: Signal<Settings>;
   /** Present inside YouTube only (the options page has no page items). */
   readonly scanner?: Scanner;
+  /** The page being shown, inside YouTube only: it changes on every in-app navigation. */
+  readonly page?: Pick<Signal<Page>, 'get' | 'subscribe'>;
   /** Unique name of this tab (`<host>:<view id>`): the key of its saved state (`shared/view-state.ts`). */
   readonly instance: string;
   /** Renames this tab (the WM strip only). */

@@ -3,11 +3,17 @@ import type { Kind } from '../shared/types.ts';
 import {
   AGE_TEXT,
   AVATAR,
-  CHANNEL,
+  CHANNEL_CLASSIC,
+  CHANNEL_PAGE,
+  CHANNEL_PAGE_NAME,
+  CHANNEL_TAB_TILE,
   ITEM_ROOT_INNER,
   ITEM_ROOT_OUTER,
   LIST_TILE,
   MENU_HOST,
+  META_COUNT_ICON,
+  META_ROW,
+  META_TEXT,
   NOT_RECO,
   TITLE,
   VIDEO_ANCHOR,
@@ -39,13 +45,34 @@ export function itemRootOf(anchor: Element): Element | null {
   return anchor.closest(ITEM_ROOT_OUTER) ?? anchor.closest(ITEM_ROOT_INNER);
 }
 
+function clean(el: Element | null | undefined): string {
+  const text = (el?.getAttribute('title') || el?.textContent || '').trim();
+  return text.replace(/\s+/g, ' ').slice(0, 200);
+}
+
 function firstText(root: Element, selectors: readonly string[]): string {
   for (const sel of selectors) {
-    const el = root.querySelector(sel);
-    const text = (el?.getAttribute('title') || el?.textContent || '').trim();
-    if (text) return text.replace(/\s+/g, ' ').slice(0, 200);
+    const text = clean(root.querySelector(sel));
+    if (text) return text;
   }
   return '';
+}
+
+/**
+ * The tile's channel name. A lockup names it in its first text row, above the counter row. On a channel's own
+ * tabs the counter row is the only one, so a lone row or one that opens with the counter icon is never a name:
+ * such a tile belongs to the channel in the page header. The header can render after the tile, so a tile
+ * found without a channel is asked again when it is recorded.
+ */
+export function channelOf(root: Element): string {
+  const classic = clean(root.querySelector(CHANNEL_CLASSIC));
+  if (classic) return classic;
+  const rows = root.querySelectorAll(META_ROW);
+  const first = rows[0];
+  if (first && rows.length > 1 && !first.querySelector(META_COUNT_ICON))
+    return clean(first.querySelector(META_TEXT));
+  if (!root.matches(CHANNEL_TAB_TILE)) return '';
+  return clean(root.closest(CHANNEL_PAGE)?.querySelector(CHANNEL_PAGE_NAME));
 }
 
 export function extractItem(root: Element): ItemInfo | undefined {
@@ -53,7 +80,7 @@ export function extractItem(root: Element): ItemInfo | undefined {
   const parsed = anchor && parseHref(anchor.getAttribute('href') ?? '');
   // A Mix or playlist tile links to its first video, but it is a list, not that video.
   if (!anchor || !parsed || root.matches(LIST_TILE)) return undefined;
-  return { ...parsed, anchor, title: firstText(root, TITLE), channel: firstText(root, CHANNEL) };
+  return { ...parsed, anchor, title: firstText(root, TITLE), channel: channelOf(root) };
 }
 
 export function menuHostOf(root: Element): Element | null {

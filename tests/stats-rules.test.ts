@@ -3,6 +3,7 @@ import { parseAge } from '../src/shared/age.ts';
 import {
   applyImpression,
   applyOffer,
+  isCountName,
   isPrunable,
   isSuppressed,
   PRUNE_AGE_MS,
@@ -66,5 +67,20 @@ describe('stats rules', () => {
     expect(isPrunable(s, PRUNE_AGE_MS + 1)).toBe(true);
     expect(isPrunable({ ...s, opened: 1 }, PRUNE_AGE_MS + 1)).toBe(false);
     expect(isPrunable(s, 10)).toBe(false);
+  });
+  it('tells a view counter from a channel name', () => {
+    for (const junk of [
+      '121K',
+      '12万',
+      '6.8万',
+      '987',
+      '5,4 Mio.',
+      '121K views',
+      '12万 回視聴',
+      '541 watching',
+    ])
+      expect(isCountName(junk), junk).toBe(true);
+    for (const name of ['Rick Astley', '24 News', '3Blue1Brown', '2CELLOS', 'Lofi Girl', ''])
+      expect(isCountName(name), name).toBe(false);
   });
 });

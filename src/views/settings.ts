@@ -1,144 +1,66 @@
-import { exportData, importData } from '../shared/backup.ts';
+// Settings in the manner of an editor's settings page: a search box over one grouped list. Every word typed must
+// occur in an entry's group, title, description or key; `@modified` keeps the entries changed from their default.
 import { h } from '../shared/h.ts';
-import { resetLayouts } from '../shared/layout-store.ts';
-import {
-  patchSettings,
-  SETTINGS_SCHEMA,
-  type SettingField,
-  type Settings,
-} from '../shared/settings.ts';
+import { SETTINGS_SCHEMA, type Settings } from '../shared/settings.ts';
 import type { ViewEnv } from './registry.ts';
+import { dataEntries } from './settings-data.ts';
+import { type Entry, fieldEntry } from './settings-entry.ts';
 
-function field(f: SettingField, s: Settings): HTMLElement {
-  const value = s[f.key];
-  const save = (v: unknown): void => void patchSettings({ [f.key]: v } as Partial<Settings>);
-  let input: HTMLElement;
-  if (f.type === 'bool')
-    input = h('input', {
-      type: 'checkbox',
-      checked: value === true,
-      onchange: (e) => save((e.target as HTMLInputElement).checked),
-    });
-  else if (f.type === 'number')
-    input = h('input', {
-      type: 'number',
-      min: f.min,
-      max: f.max,
-      step: f.step ?? 1,
-      value: f.step ? Number(value).toFixed(2) : String(value),
-      onchange: (e) => {
-        const step = f.step ?? 1;
-        const n = Number(
-          (Math.round(Number((e.target as HTMLInputElement).value) / step) * step).toFixed(4),
-        );
-        if (n >= f.min && n <= f.max) save(n);
-      },
-    });
-  else if (f.type === 'enum')
-    input = h(
-      'select',
-      { onchange: (e) => save((e.target as HTMLSelectElement).value) },
-      f.options.map((o) => h('option', { value: o, selected: o === value }, o)),
-    );
-  else
-    input = h('input', {
-      type: 'text',
-      placeholder: f.placeholder,
-      value: String(value),
-      onchange: (e) => save((e.target as HTMLInputElement).value),
-    });
-  return h('label', { class: 'field' }, h('span', null, f.label), input);
-}
-
-function actions(env: ViewEnv, status: HTMLElement): HTMLElement {
-  const reset = (): void =>
-    void resetLayouts().then(() => env.log.write('info', 'settings', 'layout reset to default'));
-  const clear = (): void => {
-    if (confirm('Delete all ytenrich statistics? This cannot be undone.'))
-      void env.call('clear', null).then(() => env.log.write('info', 'settings', 'stats cleared'));
-  };
-  const say = (text: string, error = false): void => {
-    status.textContent = text;
-    status.className = error ? 'error' : 'muted';
-    env.log.write(error ? 'warn' : 'info', 'settings', text);
-  };
-  const save = (): void => {
-    say('Exporting…');
-    exportData(env.call).then(
-      (data) => {
-        const url = URL.createObjectURL(
-          new Blob([JSON.stringify(data)], { type: 'application/json' }),
-        );
-        h('a', { href: url, download: `ytenrich-${data.exportedAt.slice(0, 10)}.json` }).click();
-        setTimeout(() => URL.revokeObjectURL(url), 60_000);
-        const n = data.stats.videos.length;
-        say(
-          `Exported settings, layouts and ${n} videos of stats. The file contains your viewing record.`,
-        );
-      },
-      (e: unknown) => say(String(e), true),
-    );
-  };
-  const file = h('input', {
-    type: 'file',
-    accept: 'application/json,.json',
-    hidden: true,
-    onchange: () => {
-      const picked = file.files?.[0];
-      file.value = '';
-      if (
-        !picked ||
-        !confirm(
-          'Replace all ytenrich settings, layouts and statistics in this browser with this file?',
-        )
-      )
-        return;
-      say('Importing…');
-      picked
-        .text()
-        .then((text) => importData(env.call, JSON.parse(text)))
-        .then(
-          (n) => say(`Imported ${n} rows of stats with settings and layouts.`),
-          (e: unknown) => say(String(e), true),
-        );
-    },
-  });
-  return h(
-    'div',
-    { class: 'actions' },
-    h(
-      'button',
-      { onclick: save, title: 'Saves settings, layouts and statistics as one JSON file' },
-      'Export data',
-    ),
-    h(
-      'button',
-      { onclick: () => file.click(), title: 'Replaces everything with an exported file' },
-      'Import data…',
-    ),
-    file,
-    h(
-      'button',
-      { onclick: reset, title: 'Applies to every open YouTube tab' },
-      'Reset tiling layout',
-    ),
-    h('button', { class: 'danger', onclick: clear }, 'Clear statistics…'),
-  );
-}
+const MODIFIED = '@modified';
 
 export function mountSettings(el: HTMLElement, env: ViewEnv): () => void {
   const status = h('p', { class: 'muted' });
-  const render = (s: Settings): void => {
-    const focused = (el.getRootNode() as Document | ShadowRoot).activeElement;
-    if (focused && el.contains(focused)) return;
-    el.replaceChildren(
-      h('h2', null, 'Settings'),
-      ...SETTINGS_SCHEMA.map((f) => field(f, s)),
-      h('h2', { class: 'section' }, 'Layout & data'),
-      actions(env, status),
-      status,
-    );
+  const entries = [...SETTINGS_SCHEMA.map(fieldEntry), ...dataEntries(env, status)];
+  const groups = [...new Set(entries.map((e) => e.group))].map((name) => ({
+    name,
+    head: h('h3', { class: 'sgroup' }, name),
+    entries: entries.filter((e) => e.group === name),
+  }));
+  let changed = new Set<Entry>(); // bound: the entries of this view
+
+  const filter = (): void => {
+    const words = search.value.toLowerCase().split(/\s+/).filter(Boolean);
+    let shown = 0;
+    for (const e of entries) {
+      const hit = words.every((w) => (w === MODIFIED ? changed.has(e) : e.text.includes(w)));
+      e.node.hidden = !hit;
+      if (hit) shown++;
+    }
+    for (const g of groups) g.head.hidden = g.entries.every((e) => e.node.hidden);
+    count.textContent =
+      shown === entries.length
+        ? `${shown} settings`
+        : shown
+          ? `${shown} of ${entries.length} settings`
+          : 'No settings found';
+    modified.textContent = `${changed.size} modified`;
+    modified.hidden = !changed.size;
   };
-  render(env.settings.get());
-  return env.settings.subscribe(render);
+  const search = h('input', {
+    type: 'search',
+    placeholder: 'Search settings',
+    'aria-label': 'Search settings',
+    oninput: filter,
+  });
+  const count = h('span', { class: 'muted' });
+  const modified = h('button', {
+    title: 'Show only the settings changed from their default',
+    onclick: () => {
+      search.value = MODIFIED;
+      filter();
+    },
+  });
+  const sync = (s: Settings): void => {
+    const focused = (el.getRootNode() as Document | ShadowRoot).activeElement;
+    changed = new Set(entries.filter((e) => e.sync(s, focused)));
+    filter();
+  };
+
+  el.replaceChildren(
+    h('div', { class: 'ssearch' }, search, h('div', { class: 'scount' }, count, modified)),
+    ...groups.flatMap((g) => [g.head, ...g.entries.map((e) => e.node)]),
+    status,
+  );
+  sync(env.settings.get());
+  return env.settings.subscribe(sync);
 }

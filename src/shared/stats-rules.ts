@@ -152,6 +152,11 @@ export function addChannel(
   };
 }
 
+/** A view counter that builds before 0.2.9 stored as a channel name: "121K", "12万", "5.4M views", "541 watching". */
+const COUNT_NAME =
+  /^\d[\d.,]*\s?(\p{L}{1,3}\.?)?(\s(views?|watching|waiting|回視聴|人が視聴中|人が待機中))?$/u;
+export const isCountName = (name: string): boolean => COUNT_NAME.test(name);
+
 export const PRUNE_AGE_MS = 90 * 24 * 3600 * 1000;
 export const MAX_VIDEOS = 100_000;
 

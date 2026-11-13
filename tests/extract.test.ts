@@ -45,6 +45,10 @@ describe('youtube extract', () => {
     });
     expect(got[0]?.title).toContain('Together Forever');
   });
+  it('takes the channel of a channel-tab tile from the page header, never from the counter row', () => {
+    const got = items(load('channel-videos.html'));
+    expect(got.map((g) => g.channel)).toEqual(['Rick Astley', 'Rick Astley', '']);
+  });
   it('extracts shorts grid cells', () => {
     const got = items(load('search-shorts.html'));
     expect(got.length).toBeGreaterThan(1);
