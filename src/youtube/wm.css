@@ -1,0 +1,22 @@
+/* Injected into youtube.com and music.youtube.com by the manifest, before the site's own sheet (youtube.css,
+   music.css): what tiling needs on both. No site's DOM names here. */
+/* Tiling WM: native slots are fixed-positioned over pane bodies (rects set inline by the projector). */
+html[ytenrich-wm], html[ytenrich-wm] body { overflow: hidden !important; }
+html[ytenrich-wm] [ytenrich-slot] { position: fixed !important; visibility: visible !important; overflow: auto !important; overscroll-behavior: contain; margin: 0 !important; min-width: 0 !important; max-width: none !important; min-height: 0 !important; max-height: none !important; box-sizing: border-box !important; transform: none !important; z-index: 1 !important; padding: 8px 12px !important; background: #fff; }
+html[dark][ytenrich-wm] [ytenrich-slot] { background: #0f0f0f; }
+html[ytenrich-wm] [ytenrich-slot][ytenrich-slot-inactive] { visibility: hidden !important; pointer-events: none !important; }
+/* Workspace switcher in the masthead, between the logo and the search box (wm/spaces-bar.ts). Its chips keep one
+   width, so the bar never stretches into free space. The search box matters more: it keeps a comfortable 400px (and
+   takes any room beyond, up to YouTube's 732px) while the bar gives up room first, scrolling sideways and fading
+   toward a side that hides more, like a tab bar; too narrow for a few chips, it hides (`.tiny`). Only then does the
+   search box shrink, as YouTube's own does. The bar is ours, so it carries no gate. */
+ytenrich-spaces { flex: 0 1000 auto; min-width: 0; display: flex; gap: 2px; height: 40px; margin: 0 12px; overflow-x: auto; scrollbar-width: none; --fl: #000; --fr: #000; mask-image: linear-gradient(to right, var(--fl), #000 24px, #000 calc(100% - 24px), var(--fr)); }
+ytenrich-spaces.more-l { --fl: transparent; }
+ytenrich-spaces.more-r { --fr: transparent; }
+ytenrich-spaces[hidden] { display: none; }
+ytenrich-spaces.tiny { visibility: hidden; }
+ytenrich-spaces button { flex: 0 0 32px; width: 32px; padding: 0; border: 0; border-radius: 8px; background: rgba(128, 128, 128, 0.12); color: #0f0f0f; opacity: 0.6; font: 500 14px Roboto, Arial, sans-serif; cursor: pointer; }
+html[dark] ytenrich-spaces button { color: #f1f1f1; }
+ytenrich-spaces button:hover { background: rgba(128, 128, 128, 0.3); opacity: 1; }
+ytenrich-spaces button.on { background: #0f0f0f; color: #fff; opacity: 1; }
+html[dark] ytenrich-spaces button.on { background: #f1f1f1; color: #0f0f0f; }

@@ -4,6 +4,7 @@ import { call } from '../shared/protocol.ts';
 import { DEFAULT_SETTINGS, loadSettings, onSettings, type Settings } from '../shared/settings.ts';
 import { createSignal, type Signal } from '../shared/signal.ts';
 import { pageChannel } from '../youtube/extract.ts';
+import { SITE } from '../youtube/site.ts';
 import { createRouteSignal, type Page } from './route-signal.ts';
 import { createScanner, type Scanner } from './scanner.ts';
 
@@ -31,6 +32,8 @@ export function createRuntime(): Runtime {
   const channel = createSignal('');
   const readChannel = (): void => channel.set(pageChannel(route.page.get().kind));
   const offChannel = [scanner.onTick(readChannel), route.page.subscribe(readChannel)];
+  // YouTube Music fires no event when a navigation is done: its DOM changes are the cue to re-read the address.
+  if (SITE === 'music') offChannel.push(scanner.onTick(route.sync));
   return {
     settings,
     page: route.page,

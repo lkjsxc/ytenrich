@@ -48,6 +48,9 @@ export type ViewDef = {
 };
 
 const W: readonly WmFamily[] = ['watch'];
+const M: readonly WmFamily[] = ['music'];
+/** youtube.com's families: the recommendation lists are of its videos. */
+const YT: readonly WmFamily[] = ['watch', 'browse', 'home', 'channel', 'shorts'];
 
 export const VIEWS: readonly ViewDef[] = [
   { id: 'guide', title: 'Guide', hint: 'YouTube’s navigation menu', slot: 'guide' },
@@ -56,7 +59,7 @@ export const VIEWS: readonly ViewDef[] = [
     title: 'Page',
     hint: 'The YouTube page itself',
     slot: 'page',
-    families: ['browse', 'channel', 'shorts'],
+    families: ['browse', 'channel', 'shorts', 'music'],
   },
   {
     id: 'home-videos',
@@ -120,35 +123,56 @@ export const VIEWS: readonly ViewDef[] = [
     slot: 'shorts',
     families: W,
   },
+  {
+    id: 'music-player',
+    title: 'Player',
+    hint: 'YouTube Music: the video or cover of what is playing (shown while something is loaded)',
+    slot: 'player',
+    optional: true,
+    families: M,
+  },
+  {
+    id: 'queue',
+    title: 'Up next',
+    hint: 'YouTube Music: Up next, Lyrics and Related (shown while something is loaded)',
+    slot: 'queue',
+    optional: true,
+    families: M,
+  },
   // ytenrich's own recommendations take the plain names; YouTube's own lists are the "Default · …" views.
   {
     id: 'recommended',
     title: 'Videos',
     hint: 'Recommended videos you have not opened, in your order (▶ sets what it lists)',
+    families: YT,
     mount: (el, env) => mountRecommended(el, env, recoSpec()),
   },
   {
     id: 'recommended-shorts',
     title: 'Shorts',
     hint: 'Recommended Shorts you have not opened',
+    families: YT,
     mount: (el, env) => mountRecommended(el, env, recoSpec({ kind: 'short' })),
   },
   {
     id: 'recommended-mixes',
     title: 'Mix lists',
     hint: 'Recommended Mix lists (YouTube’s endless radio lists) you have not opened',
+    families: YT,
     mount: (el, env) => mountRecommended(el, env, recoSpec({ kind: 'mix' })),
   },
   {
     id: 'recommended-channels',
     title: 'Channels',
     hint: 'Recommendations grouped by the channels you like most',
+    families: YT,
     mount: (el, env) => mountRecommended(el, env, recoSpec({ group: true })),
   },
   {
     id: 'channel-videos',
     title: 'This channel',
     hint: 'Unopened videos of the channel of this page: the video’s owner, or the channel page',
+    families: YT,
     mount: (el, env) => mountRecommended(el, env, recoSpec({ scope: 'page' })),
   },
   {

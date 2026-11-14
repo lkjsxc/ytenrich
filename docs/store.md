@@ -97,6 +97,7 @@ The files are the source of truth; do not copy their text into this file.
   - `storage`: settings and pane layouts.
   - `unlimitedStorage`: the local recommendation-statistics database (IndexedDB, capped at 100,000 videos).
   - Host `https://www.youtube.com/*`: the content script that provides the layout and the recommendation features on YouTube pages.
+  - Host `https://music.youtube.com/*`: the same content script provides the layout on YouTube Music (nothing is recorded there).
 - **Remote code:** none. All code is bundled.
 - **Data usage (privacy practices form):** handled locally only, never transmitted to the developer.
   - Web history: recommended and opened YouTube videos.

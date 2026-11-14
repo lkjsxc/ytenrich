@@ -17,7 +17,7 @@ const files = [
   'AGENTS.md',
   'README.md',
 ];
-const YT_DOM = /['"`(\s](ytd-|ytm-|yt-[a-z]|tp-yt-|#movie_player|#related\b|#secondary\b)/;
+const YT_DOM = /['"`(\s](ytd-|ytm-|ytmusic-|yt-[a-z]|tp-yt-|#movie_player|#related\b|#secondary\b)/;
 
 for (const f of files) {
   if (f.startsWith('docs/images/')) {

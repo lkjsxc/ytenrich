@@ -9,7 +9,8 @@ export type Page = {
   readonly nav: number;
 };
 
-export function createRouteSignal(): { page: Signal<Page>; dispose(): void } {
+/** `sync` re-reads the address: for a site that announces no finished navigation (YouTube Music). */
+export function createRouteSignal(): { page: Signal<Page>; sync(): void; dispose(): void } {
   let nav = 0;
   const read = (): Page => {
     const url = new URL(location.href);
@@ -23,6 +24,7 @@ export function createRouteSignal(): { page: Signal<Page>; dispose(): void } {
   window.addEventListener('popstate', sync);
   return {
     page,
+    sync,
     dispose() {
       document.removeEventListener(NAV_EVENT, sync);
       window.removeEventListener('popstate', sync);

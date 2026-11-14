@@ -1,7 +1,7 @@
 # Architecture
 
 ## Processes
-- **Content script** (`content.js`, isolated world, document_start, youtube.com).
+- **Content script** (`content.js`, isolated world, document_start, youtube.com and music.youtube.com; `youtube/site.ts` `SITE` tells them apart, and YouTube Music starts only the `wm` feature).
   - `createRuntime()` builds: settings signal (chrome.storage.local + onChanged), page signal (URL → PageKind; updated on `yt-navigate-finish`/popstate), scanner, log (ring buffer 200), and `suppressed` id set.
   - Features start from `FEATURES` and each returns a disposer.
 - **Background** (`background.js`, service worker / Firefox event page).
@@ -66,6 +66,14 @@ page signal (watch/shorts videoId) ─► bg.opened (resets suppression for that
   - A player or page rect change dispatches a synthetic window `resize` (debounced 120ms) so YouTube refits the `<video>` and grids.
   - `#columns` is visibility hidden, so unprojected YouTube content is invisible and inert.
 - Stacking: native slots have z-index 1; our host has 2, so the drop preview sits above slots and holes stay transparent. YouTube overlays (masthead 2020, guide drawer + scrim 2030, popups ≈2200) stay above us because the host shares body's stacking context; `body.lock-scrollbar` (drawer/dialog open) makes body `position:fixed`, which would isolate YouTube below a host mounted on `<html>`.
+
+## YouTube Music
+- One layout family, `music`, for every page (`familyOf`): the app keeps its player across navigations, so one layout holds the page and the player, and a navigation only refreshes it. Views: `page` (the app's `#content`: every browse and search page), `music-player` and `queue` (the two panels of the app's player page; optional, so their tabs exist only while something is loaded), `guide`, and the own views Stats, History, Settings and Log (the recommendation lists are youtube.com's). Presets: guide | page | player over Up next, and workspace 2 with the player large.
+- The app's player page is never drawn itself (`music.css` hides it and drops its transform): its panels are tiles whether the app calls it open (`/watch`), a miniplayer or bar-only. So the page tile stays usable while a video plays, which the app alone cannot do.
+- A pane whose views are all absent gives its room to the pane before it (`wm/optional.ts` `yieldRoom`), so the guide keeps its width when the player's column goes.
+- The host leaves the app's player bar uncovered (`slots.ts` `chromeInsets`, read on every render; `onSlotToggle` watches the shell's state attributes).
+- Navigation: the app fires no event when a navigation is done, so the route signal re-reads the address on scanner ticks (`content/runtime.ts`). The page tile scrolls to its top only when the browse address changes, not when the player page opens or closes (`resetPageScroll`).
+- Nothing is recorded on YouTube Music: stats, the collector, hiding and quick dismiss do not start there.
 
 ## Stats freshness
 - After any mutating call (record/offer/opened/dismissed/clear/restore) the background writes `statsRev` to `chrome.storage.local`, throttled to one write per 1.5s window. `onStatsChanged` (shared/protocol.ts) delivers this to every context.

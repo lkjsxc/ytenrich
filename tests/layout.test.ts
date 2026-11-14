@@ -7,6 +7,7 @@ import {
   browsePreset,
   familyOf,
   homePreset,
+  musicPreset,
   shortsPreset,
   watchPreset,
 } from '../src/wm/presets.ts';
@@ -44,11 +45,14 @@ describe('layout', () => {
       ['shorts', shortsPreset()],
       ['home', homePreset(1600)],
       ['watch', watch()],
+      ['music', musicPreset(1600)],
     ] as const) {
       const known = new Set(viewsOf(family).map((v) => v.id));
       expect(L.views(preset).filter((v) => !known.has(v))).toEqual([]);
     }
     expect(viewsOf('browse').some((v) => v.id === 'player')).toBe(false);
+    expect(viewsOf('music').some((v) => v.id === 'recommended' || v.id === 'player')).toBe(false);
+    expect(familyOf('home', 'music')).toBe('music');
     expect(shape(homePreset(1600))).toEqual({
       row: ['guide', 'recommended|recommended-shorts|stats|history|settings|log'],
     });

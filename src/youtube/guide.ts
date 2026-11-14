@@ -1,6 +1,8 @@
 // The guide (hamburger sidebar) as a WM tile. YouTube stamps the guide only on first drawer open, so
 // wakeGuide() opens and closes the drawer once while it is hidden by CSS ([ytenrich-guide-wake]).
+import { GUIDE_BUTTON as MUSIC_GUIDE_BUTTON } from './music.ts';
 import { GUIDE_BUTTON, GUIDE_DRAWER, GUIDE_RENDERER } from './selectors.ts';
+import { SITE } from './site.ts';
 import { waitFor } from './wait.ts';
 
 const WAKE = 'ytenrich-guide-wake';
@@ -14,6 +16,7 @@ const button = (): HTMLElement | null => {
 };
 
 export function wakeGuide(): Promise<boolean> {
+  if (SITE === 'music') return Promise.resolve(false); // its guide is always stamped
   if (document.querySelector(GUIDE_RENDERER)) return Promise.resolve(true);
   const btn = button();
   const drawer = document.querySelector(GUIDE_DRAWER);
@@ -38,8 +41,9 @@ export function wakeGuide(): Promise<boolean> {
 
 /** Intercepts user clicks on the masthead hamburger (our own synthetic clicks pass through). */
 export function onGuideButton(fn: () => void): () => void {
+  const hamburger = SITE === 'music' ? MUSIC_GUIDE_BUTTON : GUIDE_BUTTON;
   const listener = (e: MouseEvent): void => {
-    if (!e.isTrusted || !(e.target as Element | null)?.closest?.(GUIDE_BUTTON)) return;
+    if (!e.isTrusted || !(e.target as Element | null)?.closest?.(hamburger)) return;
     e.preventDefault();
     e.stopImmediatePropagation();
     fn();

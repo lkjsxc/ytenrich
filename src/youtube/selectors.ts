@@ -1,4 +1,4 @@
-// The ONLY place that names YouTube DOM. Verified against live DOM 2026-11 (see docs/youtube-dom.md).
+// The ONLY place that names youtube.com's DOM (YouTube Music's names are in music.ts). Verified against live DOM 2026-11 (see docs/youtube-dom.md).
 export const VIDEO_ANCHOR = 'a[href^="/watch?v="], a[href^="/shorts/"]';
 
 /** Grid cells / wrappers win over inner lockups so hiding removes the whole cell. */
@@ -96,7 +96,8 @@ export const NATIVE_SLOTS = {
   shorts: `ytd-watch-flexy #related :is(${SHELVES}):has(a[href^="/shorts/"])`,
   guide: 'tp-yt-app-drawer#guide #guide-inner-content',
 } as const;
-export type NativeSlot = keyof typeof NATIVE_SLOTS;
+/** `queue` exists in YouTube Music only (`music.ts`), which also has a `page`, a `player` and a `guide`. */
+export type NativeSlot = keyof typeof NATIVE_SLOTS | 'queue';
 
 export const MASTHEAD = '#masthead-container';
 /** The masthead's left section (hamburger, logo): the workspace switcher follows it, before the search box. */

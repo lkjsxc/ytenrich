@@ -5,6 +5,7 @@ Tiling layout
 • Drag a tab to split, join or reorder panes.
 • Nine workspaces for each kind of page (watch, home, channel and the rest). Switch with the numbers next to the YouTube logo, or with Alt+Shift+1 to 9.
 • Shorts play in the regular player, and video descriptions open by themselves.
+• YouTube Music too: the page you browse, the player and Up next sit side by side, so you can keep browsing while a video plays.
 
 Recommendations on your terms
 • Your own lists of Videos, Shorts, Mix lists and Channels, gathered from everything YouTube recommends to you, including the lists your layout hides.

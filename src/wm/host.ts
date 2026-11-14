@@ -1,4 +1,4 @@
-// Shadow-root host for all ytenrich UI on youtube.com. Lives outside the YouTube app root so YouTube never re-renders it.
+// Shadow-root host for all ytenrich UI on youtube.com and YouTube Music. Lives outside the YouTube app root so YouTube never re-renders it.
 // Must be a child of <body>, not <html>: YouTube's scroll lock (guide drawer, dialogs) makes body position:fixed,
 // i.e. a stacking context, and a host outside it would paint above every YouTube overlay.
 
@@ -9,7 +9,8 @@ import css from '../ui/ui.css';
 export type Host = {
   readonly root: HTMLElement;
   readonly layer: HTMLElement;
-  setTop(px: number): void;
+  /** Leaves the site's own bars uncovered: the masthead above, YouTube Music's player bar below. */
+  inset(by: { top: number; bottom: number }): void;
   /** Applies the UI scale, the tab bar scale and the fixed tab width. */
   look(s: Pick<Settings, 'uiScale' | 'tabScale' | 'tabWidth'>): void;
   dispose(): void;
@@ -40,7 +41,10 @@ export function createHost(): Host {
   return {
     root,
     layer,
-    setTop: (px) => void (host.style.top = `${px}px`),
+    inset({ top, bottom }) {
+      host.style.top = `${top}px`;
+      host.style.bottom = `${bottom}px`;
+    },
     look(s) {
       host.style.setProperty('--scale', String(s.uiScale));
       host.style.setProperty('--tab-scale', String(s.tabScale));

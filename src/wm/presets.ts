@@ -1,11 +1,14 @@
 import type { PageKind, WmFamily } from '../shared/types.ts';
+import { SITE } from '../youtube/site.ts';
 import { NEW_TAB } from './launcher.ts';
 import { type LayoutNode, pane, split } from './layout.ts';
 
 export const GUIDE_PX = 240; // YouTube's guide renderer width
 
-/** Watch pages, home, channel pages and the Shorts player have their own families; every other page is `browse`. */
-export function familyOf(kind: PageKind): WmFamily {
+/** Watch pages, home, channel pages and the Shorts player have their own families; every other page is `browse`.
+ * YouTube Music is one family: its player stays while its pages change, so one layout holds both. */
+export function familyOf(kind: PageKind, site = SITE): WmFamily {
+  if (site === 'music') return 'music';
   return kind === 'watch' || kind === 'shorts' || kind === 'home' || kind === 'channel'
     ? kind
     : 'browse';
@@ -61,6 +64,18 @@ export function shortsPreset(): LayoutNode {
   );
 }
 
+/** Default for YouTube Music: guide | the app's page (Settings and Log behind it) | the player over Up next. The
+ * last column exists only while something is loaded in the player; until then the page has its room. */
+export function musicPreset(width = globalThis.innerWidth || 1600): LayoutNode {
+  const f = Math.min(0.3, GUIDE_PX / Math.max(width, 800));
+  const playing = split('col', [pane(['music-player']), pane(['queue'])], [0.45, 0.55]);
+  const page = pane(['page', 'settings', 'log']);
+  return split('row', [pane(['guide']), page, playing], [f, (1 - f) * 0.6, (1 - f) * 0.4]);
+}
+/** Music workspace 2: the player large, Up next and the page beside it. */
+const musicWide = (): LayoutNode =>
+  split('row', [pane(['music-player']), pane(['queue', 'page'])], [0.62, 0.38]);
+
 const BELOW = ['playlist', 'recommended', 'channel-videos', 'history', 'stats', 'settings', 'log'];
 /** Watch workspaces 2–4: the player over the other tabs, and `tabs` at full height beside them. */
 const beside = (tabs: string[]): LayoutNode =>
@@ -100,9 +115,12 @@ const PRESETS: Record<WmFamily, () => LayoutNode> = {
   home: homePreset,
   channel: browsePreset, // the page wide beside the guide: a third column left the channel page too narrow
   shorts: shortsPreset,
+  music: musicPreset,
+};
+const BY_SPACE: Partial<Record<WmFamily, readonly (() => LayoutNode)[]>> = {
+  watch: WATCH,
+  music: [musicPreset, musicWide],
 };
 /** Every family has `SPACES` workspaces (`wm/spaces.ts`). Those without a layout of their own start as a New tab page. */
 export const presetOf = (family: WmFamily, space = 1): LayoutNode =>
-  space === 1
-    ? PRESETS[family]()
-    : ((family === 'watch' ? WATCH[space - 1]?.() : undefined) ?? pane([NEW_TAB]));
+  space === 1 ? PRESETS[family]() : (BY_SPACE[family]?.[space - 1]?.() ?? pane([NEW_TAB]));

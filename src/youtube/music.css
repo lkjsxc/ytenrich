@@ -1,0 +1,37 @@
+/* Injected into music.youtube.com by the manifest, after wm.css. Every rule is gated by html[ytenrich-wm] or a
+   ytenrich-* attribute. YouTube Music is always dark (html[dark]). */
+/* Tiles: the app's own near-black, no padding. */
+html[dark][ytenrich-wm] [ytenrich-slot] { padding: 0 !important; background: #030303; }
+/* Page tile: the app's #content, which scrolls in place of the window. The app clears its fixed nav bar, guide and
+   player bar through these variables, and sizes content from the window width; in a tile there is nothing to clear,
+   and the width is the tile's: a size container, so 100cqw is its width (this also keeps the fixed parts of a page
+   inside the tile). Natively #content is hidden while the player page is open; a tile shows always. */
+html[ytenrich-wm] [ytenrich-slot="page"] { container-type: inline-size; overflow-x: hidden !important; --ytmusic-guide-width: 0px; --ytmusic-nav-bar-height: 0px; --ytmusic-player-bar-height: 0px; --ytmusic-scrollbar-width: 0px; --ytmusic-content-width: min(100cqw - 48px, 1478px); }
+html[ytenrich-wm] [ytenrich-slot="page"] ytmusic-search-page { --ytmusic-content-width: min(100cqw - 48px, 1478px) !important; }
+/* The player page (fixed over the content; slid away by a transform while closed) is never drawn itself: its two
+   panels are tiles whether the app calls it open or not. Its transform would make it the containing block of the
+   fixed tiles; hidden, it paints no background over the page tile and takes no clicks. */
+html[ytenrich-wm] ytmusic-player-page { visibility: hidden !important; transform: none !important; will-change: auto !important; }
+/* Player tile: the main panel. The player fills it under the Song / Video switch, in every state (as a miniplayer the
+   app would fix it to the window corner at 226px). Cover and video fit the tile instead of the window. */
+html[ytenrich-wm] [ytenrich-slot="player"] { display: flex !important; flex-direction: column !important; align-items: stretch !important; overflow: hidden !important; background: #000; }
+html[ytenrich-wm] [ytenrich-slot="player"] > #av-id { flex: none; align-self: center; margin: 8px 0 !important; }
+html[ytenrich-wm] [ytenrich-slot="player"] > ytmusic-player { position: relative !important; inset: auto !important; flex: 1 1 0 !important; width: auto !important; height: auto !important; min-height: 0 !important; max-width: none !important; max-height: none !important; margin: 0 !important; border-radius: 0 !important; transform: none !important; }
+html[ytenrich-wm] [ytenrich-slot="player"] :is(#song-image, #song-video) { position: absolute !important; inset: 0 !important; width: auto !important; height: auto !important; padding: 0 !important; margin: 0 !important; }
+html[ytenrich-wm] [ytenrich-slot="player"] #song-image #thumbnail { position: absolute !important; inset: 0 !important; width: 100% !important; height: 100% !important; border-radius: 0 !important; background: transparent !important; }
+html[ytenrich-wm] [ytenrich-slot="player"] #song-image #thumbnail img { width: 100% !important; height: 100% !important; object-fit: contain !important; }
+/* Up next tile: the side panel, with the app's own tabs. With its player page closed the app stops drawing what
+   Lyrics and Related list (the tab renderer carries `page-type` while one of them is selected); a tile shows it. */
+html[ytenrich-wm] [ytenrich-slot="queue"] ytmusic-tab-renderer[page-type] > ytmusic-section-list-renderer { display: block !important; }
+/* Guide tile: the full guide. Its drawer (fixed, z 4, a transformed inner container) would cover our tab bar and be
+   the tile's containing block; the mini guide and its backdrop have no place while tiling. ☰ toggles the tile. */
+html[ytenrich-wm] tp-yt-app-drawer#guide { z-index: 1 !important; visibility: hidden !important; pointer-events: none !important; }
+html[ytenrich-wm] tp-yt-app-drawer#guide #contentContainer { transform: none !important; will-change: auto !important; }
+html[ytenrich-wm] ytmusic-app-layout :is(#mini-guide, #mini-guide-background) { display: none !important; }
+html[ytenrich-wm] [ytenrich-slot="guide"] { pointer-events: auto !important; --ytmusic-nav-bar-height: 0px; --ytmusic-player-bar-height: 0px; }
+html[ytenrich-wm] [ytenrich-slot="guide"] #guide-content { height: 100% !important; }
+html[ytenrich-wm] [ytenrich-slot="guide"] ytmusic-guide-renderer { width: 100% !important; height: 100% !important; box-sizing: border-box !important; }
+/* Workspace switcher, leading the nav bar's right-hand group. That group is absolute and as wide as its content, so
+   the bar is capped to the room the window leaves between the search box (to 820px) and the group's own buttons
+   (about 300px); narrower, it scrolls, then hides (`.tiny`, wm.css). */
+ytmusic-nav-bar #right-content > ytenrich-spaces { align-self: center; max-width: max(0px, 100vw - 1140px); }

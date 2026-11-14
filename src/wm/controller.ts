@@ -3,7 +3,7 @@ import type { Runtime } from '../content/runtime.ts';
 import type { WmFamily } from '../shared/types.ts';
 import { kindOf, viewOf, viewsOf } from '../views/registry.ts';
 import { onGuideButton } from '../youtube/guide.ts';
-import { mastheadHeight, onChaptersOpen, resetPageScroll } from '../youtube/slots.ts';
+import { chromeInsets, onChaptersOpen, resetPageScroll } from '../youtube/slots.ts';
 import { createHost } from './host.ts';
 import { NEW_TAB } from './launcher.ts';
 import * as L from './layout.ts';
@@ -32,7 +32,6 @@ export function createWmController(
   const preset = (): L.LayoutNode => presetOf(family, at.index);
   const VIEWS = viewsOf(family);
   const host = createHost();
-  host.setTop(mastheadHeight());
   const { call, log, settings, scanner, page, channel } = rt;
   const env = { call, log, settings, scanner, page, channel };
   const kinds = new Set(VIEWS.map((v) => v.id));
@@ -117,6 +116,7 @@ export function createWmController(
 
   function render(): void {
     if (disposed) return;
+    host.inset(chromeInsets()); // YouTube Music's player bar comes and goes with its optional views
     const shown = optional.visible(root);
     rendered = renderLayout(shown, ctx);
     host.root.replaceChildren(rendered.el);
@@ -179,7 +179,7 @@ export function createWmController(
   return {
     family,
     refresh() {
-      host.setTop(mastheadHeight());
+      host.inset(chromeInsets());
       projector.refresh();
     },
     dispose() {

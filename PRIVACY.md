@@ -2,7 +2,7 @@
 
 Last updated: November 14, 2026
 
-ytenrich is a browser extension for `www.youtube.com`. It runs entirely in your browser. It has no developer-operated server, account, analytics, telemetry or advertising, and it never sends data to the developer.
+ytenrich is a browser extension for `www.youtube.com` and `music.youtube.com`. On YouTube Music it only arranges the page into panes and records nothing; everything below about stats concerns `www.youtube.com`. It runs entirely in your browser. It has no developer-operated server, account, analytics, telemetry or advertising, and it never sends data to the developer.
 
 ## What ytenrich stores, and why
 

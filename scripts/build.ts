@@ -47,7 +47,8 @@ const statics = async (): Promise<void> => {
   const manifest = { ...(firefox ? firefoxManifest : chromiumManifest), version };
   writeFileSync(`${out}/manifest.json`, JSON.stringify(manifest, null, 1));
   cpSync('src/_locales', `${out}/_locales`, { recursive: true });
-  copyFileSync('src/youtube/youtube.css', `${out}/youtube.css`);
+  for (const css of ['wm.css', 'youtube.css', 'music.css'])
+    copyFileSync(`src/youtube/${css}`, `${out}/${css}`);
   copyFileSync('src/pages/options/options.html', `${out}/options.html`);
   copyFileSync('LICENSE', `${out}/LICENSE`);
   await Promise.all(

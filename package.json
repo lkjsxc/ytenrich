@@ -7,7 +7,7 @@
     "build": "node scripts/build.ts",
     "dev": "node scripts/build.ts --watch",
     "check": "node scripts/check.ts",
-    "smoke": "node scripts/build.ts && node scripts/smoke.ts && node scripts/smoke-browse.ts",
+    "smoke": "node scripts/build.ts && node scripts/smoke.ts && node scripts/smoke-browse.ts && node scripts/smoke-music.ts",
     "package": "node scripts/package.ts",
     "bump": "node scripts/version.ts",
     "store-assets": "node scripts/build.ts && node scripts/store-assets.ts",

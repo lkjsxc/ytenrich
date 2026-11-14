@@ -1,7 +1,8 @@
-// Optional native views: their tab shows only while YouTube has the element (playlist, chapters), and a view
+// Optional native views: their tab shows only while YouTube has the element (playlist, chapters, YouTube Music's
+// player and Up next), and a view
 // that is new to the defaults is added once to layouts saved before it existed.
 import type { ViewDef } from '../views/registry.ts';
-import { onPlaylistToggle, resolveSlot } from '../youtube/slots.ts';
+import { onSlotToggle, resolveSlot } from '../youtube/slots.ts';
 import * as L from './layout.ts';
 
 const INTRODUCED_KEY = 'introduced';
@@ -12,6 +13,24 @@ const LATE: readonly (readonly [string, string, boolean?])[] = [
   ['playlist', 'recommended'],
   ['chapters', 'details', true],
 ];
+
+/** `node` with the room of every pane that holds only `gone` views handed to the sibling before it (after it, for
+ * a first child): the others keep their sizes when it is dropped (the guide stays as wide when the player's column
+ * goes, instead of every pane growing in proportion). */
+function yieldRoom(node: L.LayoutNode, gone: readonly string[]): L.LayoutNode {
+  if (node.type === 'pane') return node;
+  const empty = (n: L.LayoutNode): boolean =>
+    n.type === 'pane' ? n.tabs.every((t) => gone.includes(t)) : n.children.every(empty);
+  const kept = node.children.map((c) => !empty(c));
+  const sizes = [...node.sizes];
+  kept.forEach((keep, i) => {
+    const to = keep ? -1 : Math.max(kept.lastIndexOf(true, i), kept.indexOf(true, i));
+    if (to < 0) return;
+    sizes[to] = (sizes[to] ?? 0) + (sizes[i] ?? 0);
+    sizes[i] = 0;
+  });
+  return { ...node, children: node.children.map((c) => yieldRoom(c, gone)), sizes };
+}
 
 export type Optional = {
   /** The layout as it should be drawn now: without the optional tabs that have nothing to show. */
@@ -34,12 +53,12 @@ export function createOptional(
   const check = (): void => {
     if (missing().join() !== absent) onChange();
   };
-  const offs = optional.length ? [onPlaylistToggle(check), ticks(check)] : [];
+  const offs = optional.length ? [onSlotToggle(check), ticks(check)] : [];
   return {
     visible(root) {
       const gone = missing();
       absent = gone.join();
-      return L.retainViews(root, { has: (v) => !gone.includes(v) }) ?? root;
+      return L.retainViews(yieldRoom(root, gone), { has: (v) => !gone.includes(v) }) ?? root;
     },
     introduce(root, introduced) {
       const had = Array.isArray(introduced) ? (introduced as string[]) : [];

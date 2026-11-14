@@ -1,4 +1,5 @@
 // Shared launcher for live smokes: Chromium (Playwright's, else newest cached, or YTE_CHROME) + unpacked dist/.
+import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, readdirSync } from 'node:fs';
 import { homedir, tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
@@ -15,7 +16,19 @@ const cached = (): string | undefined => {
   return dirs.map((d) => join(root, d, 'chrome-linux64/chrome')).find(existsSync);
 };
 
-export type LaunchOpts = { width?: number; height?: number; dark?: boolean; args?: string[] };
+/** `desktopUa`: drop "Headless" from the user agent (YouTube Music turns headless Chromium away). */
+export type LaunchOpts = {
+  width?: number;
+  height?: number;
+  dark?: boolean;
+  args?: string[];
+  desktopUa?: boolean;
+};
+
+const desktopUa = (exe: string): string => {
+  const major = /(\d+)\./.exec(execFileSync(exe, ['--version'], { encoding: 'utf8' }))?.[1];
+  return `--user-agent=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${major}.0.0.0 Safari/537.36`;
+};
 
 export async function launch(settings: Record<string, unknown> = {}, opts: LaunchOpts = {}) {
   const ext = resolve('dist');
@@ -28,7 +41,12 @@ export async function launch(settings: Record<string, unknown> = {}, opts: Launc
     viewport: { width: opts.width ?? 1600, height: opts.height ?? 1000 },
     colorScheme: opts.dark ? 'dark' : 'light',
     locale: 'en-US',
-    args: [`--disable-extensions-except=${ext}`, `--load-extension=${ext}`, ...(opts.args ?? [])],
+    args: [
+      `--disable-extensions-except=${ext}`,
+      `--load-extension=${ext}`,
+      ...(opts.desktopUa ? [desktopUa(exe ?? chromium.executablePath())] : []),
+      ...(opts.args ?? []),
+    ],
   });
   const errors: string[] = [];
   const page = ctx.pages().find((p) => p.url() === 'about:blank') ?? (await ctx.newPage());

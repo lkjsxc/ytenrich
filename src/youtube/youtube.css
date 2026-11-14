@@ -1,4 +1,5 @@
-/* Injected into youtube.com by the manifest. Every rule is gated by a ytenrich-* attribute. */
+/* Injected into youtube.com by the manifest, after wm.css (the tiles' base rules and the workspace switcher).
+   Every rule is gated by a ytenrich-* attribute. */
 [ytenrich-hidden] { display: none !important; }
 [ytenrich-dim] { opacity: 0.2; transition: opacity 0.15s; }
 [ytenrich-dim]:hover { opacity: 1; }
@@ -19,13 +20,8 @@
 [ytenrich-dismissed] { display: none !important; }
 html[ytenrich-no-dismiss] [ytenrich-dismiss] { display: none !important; }
 html[ytenrich-silent-menu] ytd-popup-container tp-yt-iron-dropdown { opacity: 0 !important; }
-/* Tiling WM: native slots are fixed-positioned over pane bodies (rects set inline by the projector). */
-html[ytenrich-wm], html[ytenrich-wm] body { overflow: hidden !important; }
 html[ytenrich-wm] ytd-watch-flexy #columns, html[ytenrich-wm] ytd-watch-flexy #full-bleed-container { visibility: hidden !important; }
-html[ytenrich-wm] [ytenrich-slot] { position: fixed !important; visibility: visible !important; overflow: auto !important; overscroll-behavior: contain; margin: 0 !important; min-width: 0 !important; max-width: none !important; min-height: 0 !important; max-height: none !important; box-sizing: border-box !important; transform: none !important; z-index: 1 !important; padding: 8px 12px !important; background: #fff; }
-html[dark][ytenrich-wm] [ytenrich-slot] { background: #0f0f0f; }
 html[ytenrich-wm] [ytenrich-slot="player"] { overflow: hidden !important; padding: 0 !important; background: #000; }
-html[ytenrich-wm] [ytenrich-slot][ytenrich-slot-inactive] { visibility: hidden !important; pointer-events: none !important; }
 /* YouTube sets `visibility: visible` on parts of its tiles, which would show through a hidden list and sit over the
    tab in front. Everything inside a hidden tile or an undrawn page is hidden too, except a tile drawn from inside it. */
 html[ytenrich-wm] :is([ytenrich-slot-inactive], ytd-page-manager > :not(ytd-watch-flexy, [ytenrich-slot])) :not([ytenrich-slot]:not([ytenrich-slot-inactive]), [ytenrich-slot]:not([ytenrich-slot-inactive]) *) { visibility: hidden !important; pointer-events: none !important; }
@@ -89,19 +85,5 @@ html[ytenrich-wm] ytd-app #frosted-glass { display: none !important; }
 /* Collector (content/features/collect.ts): a list the WM is not drawing keeps its loader inside the viewport, so
    YouTube loads the next page of it; each new page brings a new loader until the attribute is removed. */
 html[ytenrich-wm][ytenrich-harvest] :is(ytd-watch-flexy #related, ytd-page-manager > ytd-browse):is(:not([ytenrich-slot]), [ytenrich-slot-inactive]) ytd-continuation-item-renderer { position: fixed !important; top: 0 !important; left: 0 !important; width: 10px !important; height: 10px !important; overflow: hidden !important; visibility: hidden !important; pointer-events: none !important; }
-/* Workspace switcher in the masthead, between the logo and the search box (wm/spaces-bar.ts). Its chips keep one
-   width, so the bar never stretches into free space. The search box matters more: it keeps a comfortable 400px (and
-   takes any room beyond, up to YouTube's 732px) while the bar gives up room first, scrolling sideways and fading
-   toward a side that hides more, like a tab bar; too narrow for a few chips, it hides (`.tiny`). Only then does the
-   search box shrink, as YouTube's own does. The bar is ours, so it carries no gate. */
-ytenrich-spaces { flex: 0 1000 auto; min-width: 0; display: flex; gap: 2px; height: 40px; margin: 0 12px; overflow-x: auto; scrollbar-width: none; --fl: #000; --fr: #000; mask-image: linear-gradient(to right, var(--fl), #000 24px, #000 calc(100% - 24px), var(--fr)); }
-ytenrich-spaces.more-l { --fl: transparent; }
-ytenrich-spaces.more-r { --fr: transparent; }
-ytenrich-spaces[hidden] { display: none; }
-ytenrich-spaces.tiny { visibility: hidden; }
+/* The search box keeps a comfortable 400px beside the workspace switcher (wm.css). */
 html[ytenrich-wm] ytd-masthead #center { flex: 1 1 400px !important; max-width: 732px !important; min-width: 0 !important; }
-ytenrich-spaces button { flex: 0 0 32px; width: 32px; padding: 0; border: 0; border-radius: 8px; background: rgba(128, 128, 128, 0.12); color: #0f0f0f; opacity: 0.6; font: 500 14px Roboto, Arial, sans-serif; cursor: pointer; }
-html[dark] ytenrich-spaces button { color: #f1f1f1; }
-ytenrich-spaces button:hover { background: rgba(128, 128, 128, 0.3); opacity: 1; }
-ytenrich-spaces button.on { background: #0f0f0f; color: #fff; opacity: 1; }
-html[dark] ytenrich-spaces button.on { background: #f1f1f1; color: #0f0f0f; }

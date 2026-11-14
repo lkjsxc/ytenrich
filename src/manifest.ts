@@ -1,4 +1,6 @@
 const youtube = 'https://www.youtube.com/*';
+const music = 'https://music.youtube.com/*';
+// wm.css is shared; each site adds its own sheet after it (later rules of equal weight win).
 
 const common = {
   manifest_version: 3,
@@ -8,7 +10,7 @@ const common = {
   default_locale: 'en',
   homepage_url: 'https://github.com/lkjsxc/ytenrich',
   permissions: ['storage', 'unlimitedStorage'],
-  host_permissions: [youtube],
+  host_permissions: [youtube, music],
   incognito: 'not_allowed',
   icons: { 16: 'icon-16.png', 32: 'icon-32.png', 48: 'icon-48.png', 128: 'icon-128.png' },
   action: { default_title: 'ytenrich' },
@@ -17,7 +19,13 @@ const common = {
     {
       matches: [youtube],
       js: ['content.js'],
-      css: ['youtube.css'],
+      css: ['wm.css', 'youtube.css'],
+      run_at: 'document_start',
+    },
+    {
+      matches: [music],
+      js: ['content.js'],
+      css: ['wm.css', 'music.css'],
       run_at: 'document_start',
     },
   ],

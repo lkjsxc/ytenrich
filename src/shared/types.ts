@@ -3,8 +3,9 @@ export type Kind = 'video' | 'short' | 'mix';
 export type Surface = 'home' | 'watch' | 'search' | 'channel' | 'subs' | 'shorts' | 'other';
 export type PageKind = Surface;
 /** Tiling layout family: watch pages, home, channel pages, the Shorts player, or every other page (the page
- * itself is projected whole as the `page` view outside watch pages). Each family keeps its own saved layouts. */
-export type WmFamily = 'watch' | 'browse' | 'home' | 'channel' | 'shorts';
+ * itself is projected whole as the `page` view outside watch pages); `music` is all of YouTube Music, one layout
+ * for every page. Each family keeps its own saved layouts. */
+export type WmFamily = 'watch' | 'browse' | 'home' | 'channel' | 'shorts' | 'music';
 
 export type Impression = {
   readonly id: string;
