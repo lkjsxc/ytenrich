@@ -17,9 +17,17 @@ type Ranking = { ranked: VideoStat[]; channels: Map<string, ChannelStat> };
 async function rankAll(q: RecoQuery, sup: Judge): Promise<Ranking> {
   const tx = (await openDb()).transaction([VIDEOS, CHANNELS]);
   const videos = tx.objectStore(VIDEOS);
-  // Opened ones only when asked; over-exposed and dismissed ones never.
+  // Opened ones only when asked; over-exposed and dismissed ones never; with a search, only rows that match it.
+  const words = q.text.toLowerCase().split(/\s+/).filter(Boolean);
+  const matches = (s: VideoStat): boolean => {
+    const hay = `${s.title} ${s.channel}`.toLowerCase();
+    return words.every((w) => hay.includes(w));
+  };
   const fits = (s: VideoStat): boolean =>
-    q.kinds.includes(s.kind) && !s.dismissedAt && (s.opened ? q.opened : !sup(s));
+    q.kinds.includes(s.kind) &&
+    !s.dismissedAt &&
+    (s.opened ? q.opened : !sup(s)) &&
+    (!words.length || matches(s));
   let pool: VideoStat[] = []; // bound: POOL, or one channel's rows
   const dismissed: string[] = []; // bound: TASTE_TITLES
   const ignored: string[] = []; // bound: TASTE_TITLES; on screen at least twice and still unopened
@@ -51,18 +59,33 @@ async function rankAll(q: RecoQuery, sup: Judge): Promise<Ranking> {
 }
 
 // The last rankings are kept until the record changes (or a minute passes, since freshness moves the order): a
-// tab's refreshes and its "load more" pages then cost one slice. Bound: MEMO_MAX queries × POOL rows.
+// tab's refreshes then cost one slice. A list's next page goes on with the ranking it shows even when the record
+// changed meanwhile (for up to KEEP_MS): its order holds, and scrolling never waits for a full re-rank.
+// Bound: MEMO_MAX queries × POOL rows.
 const MEMO_MS = 60_000;
+const KEEP_MS = 15 * 60_000;
 const MEMO_MAX = 8;
-const memo = new Map<string, { at: number; ranking: Ranking }>();
+const memo = new Map<string, { at: number; rev: number; ranking: Ranking }>();
+let rev = 0;
 /** The record or the settings changed: rankings are stale. */
-export const touch = (): void => memo.clear();
+export const touch = (): void => void rev++;
+/** A dismissed video leaves the rankings kept for next pages. */
+export function forget(id: string): void {
+  for (const { ranking } of memo.values())
+    ranking.ranked = ranking.ranked.filter((v) => v.id !== id);
+}
 
-export async function recommend(q: RecoQuery, limit: number, sup: Judge): Promise<RecoPage> {
+export async function recommend(
+  q: RecoQuery,
+  limit: number,
+  sup: Judge,
+  more = false,
+): Promise<RecoPage> {
   const key = JSON.stringify(q);
   let hit = memo.get(key);
-  if (!hit || Date.now() - hit.at > MEMO_MS) {
-    hit = { at: Date.now(), ranking: await rankAll(q, sup) };
+  const age = hit ? Date.now() - hit.at : Infinity;
+  if (!hit || (more ? age > KEEP_MS : hit.rev !== rev || age > MEMO_MS)) {
+    hit = { at: Date.now(), rev, ranking: await rankAll(q, sup) };
     memo.delete(key);
     memo.set(key, hit);
     for (const old of memo.keys()) if (memo.size > MEMO_MAX) memo.delete(old);

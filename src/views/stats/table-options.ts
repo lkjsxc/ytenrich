@@ -13,7 +13,7 @@ export const KINDS: readonly (readonly [StatsQuery['kind'], string])[] = [
   ['all', 'Everything'],
   ['video', 'Videos'],
   ['short', 'Shorts'],
-  ['mix', 'Mixes'],
+  ['mix', 'Mix lists'],
 ];
 export const COLUMNS: readonly (readonly [StatsSort, string])[] = [
   ['seen', 'Shown'],

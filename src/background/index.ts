@@ -8,7 +8,7 @@ import {
 } from '../shared/protocol.ts';
 import { DEFAULT_SETTINGS, loadSettings, onSettings, type Settings } from '../shared/settings.ts';
 import * as backup from './backup.ts';
-import { recommend, touch, wanted } from './recommend.ts';
+import { forget, recommend, touch, wanted } from './recommend.ts';
 import * as read from './stats-read.ts';
 import * as repo from './stats-repo.ts';
 import { judge, suppressedIds } from './suppress.ts';
@@ -69,10 +69,11 @@ const handlers: Handlers = {
   },
   opened: (req) => repo.opened(req).then(() => null),
   describe: ({ id, title }) => repo.describe(id, title).then(() => null),
-  dismissed: ({ id }) => repo.dismissed(id).then(() => null),
+  dismissed: ({ id }) => repo.dismissed(id).then(() => (forget(id), null)),
   suppressed: async () => [...(await suppressedIds(threshold))],
   query: (q) => read.query(q, threshold),
-  recommend: async ({ query, limit }) => recommend(query, limit, await judge(threshold)),
+  recommend: async ({ query, limit, more }) =>
+    recommend(query, limit, await judge(threshold), more),
   overview: () => read.overview(threshold),
   channels: ({ sort, limit }) => read.channels(sort, limit),
   clear: () => repo.clear().then(() => null),

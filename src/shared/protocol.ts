@@ -23,7 +23,8 @@ export type Api = {
   dismissed: { req: { id: string }; res: null };
   suppressed: { req: null; res: string[] };
   query: { req: StatsQuery; res: StatsPage };
-  recommend: { req: { query: RecoQuery; limit: number }; res: RecoPage };
+  /** `more`: the next page of the list on screen, so the ranking it shows goes on instead of being redone. */
+  recommend: { req: { query: RecoQuery; limit: number; more?: boolean }; res: RecoPage };
   overview: { req: null; res: Overview };
   channels: { req: { sort: ChannelSort; limit: number }; res: ChannelStat[] };
   clear: { req: null; res: null };

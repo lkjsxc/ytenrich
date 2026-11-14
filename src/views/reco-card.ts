@@ -12,9 +12,14 @@ const NO_HINT = 'Not interested: hides it here and ranks its channel lower. YouT
 export const images = (env: ViewEnv): boolean =>
   !__FIREFOX__ && env.settings.get().thumbnailsEnabled;
 
-/** Channel and upload age, e.g. "Lofi Girl · 3mo ago" (the channel is left out where the list names it). */
+/** Channel, views and upload age, e.g. "Lofi Girl · 1.2M views · 3mo ago" (no channel where the list names it). */
 const byline = (v: VideoStat, bare: boolean): string =>
-  [bare ? '' : v.channel, v.kind === 'mix' ? 'Mix' : '', v.published ? since(v.published) : '']
+  [
+    bare ? '' : v.channel,
+    v.kind === 'mix' ? 'Mix list' : '',
+    v.views ?? '',
+    v.published ? since(v.published) : '',
+  ]
     .filter(Boolean)
     .join(' · ');
 

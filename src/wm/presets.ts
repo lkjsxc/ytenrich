@@ -52,21 +52,6 @@ export function homePreset(width = globalThis.innerWidth || 1600): LayoutNode {
   return withGuide(['recommended', 'recommended-shorts', ...OWN], width);
 }
 
-/** Default for channel pages: guide, the channel page itself, and beside it ytenrich's picks from this channel
- * (unopened videos it showed you, ranked for you), with the general Recommended behind them. */
-export function channelPreset(width = globalThis.innerWidth || 1600): LayoutNode {
-  const f = Math.min(0.3, GUIDE_PX / Math.max(width, 800));
-  return split(
-    'row',
-    [
-      pane(['guide']),
-      pane(['page']),
-      pane(['channel-videos', 'recommended', 'history', 'stats', 'settings', 'log']),
-    ],
-    [f, (1 - f) * 0.64, (1 - f) * 0.36],
-  );
-}
-
 /** Default for the Shorts player (a narrow column): recently recommended videos beside it. */
 export function shortsPreset(): LayoutNode {
   return split(
@@ -113,7 +98,7 @@ const PRESETS: Record<WmFamily, () => LayoutNode> = {
   watch: watchPreset,
   browse: browsePreset,
   home: homePreset,
-  channel: channelPreset,
+  channel: browsePreset, // the page wide beside the guide: a third column left the channel page too narrow
   shorts: shortsPreset,
 };
 /** Every family has `SPACES` workspaces (`wm/spaces.ts`). Those without a layout of their own start as a New tab page. */

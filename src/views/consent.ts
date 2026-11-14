@@ -12,7 +12,7 @@ const disclosure = (): HTMLElement[] => [
     null,
     'ytenrich records the recommendations YouTube puts on your pages and the videos you open ' +
       '(video ID, title, channel, counts and times). The record powers your Stats, History and the ' +
-      'recommended Videos, Shorts, Mixes and Channels lists. To fill those lists, ytenrich also lets ' +
+      'recommended Videos, Shorts, Mix lists and Channels lists. To fill those lists, ytenrich also lets ' +
       'YouTube load more of its own list on a page.',
   ),
   h(
@@ -61,7 +61,7 @@ export function introCard(on: boolean): HTMLElement {
       null,
       'Every YouTube page is now a tiling layout: drag tabs to split, join or reorder panes, ☰ shows the ' +
         'Guide as a tile, and the numbers in the masthead switch workspaces. These lists are ytenrich’s own ' +
-        'recommendations; ⚙ sets what each tab shows.',
+        'recommendations; ▶ beside the search box sets what each tab shows.',
     ),
     disclosure(),
     h(

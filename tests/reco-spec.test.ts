@@ -4,24 +4,24 @@ import { parseSpec, recoSpec, specTitle, toQuery } from '../src/views/reco-spec.
 describe('reco spec', () => {
   it('names a tab after what it lists', () => {
     expect(specTitle(recoSpec())).toBe('Videos');
-    expect(specTitle(recoSpec({ kinds: ['short', 'mix'] }))).toBe('Shorts + Mixes');
+    expect(specTitle(recoSpec({ kind: 'mix' }))).toBe('Mix lists');
     expect(specTitle(recoSpec({ group: true }))).toBe('Channels');
     expect(specTitle(recoSpec({ scope: 'page' }))).toBe('This channel');
-    expect(specTitle(recoSpec({ scope: 'named', channel: ' Lofi Girl ' }))).toBe('Lofi Girl');
+    expect(specTitle(recoSpec({ scope: 'page', kind: 'short' }))).toBe('This channel · Shorts');
   });
-  it('resolves the channel, and has no query without one', () => {
+  it('resolves the channel and the search, and has no query without a page channel', () => {
     expect(toQuery(recoSpec({ scope: 'page' }), '')).toBeNull();
     expect(toQuery(recoSpec({ scope: 'page' }), 'A')?.channel).toBe('A');
-    expect(toQuery(recoSpec({ scope: 'named', channel: '' }), 'A')).toBeNull();
-    expect(toQuery(recoSpec({ channel: 'stale' }), 'A')?.channel).toBe('');
+    expect(toQuery(recoSpec(), 'A')).toMatchObject({ channel: '', kinds: ['video'], text: '' });
+    expect(toQuery(recoSpec({ kind: 'short' }), '', '  lo fi ')?.text).toBe('lo fi');
   });
   it('repairs stored specs from the tab default', () => {
-    const or = recoSpec({ kinds: ['short'] });
+    const or = recoSpec({ kind: 'short' });
     expect(parseSpec(null, or)).toBe(or);
-    expect(parseSpec({ kinds: ['mix', 'bogus'], order: 'x', group: 1 }, or)).toEqual({
+    expect(parseSpec({ kind: 'mix', scope: 'named', order: 'x', group: 1 }, or)).toEqual({
       ...or,
-      kinds: ['mix'],
+      kind: 'mix',
     });
-    expect(parseSpec({ kinds: [] }, or).kinds).toEqual(['short']);
+    expect(parseSpec({ kinds: ['video'] }, or).kind).toBe('short');
   });
 });

@@ -1,7 +1,7 @@
 // Impression recording (seen once per navigation) and "opened" tracking.
 import { createDisposables } from '../../shared/signal.ts';
 import type { Impression, Kind } from '../../shared/types.ts';
-import { ageOf, channelOf } from '../../youtube/extract.ts';
+import { ageOf, channelOf, viewsOf } from '../../youtube/extract.ts';
 import { pageMixId } from '../../youtube/route.ts';
 import type { Feature } from '../features.ts';
 import { movedShort } from './shorts.ts';
@@ -45,6 +45,7 @@ export const stats: Feature = {
           title: item.title,
           channel: item.channel,
           age: ageOf(item.el),
+          views: viewsOf(item.el),
           video: item.video,
         });
         timer ??= setTimeout(flush, FLUSH_MS);

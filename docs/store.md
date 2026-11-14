@@ -69,12 +69,12 @@ All store listings are English only. Keep English as the default and remove othe
 **Description (en):**
 > ytenrich makes YouTube calmer and more personal.
 >
-> • Tiling layout on every page; Shorts play in the regular player. Chapters get their own tile, and channel pages show the channel's videos you have not seen beside the page. On watch pages, the player, details, comments and recommendations sit in resizable panes that scroll on their own. Elsewhere, the page itself sits next to the guide. Drag tabs to split, join or reorder panes. Alt+W turns the layout off and on.
+> • Tiling layout on every page; Shorts play in the regular player. Chapters get their own tile, and a This channel tab lists the unopened videos of the channel you are watching. On watch pages, the player, details, comments and recommendations sit in resizable panes that scroll on their own. Elsewhere, the page itself sits next to the guide. Drag tabs to split, join or reorder panes; nine workspaces per kind of page switch from the masthead or with Alt+Shift+1–9.
 > • Recommendation stats: see which videos YouTube keeps showing you, how often, and which ones you actually opened.
 > • Hide over-exposed videos (optional): recommendations YouTube keeps showing for more than a day that you never open can be hidden or dimmed.
 > • One-click "Not interested": a ⊘ button next to every recommendation's ⋮ menu.
 >
-> • Your own recommended lists: Videos, Shorts, Mixes, Channels and This channel, collected from what YouTube offers you, ordered by what you actually open and kept varied so no single channel or topic takes over. Each list has its own settings (kinds, one channel, newest first, grouping).
+> • Your own recommended lists: Videos, Shorts, Mix lists, Channels and This channel, collected from what YouTube offers you, ordered by what you actually open and kept varied so no single channel or topic takes over. Each list has a search box and its own settings (kind, this channel only, newest first, grouping).
 >
 > Privacy: the statistics are kept in your browser only (you can turn them off or clear them at any time) and are never sent to the developer or anyone else. There are no accounts, analytics or ads. The source is open (Apache-2.0).
 >

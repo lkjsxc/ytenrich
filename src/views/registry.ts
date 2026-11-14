@@ -124,34 +124,32 @@ export const VIEWS: readonly ViewDef[] = [
   {
     id: 'recommended',
     title: 'Videos',
-    hint: 'Recommended videos you have not opened, in your order (⚙ sets what it lists)',
+    hint: 'Recommended videos you have not opened, in your order (▶ sets what it lists)',
     mount: (el, env) => mountRecommended(el, env, recoSpec()),
   },
   {
     id: 'recommended-shorts',
     title: 'Shorts',
     hint: 'Recommended Shorts you have not opened',
-    mount: (el, env) => mountRecommended(el, env, recoSpec({ kinds: ['short'] })),
+    mount: (el, env) => mountRecommended(el, env, recoSpec({ kind: 'short' })),
   },
   {
     id: 'recommended-mixes',
-    title: 'Mixes',
-    hint: 'Recommended Mixes (YouTube’s endless radio lists) you have not opened',
-    mount: (el, env) => mountRecommended(el, env, recoSpec({ kinds: ['mix'] })),
+    title: 'Mix lists',
+    hint: 'Recommended Mix lists (YouTube’s endless radio lists) you have not opened',
+    mount: (el, env) => mountRecommended(el, env, recoSpec({ kind: 'mix' })),
   },
   {
     id: 'recommended-channels',
     title: 'Channels',
     hint: 'Recommendations grouped by the channels you like most',
-    mount: (el, env) =>
-      mountRecommended(el, env, recoSpec({ kinds: ['video', 'short'], group: true })),
+    mount: (el, env) => mountRecommended(el, env, recoSpec({ group: true })),
   },
   {
     id: 'channel-videos',
     title: 'This channel',
     hint: 'Unopened videos of the channel of this page: the video’s owner, or the channel page',
-    mount: (el, env) =>
-      mountRecommended(el, env, recoSpec({ kinds: ['video', 'short'], scope: 'page' })),
+    mount: (el, env) => mountRecommended(el, env, recoSpec({ scope: 'page' })),
   },
   {
     id: 'stats',

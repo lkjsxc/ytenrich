@@ -14,6 +14,8 @@ export type Impression = {
   readonly channel: string;
   /** Upload age as the tile words it ("3 months ago"), when it shows one. */
   readonly age?: string;
+  /** View count as the tile words it ("1.2M views", "120万 回視聴"), when it shows one. */
+  readonly views?: string;
   /** Address of the channel's avatar image, when the tile shows one. */
   readonly icon?: string;
   /** Mixes: the video the list opens with. */
@@ -36,6 +38,8 @@ export type VideoStat = {
   offers: number;
   /** Estimated upload time, from the age a tile showed (0 = unknown). */
   published: number;
+  /** View count as a tile last worded it ('' = unknown; absent in rows from before view counts). */
+  views: string;
   /** Kind of page that last offered or showed it. */
   via: Surface | '';
   surfaces: Partial<Record<Surface, number>>;
@@ -101,6 +105,8 @@ export type RecoQuery = {
   readonly group: boolean;
   readonly opened: boolean;
   readonly order: RecoOrder;
+  /** Words every listed title-plus-channel contains, any case ('' = no search). */
+  readonly text: string;
 };
 /** `channels`: stats of the channels in `rows` (grouped queries only). */
 export type RecoPage = StatsPage & { channels: ChannelStat[] };

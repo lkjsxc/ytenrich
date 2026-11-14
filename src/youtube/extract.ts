@@ -118,6 +118,19 @@ export function avatarOf(root: Element): string {
   return root.querySelector<HTMLImageElement>(AVATAR)?.src ?? '';
 }
 
+const VIEWS = /views?|watching|視聴/i;
+const COUNT = /^\d[\d.,]*\s?[KMB万億千]?$/i; // tiles now word a view count bare: "135K", "31M", "1,234"
+/** The tile's view-count text, e.g. "135K views" ('' when it shows none). Rendered late, like the age. */
+export function viewsOf(root: Element): string {
+  for (const el of root.querySelectorAll(AGE_TEXT)) {
+    const text = (el.textContent ?? '').trim();
+    if (text.length > 40 || !/\d/.test(text) || parseAge(text)) continue;
+    if (COUNT.test(text)) return `${text} views`;
+    if (VIEWS.test(text)) return text;
+  }
+  return '';
+}
+
 /** The tile's upload-age text ('' when it shows none, as Shorts do). Rendered late, so read this late too. */
 export function ageOf(root: Element): string {
   for (const el of root.querySelectorAll(AGE_TEXT)) {

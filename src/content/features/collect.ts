@@ -3,7 +3,7 @@
 import { toggleAttr } from '../../shared/dom.ts';
 import { createDisposables } from '../../shared/signal.ts';
 import type { Impression } from '../../shared/types.ts';
-import { ageOf, avatarOf, channelOf } from '../../youtube/extract.ts';
+import { ageOf, avatarOf, channelOf, viewsOf } from '../../youtube/extract.ts';
 import type { Feature } from '../features.ts';
 
 const FLUSH_MS = 2000;
@@ -41,6 +41,7 @@ export const collect: Feature = {
         ...item,
         channel: item.channel || channelOf(el),
         age: ageOf(el),
+        views: viewsOf(el),
         icon: avatarOf(el),
       }));
       buffer = [];

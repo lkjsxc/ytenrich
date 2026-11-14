@@ -164,14 +164,14 @@ td button.link:hover { background: none; text-decoration: underline; }
 .hrow .num { text-align: left; }
 .htext { overflow-wrap: anywhere; }
 .hrow:hover { background: var(--hover); }
-/* Recommended: no heading (the tab names it), only ⚙ for this tab's own settings (views/reco-panel.ts). */
-.rbar { display: flex; justify-content: flex-end; margin: -8px -10px 2px 0; }
-.rgear { width: 24px; height: 24px; border-radius: 50%; color: var(--muted); font-size: 15px; line-height: 24px; }
-.rgear:hover, .rgear.on { color: var(--fg); background: var(--raised); }
+/* Recommended: no heading (the tab names it); a sticky bar with ▶ (this tab's settings, views/reco-panel.ts) and search. */
+.rbar { position: sticky; top: 0; z-index: 2; display: flex; gap: 6px; margin-top: -10px; padding: 10px 0 8px; background: var(--bg); }
+.rtoggle { flex: 0 0 34px; height: 32px; border: 1px solid var(--line); border-radius: 6px; background: none; color: var(--muted); font-size: 13px; }
+.rtoggle:hover, .rtoggle.on { color: var(--fg); background: var(--raised); }
+.rbar input { flex: 1; min-width: 0; height: 32px; box-sizing: border-box; padding: 0 10px; border-radius: 6px; }
 .rpanel { display: flex; flex-direction: column; gap: 8px; margin: 0 0 10px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--raised); }
 .prow { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; }
 .prow > .muted:first-child { flex: 0 0 48px; }
-.prow input[type="text"] { flex: 1 1 160px; min-width: 0; }
 .rgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 14px 10px; margin-top: 4px; }
 .rgrid.text { grid-template-columns: 1fr; gap: 0; }
 .rcard { position: relative; display: flex; flex-direction: column; gap: 2px; min-width: 0; color: var(--fg); text-decoration: none; font-size: 12px; }

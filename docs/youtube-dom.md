@@ -35,6 +35,8 @@ All names live in `src/youtube/selectors.ts` and `src/youtube/youtube.css`. Fixt
 - Labels are matched by normalized text (`i18n-labels.ts`). The user can add an exact label in Settings.
 
 ## Watch page
+- Tile view counts: list tiles now word them bare ("135K", "31M"; live ones "2.8K watching") in the same metadata spans as the age (`AGE_TEXT`); `extract.ts` `viewsOf` adds "views". Verified 2026-11-14.
+- Channel tab bar: `ytd-tabbed-page-header tp-yt-paper-tabs#tabs` is sized from the window and centered with negative margins, so in a narrower tile its start (Home, Videos, Shorts) was cut off; `youtube.css` fits it to the tile and lets `#tabsContainer` scroll sideways. Verified 2026-11-14.
 - Description: `ytd-watch-metadata ytd-text-inline-expander#description-inline-expander` gets `[is-expanded]` once open; its `#expand` ("…more") opens it. Owner name: `ytd-watch-metadata #owner ytd-channel-name #text`. Verified 2026-11-13.
 - Chapters: engagement panels live in `ytd-watch-flexy #panels` (hidden with the column while tiling). The chapter list is `ytd-engagement-panel-section-list-renderer[target-id="engagement-panel-macro-markers-description-chapters"]`, present twice (the first is the one YouTube opens), with `ytd-macro-markers-list-item-renderer` rows rendered even while closed. Closed it is `display: none` with `visibility="ENGAGEMENT_PANEL_VISIBILITY_HIDDEN"`; the player's `.ytp-chapter-title` and the description's "View all" set `…_EXPANDED`. Videos without chapters have no such panel. Verified 2026-11-13 (seeking from the projected list unverified: pre-roll ads in headless runs).
 - A Short plays in the regular player at `/watch?v=<id>` (pillarboxed); `features/shorts.ts` relies on it.

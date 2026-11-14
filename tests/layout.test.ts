@@ -5,7 +5,6 @@ import { addEdge } from '../src/wm/layout-edge.ts';
 import { parseLayout } from '../src/wm/layout-parse.ts';
 import {
   browsePreset,
-  channelPreset,
   familyOf,
   homePreset,
   shortsPreset,
@@ -41,7 +40,7 @@ describe('layout', () => {
     expect(b.sizes[0]).toBeCloseTo(0.15);
     for (const [family, preset] of [
       ['browse', b],
-      ['channel', channelPreset(1600)],
+      ['channel', browsePreset(1600)],
       ['shorts', shortsPreset()],
       ['home', homePreset(1600)],
       ['watch', watch()],
