@@ -26,18 +26,26 @@ export async function waitFor(label: string, check: () => Promise<boolean>): Pro
   throw new Error(`${label} timed out. Check the store dashboard before retrying.`);
 }
 
-/** Requests to the AMO API, each signed with a fresh one-minute JWT from the API key and secret. */
+/** Requests to the AMO API, each signed with a fresh one-minute JWT from the API key and secret. AMO throttles
+ * edits (HTTP 429): a throttled request waits and goes again with a new token, up to three times. */
 export function amoClient(iss: string, secret: string) {
   const encode = (value: object) => Buffer.from(JSON.stringify(value)).toString('base64url');
-  return (url: string, init?: RequestInit): Promise<Response> => {
+  const amo = async (url: string, init?: RequestInit, attempt = 1): Promise<Response> => {
     const iat = Math.floor(Date.now() / 1000);
     const claims = encode({ iss, jti: randomUUID(), iat, exp: iat + 60 });
     const data = `${encode({ alg: 'HS256', typ: 'JWT' })}.${claims}`;
     const signature = createHmac('sha256', secret).update(data).digest('base64url');
-    const headers = {
-      ...(init?.headers as Record<string, string>),
-      Authorization: `JWT ${data}.${signature}`,
-    };
-    return request(url, { ...init, headers });
+    const auth = { Authorization: `JWT ${data}.${signature}` };
+    try {
+      return await request(url, { ...init, headers: { ...(init?.headers as object), ...auth } });
+    } catch (e) {
+      if (attempt >= 4 || !String(e).includes('HTTP 429')) throw e;
+      console.log(
+        `AMO throttled ${init?.method ?? 'GET'} ${url}; trying again in ${30 * attempt}s.`,
+      );
+      await delay(30_000 * attempt);
+      return amo(url, init, attempt + 1);
+    }
   };
+  return (url: string, init?: RequestInit): Promise<Response> => amo(url, init);
 }
