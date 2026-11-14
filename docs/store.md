@@ -1,6 +1,6 @@
 # Store submission
 
-Keep this file in sync with `PRIVACY.md` and the code. `docs/store-update-prompt.md` is a ready prompt for an agent that updates the three dashboards from this file. Re-check it whenever a feature starts storing or sending anything new.
+Keep this file in sync with `PRIVACY.md` and the code. Re-check it whenever a feature starts storing or sending anything new. The listing text itself lives in files (§ Listing text) and reaches the stores from the release workflow as far as their APIs allow. `docs/store-update-prompt.md` is a ready prompt for an agent that does the rest in the Chrome and Edge dashboards.
 
 ## Packages and assets
 - `pnpm package` builds from a clean commit and writes to `release/`:
@@ -42,7 +42,7 @@ The workflow requests a short-lived Chrome token. Enter the Edge and Firefox sec
 
 ### Release
 
-1. Run `pnpm bump` and land it with the release changes on `main`. Check the listing and privacy declarations in each store when data handling, permissions or listing text change. This workflow submits packages to the existing listings. Use the dashboards to update listing details and privacy declarations.
+1. Run `pnpm bump`, write the new top section of `store/release-notes.md` (`pnpm check` fails until its version matches), and land both with the release changes on `main`. Check the privacy declarations in each dashboard when data handling or permissions change; no API reaches those.
 2. When ready to submit, push one matching tag at a time from the intended commit on `main`. For example, for version `0.1.1`:
 
    ```sh
@@ -50,9 +50,10 @@ The workflow requests a short-lived Chrome token. Enter the Edge and Firefox sec
    git push origin refs/tags/v0.1.1
    ```
 
-3. The same tag publishes a [GitHub release](https://github.com/lkjsxc/ytenrich/releases) with `ytenrich-chromium.zip`, `ytenrich-firefox.zip` (fixed names, so README's `releases/latest/download/…` links always give the newest) and the source ZIP. It does not wait for the stores.
-4. Check the three submission jobs under [Actions](https://github.com/lkjsxc/ytenrich/actions/workflows/store-release.yml) and the review status in each store dashboard. Firefox submits its source ZIP alongside the extension. The jobs finish when submissions are accepted for review.
-5. For a partial failure, check the affected dashboard first. If the version is still unsubmitted, correct the cause and use **Re-run failed jobs**. Chrome and Firefox check for an existing submission of the same version. For Edge, verify a timed-out upload or publish using the operation ID in the job log and the status in Partner Center before rerunning. Use the original ZIP to finish any confirmed draft in the dashboard if the store rejects a repeated upload. If a store rejects the version and the code needs a fix, release a new version.
+3. The same tag publishes a [GitHub release](https://github.com/lkjsxc/ytenrich/releases) whose text is the newest section of `store/release-notes.md`, with `ytenrich-chromium.zip`, `ytenrich-firefox.zip` (fixed names, so README's `releases/latest/download/…` links always give the newest) and the source ZIP. It does not wait for the stores.
+4. When `store/description.txt` or the summary changed since the previous tag, the run's summary page (package job) shows the text to paste into the Chrome and Edge dashboards. The Firefox job has already put it on AMO.
+5. Check the three submission jobs under [Actions](https://github.com/lkjsxc/ytenrich/actions/workflows/store-release.yml) and the review status in each store dashboard. Firefox submits its source ZIP alongside the extension. The jobs finish when submissions are accepted for review.
+6. For a partial failure, check the affected dashboard first. If the version is still unsubmitted, correct the cause and use **Re-run failed jobs**. Chrome and Firefox check for an existing submission of the same version. For Edge, verify a timed-out upload or publish using the operation ID in the job log and the status in Partner Center before rerunning. Use the original ZIP to finish any confirmed draft in the dashboard if the store rejects a repeated upload. If a store rejects the version and the code needs a fix, release a new version.
 
 API references: [Chrome Web Store v2](https://developer.chrome.com/docs/webstore/using-api/), [Edge Add-ons v1.1](https://learn.microsoft.com/en-us/microsoft-edge/extensions/update/api/using-addons-api), [Firefox Add-ons](https://mozilla.github.io/addons-server/topics/api/addons.html#version-create).
 
@@ -62,23 +63,19 @@ API references: [Chrome Web Store v2](https://developer.chrome.com/docs/webstore
 ## Listing text
 
 All store listings are English only. Keep English as the default and remove other listing locales, including Japanese. Package metadata lives only in `src/_locales/en/messages.json`; do not reintroduce other `_locales` directories. Store navigation may still follow the visitor's language; the extension's listing text stays English.
-**Name:** ytenrich
+**Name:** ytenrich (the manifest).
 
-**Summary** (the manifest description, ≤132 chars, English only in `src/_locales/en/messages.json`): Tiling layout for every YouTube page, recommendation stats, hiding of repeated recommendations, one-click "Not interested".
+The files are the source of truth; do not copy their text into this file.
 
-**Description (en):**
-> ytenrich makes YouTube calmer and more personal.
->
-> • Tiling layout on every page; Shorts play in the regular player. Chapters get their own tile, and a This channel tab lists the unopened videos of the channel you are watching. On watch pages, the player, details, comments and recommendations sit in resizable panes that scroll on their own. Elsewhere, the page itself sits next to the guide. Drag tabs to split, join or reorder panes; nine workspaces per kind of page switch from the masthead or with Alt+Shift+1–9.
-> • Recommendation stats: see which videos YouTube keeps showing you, how often, and which ones you actually opened.
-> • Hide over-exposed videos (optional): recommendations YouTube keeps showing for more than a day that you never open can be hidden or dimmed.
-> • One-click "Not interested": a ⊘ button next to every recommendation's ⋮ menu.
->
-> • Your own recommended lists: Videos, Shorts, Mix lists, Channels and This channel, collected from what YouTube offers you, ordered by what you actually open and kept varied so no single channel or topic takes over. Each list has a search box and its own settings (kind, this channel only, newest first, grouping).
->
-> Privacy: the statistics are kept in your browser only (you can turn them off or clear them at any time) and are never sent to the developer or anyone else. There are no accounts, analytics or ads. The source is open (Apache-2.0).
->
-> ytenrich is not affiliated with, endorsed by or sponsored by YouTube or Google.
+| Text | File | Chrome | Edge | Firefox (AMO) |
+|---|---|---|---|---|
+| Summary (≤132 chars) | `src/_locales/en/messages.json` `description` | the package | paste as the short description | API, on release |
+| Description (≤10,000 chars) | `store/description.txt` | paste (run summary) | paste (run summary) | API, on release |
+| Release notes | `store/release-notes.md`, newest section | — | — | API, on release (also the GitHub release text) |
+| Notes for reviewers | `store/reviewer-notes.txt` | — | API, with each submission | API, with each submission |
+| Privacy policy | `PRIVACY.md` | URL below | URL below | API, on release (as plain text) |
+
+`scripts/store-listing.ts` reads them (`node scripts/store-listing.ts` previews all; `tests/store-listing.test.ts` checks lengths and the release-notes version) and sends the Firefox parts (`syncFirefoxListing`: summary, description, homepage, privacy policy, version notes, in the add-on's default locale). Screenshots, categories and the Chrome/Edge privacy forms stay in the dashboards; no store API takes them except AMO's previews, which are not synced yet.
 
 **Category:**
 - Chrome: Tools.
@@ -106,7 +103,7 @@ All store listings are English only. Keep English as the default and remove othe
   - Website content: video titles and channel names.
   - User activity: opens and "Not interested" clicks.
   - Certify all three: no sale, no use unrelated to the single purpose, no creditworthiness use.
-- **Disclosure:** stats are the extension's prominently described purpose (listing summary and description, welcome card), so they are on by default. Install opens YouTube, where the welcome card above the recommended lists states what is recorded and has **Turn stats off** until acknowledged; Settings has the same switch (`src/views/consent.ts`). Keep the listing's first lines about the statistics, since that is what makes default-on acceptable under the store's disclosure rule.
+- **Disclosure:** stats are the extension's prominently described purpose (listing summary and description, welcome card), so they are on by default. Install opens YouTube, where the welcome card above the recommended lists states what is recorded and has **Turn stats off** until acknowledged; Settings has the same switch (`src/views/consent.ts`). Keep the first paragraph of `store/description.txt` about the record, since that is what makes default-on acceptable under the store's disclosure rule.
 - **Privacy practices answers to keep true:** images (thumbnails, avatars) are loaded from YouTube's image servers by default in the Chromium build; nothing goes to the developer.
 
 ## Firefox (addons.mozilla.org)
@@ -116,7 +113,4 @@ All store listings are English only. Keep English as the default and remove othe
   - the collector only keeps the page's own list loading (a CSS position on YouTube's loader element), so those requests are YouTube's, made by its page in the user's session;
   - remote thumbnails, the only request carrying user-derived data, are compiled out of the Firefox build (`__FIREFOX__`).
 - Private browsing: `incognito: 'not_allowed'`. Mozilla forbids storing data from private sessions.
-- **Reviewer notes** (paste into the submission):
-  > Source: ytenrich-<v>-source.zip (git archive of the tagged commit). The submitted files are esbuild bundles of the TypeScript in src/.
-  > Build: Node.js 24 and pnpm 11.1.2 (`corepack enable`), then `pnpm install --frozen-lockfile && pnpm build --firefox`. The output in dist-firefox/ matches the package.
-  > No remote code and no network requests (the thumbnails are not in the Firefox build). Data stays in extension storage.
+- **Reviewer notes:** `store/reviewer-notes.txt`, sent with every submission (source ZIP and build steps included).

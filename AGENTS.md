@@ -12,7 +12,7 @@ AI-first repo: no human ergonomics, no backward compatibility, no migrations. Mo
 - `pnpm build`: writes Chromium to `dist/`. `pnpm build --firefox`: writes Firefox to `dist-firefox/`. `pnpm dev`: watch build.
 - `pnpm package`: store zips (chromium, firefox, source) from a clean commit → `release/`. `pnpm store-assets`: listing images → `release/store/`.
 - [Store releases](docs/store.md#automated-updates): use **Run workflow** in GitHub Actions to preview packages. Pushing a matching `vX.Y.Z` tag on `main` submits that version to the three stores, so push a release tag only when the user asks to submit that version.
-- `pnpm bump`: next version. Versions are one counter written with dots (`0.2.1`, `0.2.2`, … `0.2.99`, `0.3.0`), up by one per release whatever the size of the change (`scripts/version.ts`).
+- `pnpm bump`: next version; then write the new top section of `store/release-notes.md` (check fails until it matches). Versions are one counter written with dots (`0.2.1`, `0.2.2`, … `0.2.99`, `0.3.0`), up by one per release whatever the size of the change (`scripts/version.ts`).
 - `pnpm check`: the canonical gate (repo rules + tsc + biome + vitest). Prints `ok check`. `pnpm fix` auto-formats.
 - `pnpm smoke`: live Chromium + extension runs on youtube.com (`scripts/smoke.ts` watch page, `scripts/smoke-browse.ts` search/channel and family switches; launcher in `smoke-lib.ts`). Prints JSON facts and writes `tmp/smoke-*.png`. Read the PNGs to judge layout. It is not canonical (depends on the network and on YouTube). It auto-falls back to the newest cached Chromium; `YTE_CHROME=<path>` overrides.
 
@@ -40,7 +40,7 @@ AI-first repo: no human ergonomics, no backward compatibility, no migrations. Mo
   - `render`, `resize`, `tab-drag`, `menus`, `host`, `presets`, `layout-edge`.
 - `src/views/`: `registry.ts` lists every tab view. Recommended is one mount (`recommended.ts`) with a per-tab spec (`reco-spec.ts`, ▶ `reco-panel.ts`). Native views set `slot`; own views set `mount(el, env)`. Own views run in both the WM and the options page. `views/stats/` is the Stats view (pure period math in `period.ts`; charts are plain flex DOM in `parts.ts`).
 - `src/shared/`: h, signal, settings (schema-driven UI), stats-rules, types, log; the ranking in `recommend.ts` + `diversify.ts` + `taste.ts`.
-- `docs/architecture.md`: data flow and invariants. `docs/youtube-dom.md`: DOM knowledge and quirks. `docs/features.md`: recipes. `docs/roadmap.md`: next work. `docs/store.md`: store dashboard answers (keep in sync with `PRIVACY.md`).
+- `docs/architecture.md`: data flow and invariants. `docs/youtube-dom.md`: DOM knowledge and quirks. `docs/features.md`: recipes. `docs/roadmap.md`: next work. `docs/store.md`: store dashboard answers (keep in sync with `PRIVACY.md`). `store/`: the listing text (description, release notes, reviewer notes), sent to AMO on release by `scripts/store-listing.ts`.
 
 ## Images
 - Users drop raw screenshots in `tmp/` (gitignored). Run `pnpm image tmp/<file> <kebab-name>` to write `docs/images/<name>.webp` (≤1920px wide, WebP). Then delete the raw file.

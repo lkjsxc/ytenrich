@@ -1,42 +1,28 @@
-# Prompt for the store-dashboard agent (ChatGPT)
+# Prompt for the store-dashboard agent
 
-Paste everything below the line into the agent that operates the store dashboards for ytenrich.
+Paste everything below the line into an agent that operates the Chrome Web Store and Edge Partner Center dashboards
+for ytenrich. Firefox needs no agent: the release workflow updates its listing through the AMO API.
 
 ---
 
-You are updating the store listings of the browser extension **ytenrich** (repo `github.com/lkjsxc/ytenrich`) to
-match the latest release. Read its version from `package.json` on `main`. Work in the three dashboards: Chrome Web Store developer dashboard, Microsoft Partner
-Center (Edge Add-ons) and addons.mozilla.org (Firefox). The source of truth for every text is
-`docs/store.md` and `PRIVACY.md` on the `main` branch; read both first and copy texts from them exactly.
+You are updating the store listings of the browser extension **ytenrich** (repo `github.com/lkjsxc/ytenrich`) in
+the Chrome Web Store developer dashboard and Microsoft Partner Center (Edge Add-ons). Their APIs only take
+packages, so the listing text is pasted by hand. The repository on `main` is the source of truth; copy texts
+exactly, never rewrite them:
+- Description: `store/description.txt`.
+- Summary (Edge "short description"; Chrome takes it from the package): the `description` message in
+  `src/_locales/en/messages.json`.
+- Single purpose, permission justifications and the data-usage answers: § "Chrome Web Store" in `docs/store.md`.
+- Privacy policy URL: `https://github.com/lkjsxc/ytenrich/blob/main/PRIVACY.md`.
 
-Why this is needed: since 0.2.6 the local statistics are **on by default** (before, the user had to enable
-them), thumbnails are loaded from YouTube's image servers by default in the Chromium build, and the extension
-has new features (its own recommended Videos / Shorts / Channels lists). The listings must describe the
-statistics prominently, because that is what makes default-on acceptable under the stores' disclosure rules.
+Steps (stop and ask the owner whenever a dashboard shows something these do not cover):
+1. Both stores: listings are English only. Keep English as the default and remove any other listing locale.
+2. Both stores: replace the description with `store/description.txt`; in Edge, also set the short description.
+3. Chrome, Privacy practices: set the texts and answers from `docs/store.md` § "Chrome Web Store"; keep the
+   three certifications checked.
+4. Edge, Properties and Privacy: the same privacy policy URL; answer data questions consistently with Chrome
+   (browsing-related data is stored locally on the device and never transmitted to the developer).
+5. Report, per store, which version is live, which is in review, and any rejection (quote the reason). Do not
+   cancel or withdraw a submission without asking the owner.
 
-Do these steps, and stop to ask the owner whenever a dashboard shows something these steps do not cover.
-
-1. **English-only listings (all three stores).** Keep English as the default and remove Japanese and any
-   other non-English listing locales. Use "Description (en)" from `docs/store.md` and keep its summary line.
-   The package must contain only `_locales/en`; a new version is required to remove a packaged locale in
-   Chrome. Do not add translations back. The stores may localize their own navigation, but all developer
-   listing text and artwork must stay English.
-2. **Chrome: Privacy practices tab.**
-   - Single purpose and permission justifications: use the texts under "Chrome Web Store" in `docs/store.md`.
-   - Data usage: keep "Web history", "Website content" and "User activity" checked; keep all three
-     certifications checked. Nothing is sold or transferred.
-   - Privacy policy URL: `https://github.com/lkjsxc/ytenrich/blob/main/PRIVACY.md`.
-3. **Edge: Properties and Privacy.** Same privacy policy URL. If asked whether the extension collects personal
-   information, answer consistently with Chrome: browsing-related data is stored locally on the device and is
-   never transmitted to the developer.
-4. **Firefox.** No change to the data-collection declaration: the Firefox build transmits nothing (it has no
-   image loading), and local storage is not "data collection" in Mozilla's sense. Only update the descriptions.
-5. **Reviewer notes** (wherever a dashboard has a notes-for-reviewer field): "Local statistics are on by
-   default and described on the welcome card shown on YouTube after installation, which also has a Turn stats
-   off button. All data stays in the browser. On Chromium, thumbnails are loaded from i.ytimg.com and yt3.ggpht.com."
-6. **Pending submissions.** For each store, report which version is live, which is in review, and whether a
-   review was rejected (quote the reason). Do not cancel or withdraw anything without asking the owner.
-7. When a store has no submission in review, tell the owner so the newest version can be submitted from GitHub
-   Actions ("Re-run failed jobs" on the newest "Browser stores" run for the newest tag).
-
-Report back: per store, what you changed, what you could not change and why, and the review status.
+Report back what you changed, what you could not change and why, and the review status.

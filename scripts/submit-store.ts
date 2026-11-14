@@ -1,10 +1,10 @@
-// Submit the packages produced by pnpm package to the existing ytenrich listings.
-import { createHmac, randomUUID } from 'node:crypto';
+// Submit the packages produced by pnpm package to the existing ytenrich listings. Firefox also gets its listing text
+// from the repository (store-listing.ts); Chrome's and Edge's APIs take packages only.
 import { readFileSync } from 'node:fs';
-import { json, request, waitFor } from './store-api.ts';
+import { amoClient, json, request, waitFor } from './store-api.ts';
+import { listing, syncFirefoxListing } from './store-listing.ts';
 
-const notes =
-  'Open a YouTube watch page in a normal desktop window. Resize or split panes and switch workspaces with the numbers in the masthead. Local statistics are on by default; open the Stats tab to see them. To test the Not interested shortcut, use a reviewer-controlled YouTube account and a recommendation with that native menu item.';
+const notes = listing().reviewer;
 
 function credential(name: string): string {
   const value = process.env[name];
@@ -113,17 +113,9 @@ type FirefoxUpload = { uuid: string; processed: boolean; valid: boolean; version
 
 async function firefox(version: string, prefix: string): Promise<void> {
   const base = 'https://addons.mozilla.org/api/v5/addons';
-  const versions = `${base}/addon/${encodeURIComponent('ytenrich@lkjsxc')}/versions/`;
-  const iss = credential('AMO_API_KEY');
-  const secret = credential('AMO_API_SECRET');
-  const encode = (value: object) => Buffer.from(JSON.stringify(value)).toString('base64url');
-  const amo = (url: string, init?: RequestInit) => {
-    const iat = Math.floor(Date.now() / 1000);
-    const claims = encode({ iss, jti: randomUUID(), iat, exp: iat + 60 });
-    const data = `${encode({ alg: 'HS256', typ: 'JWT' })}.${claims}`;
-    const signature = createHmac('sha256', secret).update(data).digest('base64url');
-    return request(url, { ...init, headers: { Authorization: `JWT ${data}.${signature}` } });
-  };
+  const addon = `${base}/addon/${encodeURIComponent('ytenrich@lkjsxc')}/`;
+  const versions = `${addon}versions/`;
+  const amo = amoClient(credential('AMO_API_KEY'), credential('AMO_API_SECRET'));
   const { results } = await json<{ results: FirefoxVersion[] }>(
     amo(`${versions}?filter=all_without_unlisted`),
   );
@@ -133,7 +125,7 @@ async function firefox(version: string, prefix: string): Promise<void> {
       throw new Error(`Firefox ${version} already exists. Check its status on AMO.`);
     if (!existing.source) throw new Error(`Firefox ${version} is missing its source ZIP on AMO.`);
     console.log(`Firefox ${version} already exists (${existing.file.status}).`);
-    return;
+    return syncFirefoxListing(amo, addon, version);
   }
   if (results.some((entry) => entry.file.status === 'unreviewed'))
     throw new Error('Another Firefox submission is awaiting review.');
@@ -159,14 +151,12 @@ async function firefox(version: string, prefix: string): Promise<void> {
   const submission = new FormData();
   submission.set('upload', uuid);
   submission.set('source', new Blob([readFileSync(`${prefix}-source.zip`)]), 'ytenrich-source.zip');
-  submission.set(
-    'approval_notes',
-    `${notes} Build instructions are in README.md in the source ZIP.`,
-  );
+  submission.set('approval_notes', notes);
   const created = await json<FirefoxVersion>(amo(versions, { method: 'POST', body: submission }));
   if (created.version !== version || !created.source)
     throw new Error('AMO did not confirm the submitted version and source. Check the dashboard.');
   console.log(`Firefox ${version} submitted with source.`);
+  await syncFirefoxListing(amo, addon, version);
 }
 
 const [store, version] = process.argv.slice(2);

@@ -60,7 +60,7 @@ pnpm install && pnpm build
 ## Release
 - Bump `version` in `package.json`, commit, then run `pnpm package`. It writes `release/ytenrich-<version>-{chromium,firefox,source}.zip`.
 - `pnpm store-assets` writes the listing images to `release/store/`.
-- Listing text, dashboard answers and per-store steps are in [docs/store.md](docs/store.md).
+- The listing text is in [store/](store/) (Firefox gets it on every release; Chrome and Edge take it by hand); dashboard answers and per-store steps are in [docs/store.md](docs/store.md).
 
 ## Development
 AI-first repository: start at [AGENTS.md](AGENTS.md).

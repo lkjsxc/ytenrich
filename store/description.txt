@@ -1,0 +1,25 @@
+ytenrich lays every YouTube page out as tiling panes and gives you your own recommendation lists, ranked by what you actually watch. To do that, it keeps a record of the recommendations YouTube shows you and the videos you open. The record stays in your browser.
+
+Tiling layout
+• The player, details, chapters, comments, chat and lists sit side by side in resizable panes with tabs, each scrolling on its own. Other pages sit next to YouTube's guide.
+• Drag a tab to split, join or reorder panes.
+• Nine workspaces for each kind of page (watch, home, channel and the rest). Switch with the numbers next to the YouTube logo, or with Alt+Shift+1 to 9.
+• Shorts play in the regular player, and video descriptions open by themselves.
+
+Recommendations on your terms
+• Your own lists of Videos, Shorts, Mix lists and Channels, gathered from everything YouTube recommends to you, including the lists your layout hides.
+• Ranked by the channels and topics you open or pass over, and kept varied, so no single channel or topic takes over.
+• Each list has a search box and its own settings: what it shows, all channels or only the one you are watching, ranked or newest first, grouped by channel.
+• A "Not interested" button on every YouTube recommendation: one click, without opening the menu.
+• Optional: hide or dim the videos YouTube keeps showing you and you never open.
+
+Statistics
+• See which videos YouTube keeps showing you, how often, and which of them you opened, day by day.
+
+Privacy
+• No account, no server, no analytics, no ads. Nothing is sent to the developer.
+• Turn the record off or clear it at any time in Settings.
+• The Chrome and Edge versions load thumbnails from YouTube's image servers (you can turn this off). The Firefox version loads none.
+• Open source (Apache-2.0): https://github.com/lkjsxc/ytenrich
+
+ytenrich is not affiliated with YouTube or Google.
