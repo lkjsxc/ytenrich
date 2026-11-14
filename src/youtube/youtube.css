@@ -90,15 +90,16 @@ html[ytenrich-wm] ytd-app #frosted-glass { display: none !important; }
    YouTube loads the next page of it; each new page brings a new loader until the attribute is removed. */
 html[ytenrich-wm][ytenrich-harvest] :is(ytd-watch-flexy #related, ytd-page-manager > ytd-browse):is(:not([ytenrich-slot]), [ytenrich-slot-inactive]) ytd-continuation-item-renderer { position: fixed !important; top: 0 !important; left: 0 !important; width: 10px !important; height: 10px !important; overflow: hidden !important; visibility: hidden !important; pointer-events: none !important; }
 /* Workspace switcher in the masthead, between the logo and the search box (wm/spaces-bar.ts). Its chips keep one
-   width, so the bar never stretches into free space. On a narrow window the search box gives up room first (it
-   shrinks about four times faster); below all chips the bar scrolls sideways and fades toward a side that hides
-   more, like a tab bar. It is ours, so it carries no gate. */
-ytenrich-spaces { flex: 0 0.25 auto; min-width: 76px; display: flex; gap: 2px; height: 40px; margin: 0 12px; overflow-x: auto; scrollbar-width: none; --fl: #000; --fr: #000; mask-image: linear-gradient(to right, var(--fl), #000 24px, #000 calc(100% - 24px), var(--fr)); }
+   width, so the bar never stretches into free space. The search box matters more: it keeps a comfortable 400px (and
+   takes any room beyond, up to YouTube's 732px) while the bar gives up room first, scrolling sideways and fading
+   toward a side that hides more, like a tab bar; too narrow for a few chips, it hides (`.tiny`). Only then does the
+   search box shrink, as YouTube's own does. The bar is ours, so it carries no gate. */
+ytenrich-spaces { flex: 0 1000 auto; min-width: 0; display: flex; gap: 2px; height: 40px; margin: 0 12px; overflow-x: auto; scrollbar-width: none; --fl: #000; --fr: #000; mask-image: linear-gradient(to right, var(--fl), #000 24px, #000 calc(100% - 24px), var(--fr)); }
 ytenrich-spaces.more-l { --fl: transparent; }
 ytenrich-spaces.more-r { --fr: transparent; }
 ytenrich-spaces[hidden] { display: none; }
-html[ytenrich-wm] ytd-masthead #center { min-width: 0 !important; }
-html[ytenrich-wm] ytd-masthead #center ytd-searchbox { min-width: 0 !important; }
+ytenrich-spaces.tiny { visibility: hidden; }
+html[ytenrich-wm] ytd-masthead #center { flex: 1 1 400px !important; max-width: 732px !important; min-width: 0 !important; }
 ytenrich-spaces button { flex: 0 0 32px; width: 32px; padding: 0; border: 0; border-radius: 8px; background: rgba(128, 128, 128, 0.12); color: #0f0f0f; opacity: 0.6; font: 500 14px Roboto, Arial, sans-serif; cursor: pointer; }
 html[dark] ytenrich-spaces button { color: #f1f1f1; }
 ytenrich-spaces button:hover { background: rgba(128, 128, 128, 0.3); opacity: 1; }
