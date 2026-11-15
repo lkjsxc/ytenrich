@@ -68,9 +68,11 @@ export async function restore(store: StoreName, rows: readonly unknown[]): Promi
         target.put({ id: key, video: raw.video, time: raw.time, origin });
     } else if (base === 'videos') {
       const v = { ...repair(emptyStat(key, 0), raw), origin };
-      target.put(isCountName(v.channel) ? { ...v, channel: '' } : v); // a backup from before 0.2.9 (db.ts `scrub`)
+      // Only YouTube backups before 0.2.9 captured view counters as channels (db.ts `scrub`).
+      target.put(!music && isCountName(v.channel) ? { ...v, channel: '' } : v);
     } else if (base === 'days') target.put({ ...normDay(repair(emptyDay(key), raw)), origin });
-    else if (!isCountName(key)) target.put({ ...repair({ ...CHANNEL, name: key }, raw), origin });
+    else if (music || !isCountName(key))
+      target.put({ ...repair({ ...CHANNEL, name: key }, raw), origin });
   }
   await complete(tx);
   forget();
