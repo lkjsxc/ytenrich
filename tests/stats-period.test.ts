@@ -23,6 +23,7 @@ describe('day and channel counters', () => {
     const b = addChannel(a, 'ch', 200, { opened: 1 });
     expect(b).toEqual({
       name: 'ch',
+      origin: 'youtube',
       seen: 2,
       videos: 1,
       opened: 1,

@@ -33,6 +33,9 @@ export function isSuppressed(
 export function emptyStat(id: string, now: number): VideoStat {
   return {
     id,
+    origin: 'youtube',
+    thumbnail: '',
+    duration: 0,
     kind: 'video',
     title: '',
     channel: '',
@@ -98,6 +101,7 @@ export function applyOffer(prev: VideoStat | undefined, item: Impression, now: n
 export function emptyDay(day: string): DayStat {
   return {
     day,
+    origin: 'youtube',
     seen: 0,
     fresh: 0,
     opened: 0,
@@ -128,6 +132,7 @@ export function addDay(prev: DayStat | undefined, now: number, delta: DayDelta):
   const add = (k: Exclude<keyof DayDelta, 'surfaces'>): number => d[k] + (delta[k] ?? 0);
   return {
     day: d.day,
+    origin: d.origin,
     seen: add('seen'),
     fresh: add('fresh'),
     opened: add('opened'),
@@ -149,6 +154,7 @@ export function addChannel(
   const c = prev ?? { name, seen: 0, videos: 0, opened: 0, dismissed: 0, lastSeen: now, icon: '' };
   return {
     name,
+    origin: c.origin ?? 'youtube',
     seen: c.seen + (delta.seen ?? 0),
     videos: c.videos + (delta.videos ?? 0),
     opened: c.opened + (delta.opened ?? 0),

@@ -2,9 +2,12 @@
 import { emptyDay, emptyStat, isCountName, normDay } from '../shared/stats-rules.ts';
 import type { ChannelStat, StoreName } from '../shared/types.ts';
 import { complete, done, openDb, VIDEOS, walk } from './db.ts';
+import { STORES } from './origin.ts';
 import { forget, prune } from './stats-repo.ts';
 
-const KEY: Record<StoreName, string> = { videos: 'id', days: 'day', channels: 'name', opens: 'id' };
+const KEY = Object.fromEntries(
+  STORES.map((s) => [s, s.endsWith('days') ? 'day' : s.endsWith('channels') ? 'name' : 'id']),
+) as Record<StoreName, string>;
 const CHANNEL: ChannelStat = {
   name: '',
   seen: 0,
@@ -39,14 +42,21 @@ function repair<T extends object>(template: T, raw: Record<string, unknown>): T 
 }
 
 export async function restore(store: StoreName, rows: readonly unknown[]): Promise<void> {
-  const tx = (await openDb()).transaction(store === 'opens' ? [store, VIDEOS] : store, 'readwrite');
+  const music = store.startsWith('music-');
+  const base = store.replace('music-', '');
+  const videoStore = music ? 'music-videos' : VIDEOS;
+  const origin = music ? 'music' : 'youtube';
+  const tx = (await openDb()).transaction(
+    base === 'opens' ? [store, videoStore] : store,
+    'readwrite',
+  );
   const target = tx.objectStore(store);
   for (const row of rows) {
     if (typeof row !== 'object' || row === null) continue;
     const raw = row as Record<string, unknown>;
     const key = raw[KEY[store]];
     if (typeof key !== 'string' || !key) continue;
-    if (store === 'opens') {
+    if (base === 'opens') {
       if (
         typeof raw.video !== 'string' ||
         typeof raw.time !== 'number' ||
@@ -54,13 +64,13 @@ export async function restore(store: StoreName, rows: readonly unknown[]): Promi
         raw.time < 0
       )
         continue;
-      if (await done(tx.objectStore(VIDEOS).get(raw.video)))
-        target.put({ id: key, video: raw.video, time: raw.time });
-    } else if (store === 'videos') {
-      const v = repair(emptyStat(key, 0), raw);
+      if (await done(tx.objectStore(videoStore).get(raw.video)))
+        target.put({ id: key, video: raw.video, time: raw.time, origin });
+    } else if (base === 'videos') {
+      const v = { ...repair(emptyStat(key, 0), raw), origin };
       target.put(isCountName(v.channel) ? { ...v, channel: '' } : v); // a backup from before 0.2.9 (db.ts `scrub`)
-    } else if (store === 'days') target.put(normDay(repair(emptyDay(key), raw)));
-    else if (!isCountName(key)) target.put(repair({ ...CHANNEL, name: key }, raw));
+    } else if (base === 'days') target.put({ ...normDay(repair(emptyDay(key), raw)), origin });
+    else if (!isCountName(key)) target.put({ ...repair({ ...CHANNEL, name: key }, raw), origin });
   }
   await complete(tx);
   forget();

@@ -14,6 +14,7 @@ export type VideoTable = { readonly el: HTMLElement; sync(): void; show(page: St
 
 /** `q` is mutated in place by the controls; `refresh` re-queries. */
 export function createVideoTable(env: ViewEnv, q: StatsQuery, refresh: () => void): VideoTable {
+  const music = q.origin === 'music';
   const set = (patch: Partial<StatsQuery>): void => {
     Object.assign(q, patch, { limit: PAGE_STEP });
     sync();
@@ -35,18 +36,20 @@ export function createVideoTable(env: ViewEnv, q: StatsQuery, refresh: () => voi
 
   const sync = (): void => {
     chips.replaceChildren(
-      choice('chips', FILTERS, q.filter, (filter) => set({ filter })),
+      ...(music ? [] : [choice('chips', FILTERS, q.filter, (filter) => set({ filter }))]),
       h(
         'div',
         { class: 'controls' },
-        h(
-          'select',
-          {
-            onchange: (e) =>
-              set({ kind: (e.target as HTMLSelectElement).value as StatsQuery['kind'] }),
-          },
-          KINDS.map(([v, label]) => h('option', { value: v, selected: v === q.kind }, label)),
-        ),
+        music
+          ? null
+          : h(
+              'select',
+              {
+                onchange: (e) =>
+                  set({ kind: (e.target as HTMLSelectElement).value as StatsQuery['kind'] }),
+              },
+              KINDS.map(([v, label]) => h('option', { value: v, selected: v === q.kind }, label)),
+            ),
         search,
         q.channel
           ? h(
@@ -64,7 +67,7 @@ export function createVideoTable(env: ViewEnv, q: StatsQuery, refresh: () => voi
     headRow.replaceChildren(
       h('th'),
       h('th', null, 'Video'),
-      ...COLUMNS.map(([key, label]) =>
+      ...COLUMNS.filter(([key]) => !music || key !== 'seen').map(([key, label]) =>
         h(
           'th',
           { class: key === q.sort ? 'num sort on' : 'num sort', onclick: () => set({ sort: key }) },
@@ -124,7 +127,7 @@ export function createVideoTable(env: ViewEnv, q: StatsQuery, refresh: () => voi
             )
           : null,
       ),
-      h('td', { class: 'num', title: where }, num(v.seen)),
+      music ? null : h('td', { class: 'num', title: where }, num(v.seen)),
       h('td', { class: 'num' }, num(v.opened)),
       h('td', { class: 'num muted' }, ago(v.lastSeen)),
     );

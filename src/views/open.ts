@@ -3,17 +3,20 @@
 import type { VideoStat } from '../shared/types.ts';
 import type { ViewEnv } from './registry.ts';
 
-type Ref = Pick<VideoStat, 'id' | 'kind'> & { readonly video?: string };
+type Ref = Pick<VideoStat, 'id' | 'kind' | 'origin' | 'thumbnail'> & { readonly video?: string };
 
 /** Shorts open in the watch player (they tile there, `content/features/shorts.ts`); a Mix starts its radio. */
 export const videoUrl = (v: Ref): string =>
   v.kind === 'mix'
     ? `https://www.youtube.com/watch?v=${v.video}&list=${v.id}&start_radio=1`
-    : `https://www.youtube.com/watch?v=${v.id}`;
+    : `https://${v.origin === 'music' ? 'music' : 'www'}.youtube.com/watch?v=${v.id}`;
 
 /** Thumbnail address; a Mix shows the video it opens with. */
 export const thumbUrl = (v: Ref, size: 'default' | 'mqdefault'): string =>
-  `https://i.ytimg.com/vi/${v.kind === 'mix' ? v.video || v.id : v.id}/${size}.jpg`;
+  v.origin === 'music' &&
+  /^https:\/\/(i\.ytimg\.com|lh3\.googleusercontent\.com)\//.test(v.thumbnail ?? '')
+    ? v.thumbnail!
+    : `https://i.ytimg.com/vi/${v.kind === 'mix' ? v.video || v.id : v.id}/${size}.jpg`;
 
 export const kindBadge = (v: Ref): string =>
   v.kind === 'short' ? 'Short' : v.kind === 'mix' ? 'Mix' : '';

@@ -1,8 +1,8 @@
 # ytenrich privacy policy
 
-Last updated: November 14, 2026
+Last updated: November 15, 2026
 
-ytenrich is a browser extension for `www.youtube.com` and `music.youtube.com`. On YouTube Music it only arranges the page into panes and records nothing; everything below about stats concerns `www.youtube.com`. It runs entirely in your browser. It has no developer-operated server, account, analytics, telemetry or advertising, and it never sends data to the developer.
+ytenrich is a browser extension for `www.youtube.com` and `music.youtube.com`. On YouTube Music it arranges the page into panes and keeps a separate local play record for History and Stats. It runs entirely in your browser. It has no developer-operated server, account, analytics, telemetry or advertising, and it never sends data to the developer.
 
 ## What ytenrich stores, and why
 
@@ -10,6 +10,7 @@ ytenrich is a browser extension for `www.youtube.com` and `music.youtube.com`. O
 - each video or Short that YouTube shows you as a recommendation and that is at least half visible: its video ID, type (video, Short or Mix list), title, channel name, the kind of page it appeared on (home, watch, search, channel, subscriptions, Shorts or other), how many times it was shown, when it was first and last shown, and its view count as the tile words it (such as "1.2M views");
 - each video or Short that YouTube places on a page as a recommendation without it reaching your screen (further down a list, or in a list that your layout hides): the same details, with a shown count of zero, plus how many page views offered it and the kind of page that last did, and roughly when the video was uploaded (worked out from the age its tile shows, such as "3 months ago"). These fill the Recommended view. **Settings → Recommended: Collect** limits the record to what was on screen (`shown`);
 - how many times you opened each video and the time of each recorded open, which amounts to a list of the videos you watched (shown in the History view);
+- on YouTube Music, each track start (including a replay after ending) that plays for at least 10 seconds: video ID, start time, title, artist, thumbnail address and duration, with day, hour and artist totals. Skipped tracks under 10 seconds leave no record. Music plays stay separate from YouTube history and never influence recommendations or channel liking;
 - when you used ytenrich's **Not interested** button on a video;
 - daily totals: recommendations shown (also by page kind, by hour of day, and how many were new, repeats or Shorts), videos opened, videos dismissed, and recommendations hidden by ytenrich;
 - per-channel totals, keyed by channel name: recommendations shown, distinct videos, opens and dismissals, and the address of the channel's avatar image when a recommendation showed one.
@@ -23,8 +24,8 @@ Everything is stored in your browser profile, in the extension's local storage a
 ## Retention and deletion
 
 - A recorded video that you never opened or dismissed is deleted 90 days after it was last shown.
-- Open events are capped at 200,000, oldest first. Deleting a video also deletes its open events. Older versions retained only each video’s latest open time; earlier times cannot be recovered.
-- The record holds at most 100,000 videos. Beyond that, the least recently shown videos are deleted first.
+- Open events are capped at 200,000 per origin (YouTube and Music), oldest first. Deleting a video also deletes its open events. Older versions retained only each video’s latest open time; earlier times cannot be recovered.
+- The record holds at most 100,000 videos per origin. Beyond that, the least recently shown videos are deleted first.
 - Other entries and the daily totals stay until you delete them.
 - **Settings → Clear statistics** deletes the whole record.
 - **Settings → Export data** saves your settings, layouts and the whole record as one JSON file on your device. ytenrich sends it nowhere; the file contains your viewing record, so keep it as private as the record itself. **Import data** replaces everything in this browser with such a file.
@@ -34,7 +35,7 @@ Everything is stored in your browser profile, in the extension's local storage a
 ## Network requests
 
 ytenrich makes no network requests of its own except images, which you can turn off:
-- **Images (Chrome and other Chromium browsers only; on by default, turned off in Settings).** While images are on, the Stats, History and Recommended views load thumbnails from YouTube's image server (`i.ytimg.com`) and channel avatars from its avatar server (`yt3.ggpht.com` or `yt3.googleusercontent.com`) over HTTPS. A thumbnail request contains a video ID; an avatar request contains the avatar's address. Requests are sent without cookies and without a referrer. The image server receives ordinary connection information, such as your IP address. The Firefox version does not include this option.
+- **Images (Chrome and other Chromium browsers only; on by default, turned off in Settings).** While images are on, the Stats, History and Recommended views load thumbnails from YouTube's image server (`i.ytimg.com`) Music covers from Google's image server (`lh3.googleusercontent.com`), and channel avatars from its avatar server (`yt3.ggpht.com` or `yt3.googleusercontent.com`) over HTTPS. A thumbnail request contains a video ID; an avatar request contains the avatar's address. Requests are sent without cookies and without a referrer. The image server receives ordinary connection information, such as your IP address. The Firefox version does not include this option.
 
 ## Actions on YouTube
 

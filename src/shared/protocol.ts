@@ -6,7 +6,9 @@ import type {
   HistoryQuery,
   Impression,
   Kind,
+  MusicPlay,
   OpenEvent,
+  Origin,
   Overview,
   RecoPage,
   RecoQuery,
@@ -16,6 +18,7 @@ import type {
 } from './types.ts';
 
 export type Api = {
+  played: { req: MusicPlay; res: null };
   /** `hidden`: over-exposed recommendations hidden since the last call. */
   record: { req: { items: readonly Impression[]; hidden: number }; res: { suppressed: string[] } };
   /** Recommendations found on the page but not on screen. `want`: the stock is low, collect more. */
@@ -26,12 +29,12 @@ export type Api = {
   dismissed: { req: { id: string }; res: null };
   suppressed: { req: null; res: string[] };
   history: { req: HistoryQuery; res: HistoryPage };
-  videoOpens: { req: { id: string }; res: OpenEvent[] };
+  videoOpens: { req: { id: string; origin?: Origin }; res: OpenEvent[] };
   query: { req: StatsQuery; res: StatsPage };
   /** `more`: the next page of the list on screen, so the ranking it shows goes on instead of being redone. */
   recommend: { req: { query: RecoQuery; limit: number; more?: boolean }; res: RecoPage };
-  overview: { req: null; res: Overview };
-  channels: { req: { sort: ChannelSort; limit: number }; res: ChannelStat[] };
+  overview: { req: { origin?: Origin } | null; res: Overview };
+  channels: { req: { sort: ChannelSort; limit: number; origin?: Origin }; res: ChannelStat[] };
   clear: { req: null; res: null };
   /** Backup: one page of a store's rows after primary key `after`; `next` is null at the end. */
   dump: {

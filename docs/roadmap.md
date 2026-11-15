@@ -22,7 +22,8 @@ awkward natively are rebuilt as own views. Steps, in order:
 
 ## YouTube Music (tiling since 2026-11-14; [friction list](music-ux.md))
 - Comments (the app's third side tab) as a tile; Lyrics and Related at once (one element of the app: it needs a second copy or an own view).
-- A play record for Music (History, Stats) kept apart from youtube.com's recommendations, and quick dismiss ("Not interested" on shelves).
+- ~~A play record for Music (History, Stats), kept apart from youtube.com's recommendations.~~ Done (2026-11-15, 0.2.14): one open per track start/replay after 10 seconds, metadata from the kept player, separate origin stores, artist/day/hour totals.
+- Quick dismiss ("Not interested" on shelves).
 - Panes that drop out by window width (a guide saved on a wide window stays on a narrow one).
 - Unverified signed in: the Song / Video switch above the player (`#av-id`), Library pages, the account menu, reordering the queue by dragging. Unverified in Firefox (no live smoke there).
 - The player bar's ▲ only flips the app's own state while tiling; it could toggle the Player tile instead.

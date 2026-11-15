@@ -1,5 +1,7 @@
 // Stats reads for the Stats view. Everything is bounded: index walks stop at the page size.
+
 import { normDay } from '../shared/stats-rules.ts';
+import type { Origin } from '../shared/types.ts';
 import {
   type ChannelSort,
   type ChannelStat,
@@ -11,6 +13,7 @@ import {
   type VideoStat,
 } from '../shared/types.ts';
 import { CHANNELS, DAYS, done, openDb, VIDEOS, walk } from './db.ts';
+import { storeOf } from './origin.ts';
 import { type Judge, judge, suppressedIds } from './suppress.ts';
 
 const FILTERS: Record<StatsQuery['filter'], (s: VideoStat, sup: Judge) => boolean> = {
@@ -23,8 +26,10 @@ const FILTERS: Record<StatsQuery['filter'], (s: VideoStat, sup: Judge) => boolea
 };
 
 export async function query(q: StatsQuery, threshold: number): Promise<StatsPage> {
-  const sup = await judge(threshold);
-  const store = (await openDb()).transaction(VIDEOS).objectStore(VIDEOS);
+  const sup: Judge = q.origin === 'music' ? () => false : await judge(threshold);
+  const store = (await openDb())
+    .transaction(storeOf(VIDEOS, q.origin))
+    .objectStore(storeOf(VIDEOS, q.origin));
   const needle = q.search.trim().toLowerCase();
   const match = (s: VideoStat): boolean =>
     (q.kind === 'all' || s.kind === q.kind) &&
@@ -53,13 +58,15 @@ export async function query(q: StatsQuery, threshold: number): Promise<StatsPage
   return { rows: page, more: rows.length > q.limit, suppressed: page.filter(sup).map((s) => s.id) };
 }
 
-export async function overview(threshold: number): Promise<Overview> {
-  const tx = (await openDb()).transaction([VIDEOS, DAYS, CHANNELS]);
-  const videos = done(tx.objectStore(VIDEOS).count());
-  const channels = done(tx.objectStore(CHANNELS).count());
+export async function overview(threshold: number, origin: Origin = 'youtube'): Promise<Overview> {
+  const tx = (await openDb()).transaction(
+    [VIDEOS, DAYS, CHANNELS].map((s) => storeOf(s as 'videos' | 'days' | 'channels', origin)),
+  );
+  const videos = done(tx.objectStore(storeOf(VIDEOS, origin)).count());
+  const channels = done(tx.objectStore(storeOf(CHANNELS, origin)).count());
   const days: DayStat[] = [];
   await walk(
-    tx.objectStore(DAYS),
+    tx.objectStore(storeOf(DAYS, origin)),
     null,
     'prev',
     (c) => days.push(normDay(c.value as DayStat)) < OVERVIEW_DAYS,
@@ -67,13 +74,20 @@ export async function overview(threshold: number): Promise<Overview> {
   return {
     videos: await videos,
     channels: await channels,
-    suppressed: (await suppressedIds(threshold)).size,
+    suppressed: origin === 'music' ? 0 : (await suppressedIds(threshold)).size,
     days,
   };
 }
 
-export async function channels(sort: ChannelSort, limit: number): Promise<ChannelStat[]> {
-  const index = (await openDb()).transaction(CHANNELS).objectStore(CHANNELS).index(sort);
+export async function channels(
+  sort: ChannelSort,
+  limit: number,
+  origin: Origin = 'youtube',
+): Promise<ChannelStat[]> {
+  const index = (await openDb())
+    .transaction(storeOf(CHANNELS, origin))
+    .objectStore(storeOf(CHANNELS, origin))
+    .index(sort);
   const rows: ChannelStat[] = [];
   await walk(index, null, 'prev', (c) => rows.push(c.value as ChannelStat) < limit);
   return rows;

@@ -2,9 +2,11 @@
 // stores are rebuilt from `videos`, and version 3 drops channel names that were view counters (`scrub`). Readers tolerate rows that lack newer fields (stats-rules `normDay`).
 import { addChannel, isCountName } from '../shared/stats-rules.ts';
 import type { ChannelStat, VideoStat } from '../shared/types.ts';
+import { BASES, storeOf } from './origin.ts';
+import { upgradeOrigins } from './origin-upgrade.ts';
 
 const DB_NAME = 'ytenrich';
-const DB_VERSION = 4;
+const DB_VERSION = 5;
 export const VIDEOS = 'videos';
 export const OPENS = 'opens';
 export const DAYS = 'days';
@@ -37,6 +39,16 @@ export function openDb(): Promise<IDBDatabase> {
         opens.createIndex('video', ['video', 'time', 'id']);
         backfillOpens(tx);
       }
+      for (const name of BASES) {
+        const store = db.createObjectStore(storeOf(name, 'music'), {
+          keyPath: name === 'days' ? 'day' : name === 'channels' ? 'name' : 'id',
+        });
+        if (name === 'opens') {
+          store.createIndex('time', ['time', 'id']);
+          store.createIndex('video', ['video', 'time', 'id']);
+        } else for (const index of SCHEMA[name]?.indexes ?? []) store.createIndex(index, index);
+      }
+      if (e.oldVersion < 5) upgradeOrigins(tx);
       if (fresh) backfill(tx);
       else if (e.oldVersion < 3) scrub(tx);
     };
@@ -87,6 +99,7 @@ export function backfillOpens(tx: IDBTransaction): void {
       tx.objectStore(OPENS).put({
         id: `legacy:${v.id}`,
         video: v.id,
+        origin: v.origin ?? 'youtube',
         time: v.openedAt ?? v.lastSeen,
       });
     return true;

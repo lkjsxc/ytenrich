@@ -1,4 +1,4 @@
-ytenrich lays every YouTube page out as tiling panes and gives you your own recommendation lists, ranked by what you actually watch. To do that, it keeps a record of the recommendations YouTube shows you and the videos you open. The record stays in your browser.
+ytenrich lays every YouTube page out as tiling panes and gives you your own recommendation lists, ranked by what you actually watch. To do that, it keeps a record of the recommendations YouTube shows you and the videos you open. YouTube Music keeps its own History and Stats: a track start or replay counts after 10 seconds of playback. The record stays in your browser.
 
 Tiling layout
 • The player, details, chapters, comments, chat and lists sit side by side in resizable panes with tabs, each scrolling on its own. Other pages sit next to YouTube's guide.

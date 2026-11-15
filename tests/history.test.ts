@@ -47,7 +47,7 @@ it('backfills one latest event per opened video when upgrading v3', async () => 
   });
   const { read } = await modules();
   expect(await read.videoOpens(request.id)).toEqual([
-    { id: 'legacy:video', video: 'video', time: 1234 },
+    { id: 'legacy:video', video: 'video', time: 1234, origin: 'youtube' },
   ]);
   expect(await read.videoOpens('unopened')).toEqual([]);
 });

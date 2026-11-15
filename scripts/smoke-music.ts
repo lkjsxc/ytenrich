@@ -1,6 +1,6 @@
-// Live smoke for YouTube Music: one layout for every page, the player's tiles while something is loaded.
-// Signed out. Prints JSON facts and writes tmp/smoke-music-*.png.
 import { dismissPromo, launch, rect, tabs } from './smoke-lib.ts';
+import { assertNativeMusic, nativeMusicPlay } from './smoke-music-native.ts';
+import { musicRecordSmoke } from './smoke-music-record.ts';
 
 const { ctx, page, sw, errors } = await launch({}, { desktopUa: true });
 const PAGE = '[ytenrich-slot=page]';
@@ -64,7 +64,7 @@ await page.waitForTimeout(1000);
 const guideBack = await tabs(page);
 // Playing something brings the player's tiles and the player bar; the page keeps its place.
 await page.locator(`${PAGE} a[href*="watch?v="]`).first().click();
-await page.waitForTimeout(9000);
+const nativeFirst = await nativeMusicPlay(page);
 const playing = {
   ...(await facts()),
   player: await same('player', 'music-player'),
@@ -79,7 +79,6 @@ const playing = {
   }, PAGE),
 };
 await page.screenshot({ path: 'tmp/smoke-music-playing.png' });
-// Moving on in the app closes its player page; the tiles stay.
 await dismissPromo(page);
 await page.locator('[ytenrich-slot=guide] ytmusic-guide-entry-renderer').nth(1).click(); // Explore
 await page.waitForTimeout(5000);
@@ -139,14 +138,14 @@ await page
   )
   .first()
   .click();
-await page.waitForTimeout(8000);
+const nativeSecond = await nativeMusicPlay(page);
+await assertNativeMusic(sw, [nativeFirst, nativeSecond]);
 const song = {
   ...(await state()),
   tabs: await tabs(page),
   player: await rect(page, '[ytenrich-slot=player] ytmusic-player'),
   cover: await rect(page, '[ytenrich-slot=player] #song-image img'),
 };
-// Related is a tab behind Up next: it selects the app's own (last) tab, and the queue tile gives way.
 await page.locator('ytenrich-root .tab[data-view=related]').click();
 await page.waitForTimeout(3000);
 const related = { ...(await side()), shown: await same('side', 'related') };
@@ -162,7 +161,6 @@ const detail = {
   side: await side(),
 };
 await page.screenshot({ path: 'tmp/smoke-music-detail.png' });
-// Tiling off gives the app back untouched.
 await sw.evaluate(() => chrome.storage.local.set({ settings: { wmEnabled: false } }));
 await page.waitForTimeout(1500);
 const off = await page.evaluate(() => ({
@@ -196,3 +194,4 @@ console.log(
   ),
 );
 await ctx.close();
+await musicRecordSmoke();

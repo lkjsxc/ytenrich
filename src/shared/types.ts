@@ -1,4 +1,5 @@
 /** `mix`: a Mix tile (YouTube's endless radio list), keyed by its list id; `video` names the video it opens with. */
+export type Origin = 'youtube' | 'music';
 export type Kind = 'video' | 'short' | 'mix';
 export type Surface = 'home' | 'watch' | 'search' | 'channel' | 'subs' | 'shorts' | 'other';
 export type PageKind = Surface;
@@ -24,10 +25,13 @@ export type Impression = {
 };
 
 export type VideoStat = {
+  origin?: Origin;
   id: string;
   kind: Kind;
   title: string;
   channel: string;
+  thumbnail?: string;
+  duration?: number;
   firstSeen: number;
   lastSeen: number;
   seen: number;
@@ -50,6 +54,7 @@ export type VideoStat = {
 
 /** One local calendar day. `hours` holds 24 impression counts by local hour. */
 export type DayStat = {
+  origin?: Origin;
   day: string;
   seen: number;
   /** Impressions of videos never shown before. `seen - fresh` are repeats. */
@@ -64,10 +69,11 @@ export type DayStat = {
   surfaces: Partial<Record<Surface, number>>;
   hours: number[];
 };
-export type DayDelta = Partial<Omit<DayStat, 'day' | 'hours'>>;
+export type DayDelta = Partial<Omit<DayStat, 'day' | 'hours' | 'origin'>>;
 
 /** Cumulative per-channel counters, keyed by display name (the DOM exposes no stable channel id). */
 export type ChannelStat = {
+  origin?: Origin;
   name: string;
   seen: number;
   videos: number;
@@ -77,15 +83,17 @@ export type ChannelStat = {
   /** Avatar image address ('' when no tile showed one yet). */
   icon: string;
 };
-export type ChannelDelta = Partial<Omit<ChannelStat, 'name' | 'lastSeen' | 'icon'>>;
+export type ChannelDelta = Partial<Omit<ChannelStat, 'name' | 'lastSeen' | 'icon' | 'origin'>>;
 /** Stats stores a backup carries, each paged by its primary key. */
-export type StoreName = 'videos' | 'days' | 'channels' | 'opens';
+export type BaseStore = 'videos' | 'days' | 'channels' | 'opens';
+export type StoreName = BaseStore | `music-${BaseStore}`;
 export type ChannelSort = 'seen' | 'opened';
 
 /** `pending`: recommended but never opened, dismissed or over-exposed (the Recommended view). */
 export type StatsFilter = 'pending' | 'all' | 'unopened' | 'suppressed' | 'dismissed' | 'opened';
 export type StatsSort = 'seen' | 'opened' | 'lastSeen' | 'openedAt';
 export type StatsQuery = {
+  origin?: Origin;
   sort: StatsSort;
   filter: StatsFilter;
   kind: Kind | 'all';
@@ -122,8 +130,16 @@ export function dayKey(time: number): string {
 }
 
 /** Stable identity breaks timestamp ties, including multiple opens in one millisecond. */
-export type OpenEvent = { id: string; video: string; time: number };
+export type OpenEvent = { id: string; video: string; time: number; origin?: Origin };
 export type OpenRow = OpenEvent & { row: VideoStat };
 export type OpenCursor = [time: number, id: string];
-export type HistoryQuery = { search: string; limit: number; before?: OpenCursor };
+export type HistoryQuery = { search: string; limit: number; before?: OpenCursor; origin?: Origin };
+export type MusicPlay = {
+  id: string;
+  title: string;
+  channel: string;
+  thumbnail: string;
+  duration: number;
+  time: number;
+};
 export type HistoryPage = { rows: OpenRow[]; next: OpenCursor | null };

@@ -1,4 +1,3 @@
-// Stats writes. Every mutation updates the video row, the day row and the channel row in one transaction.
 import {
   addChannel,
   addDay,
@@ -23,6 +22,8 @@ import type {
 import { dayKey } from '../shared/types.ts';
 import { CHANNELS, complete, DAYS, done, OPENS, openDb, VIDEOS, walk } from './db.ts';
 import { capOpens, removeOpens } from './history.ts';
+import { pruneMusic } from './music-prune.ts';
+import { STORES } from './origin.ts';
 import { forget, judge, track, untrack } from './suppress.ts';
 
 const ALL = [VIDEOS, DAYS, CHANNELS, OPENS];
@@ -42,7 +43,6 @@ async function putChannel(
   const store = tx.objectStore(CHANNELS);
   store.put(addChannel(await done<ChannelStat | undefined>(store.get(name)), name, now, delta));
 }
-
 /** Records impressions; returns the ids among them that are now suppressed. */
 export async function record(
   items: readonly Impression[],
@@ -75,7 +75,6 @@ export async function record(
   await complete(tx);
   return suppressed;
 }
-
 /** Keeps recommendations that were on a page without being on screen (video rows only, no counters). */
 export async function offer(items: readonly Impression[]): Promise<void> {
   const tx = (await openDb()).transaction([VIDEOS, CHANNELS], 'readwrite');
@@ -92,7 +91,8 @@ export async function offer(items: readonly Impression[]): Promise<void> {
   }
   for (const [name, icon] of icons) {
     const prev = await done<ChannelStat | undefined>(channels.get(name));
-    if (prev?.icon !== icon) channels.put({ ...addChannel(prev, name, now, {}), icon });
+    if (prev?.icon !== icon)
+      channels.put({ ...addChannel(prev, name, now, {}), origin: 'youtube', icon });
   }
   await complete(tx);
 }
@@ -109,7 +109,12 @@ async function edit(
   const next = fn(prev ?? emptyStat(id, now));
   videos.put(next);
   if (next.opened > (prev?.opened ?? 0)) {
-    tx.objectStore(OPENS).add({ id: crypto.randomUUID(), video: id, time: next.openedAt });
+    tx.objectStore(OPENS).add({
+      id: crypto.randomUUID(),
+      video: id,
+      time: next.openedAt,
+      origin: 'youtube',
+    });
     await capOpens(tx);
   }
   track(next);
@@ -150,20 +155,20 @@ export function dismissed(id: string): Promise<void> {
     },
   );
 }
-
-/** After rows were written behind this module's back (a restored backup). */
 export { forget };
 
 export async function clear(): Promise<void> {
-  const tx = (await openDb()).transaction(ALL, 'readwrite');
-  for (const name of ALL) tx.objectStore(name).clear();
+  const tx = (await openDb()).transaction(STORES, 'readwrite');
+  for (const name of STORES) tx.objectStore(name).clear();
   await complete(tx);
   forget();
 }
-
 /** Drops stale unopened rows, then the oldest rows beyond the caps. */
 export async function prune(): Promise<number> {
-  const tx = (await openDb()).transaction([VIDEOS, CHANNELS, OPENS], 'readwrite');
+  const tx = (await openDb()).transaction(
+    [VIDEOS, CHANNELS, OPENS, 'music-videos', 'music-channels', 'music-opens'],
+    'readwrite',
+  );
   const now = Date.now();
   let removed = 0;
   const videos = tx.objectStore(VIDEOS);
@@ -188,6 +193,7 @@ export async function prune(): Promise<number> {
       return --extra > 0;
     });
   await capOpens(tx);
+  await pruneMusic(tx);
   await complete(tx);
   return removed;
 }

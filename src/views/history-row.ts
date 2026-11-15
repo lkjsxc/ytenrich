@@ -56,7 +56,7 @@ export function historyRow(
     });
     if (!on) return;
     void env
-      .call('videoOpens', { id: v.id })
+      .call('videoOpens', { id: v.id, origin: v.origin })
       .then((opens) => {
         if (my !== request) return;
         hold(() => {

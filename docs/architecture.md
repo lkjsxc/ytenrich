@@ -1,7 +1,7 @@
 # Architecture
 
 ## Processes
-- **Content script** (`content.js`, isolated world, document_start, youtube.com and music.youtube.com; `youtube/site.ts` `SITE` tells them apart, and YouTube Music starts only the `wm` feature).
+- **Content script** (`content.js`, isolated world, document_start, youtube.com and music.youtube.com; `youtube/site.ts` `SITE` tells them apart, and YouTube Music starts `wm` and `music-stats`).
   - `createRuntime()` builds: settings signal (chrome.storage.local + onChanged), page signal (URL → PageKind; updated on `yt-navigate-finish`/popstate), scanner, log (ring buffer 200), and `suppressed` id set.
   - Features start from `FEATURES` and each returns a disposer.
 - **Background** (`background.js`, service worker / Firefox event page).
@@ -78,7 +78,11 @@ page signal (watch/shorts videoId) ─► bg.opened (resets suppression for that
 - A pane whose views are all absent gives its room to the pane before it (`wm/optional.ts` `yieldRoom`), so the guide keeps its width when the player's column goes.
 - The host leaves the app's player bar uncovered (`slots.ts` `chromeInsets`, read on every render; `onSlotToggle` watches the shell's state attributes).
 - Navigation: the app fires no event when a navigation is done, so the route signal re-reads the address on scanner ticks (`content/runtime.ts`). The page tile scrolls to its top only when the browse address changes, not when the player page opens or closes (`resetPageScroll`).
-- Nothing is recorded on YouTube Music: stats, the collector, hiding and quick dismiss do not start there.
+- `content/features/music-stats.ts` listens to the kept media element, independently of the WM. `youtube/music-record.ts` reads its video id from the player's title link (never the browse URL), title, artist, cover and duration from the player/bar/selected queue row. A direct `/watch` load works without a recommendation tile. Ads do not qualify.
+- `shared/music-play.ts` holds one start: id changes reset it; an ended track starting again at the beginning resets it too. Media progress must total 10 seconds before `played` inserts an open event at the start's time. Pauses, buffering and seeks contribute no listening time; navigation with the same id contributes no extra start. A skip before qualification leaves no row. Disabling stats stops recording.
+- IndexedDB v5 adds `music-videos`, `music-opens`, `music-days` and `music-channels`, with the same indexes and per-origin caps as YouTube. Rows carry `origin: music | youtube`; identical video ids and artist/channel names never share counters. The additive upgrade labels unmarked existing rows `youtube`, moves explicitly Music-tagged rows to the Music stores, and follows known video provenance for old events. It preserves counters/times and invents no plays.
+- `played` updates the Music video, event, day and artist atomically; hours count qualified starts. History, its ×N disclosure, and Stats select stores for the current site. Music keeps existing labels (Videos opened, Videos, Channels, Opened, Last); channels mean artists. Recommendation-only figures, chips and kind controls are omitted. Recommended, taste, suppression and channel liking only read YouTube stores. Clear and backup cover both origins; old backups have no Music rows.
+- The collector, recommendation impressions, hiding and quick dismiss do not start on Music.
 
 ## Stats freshness
 - After any mutating call (record/offer/opened/dismissed/clear/restore) the background writes `statsRev` to `chrome.storage.local`, throttled to one write per 1.5s window. `onStatsChanged` (shared/protocol.ts) delivers this to every context.

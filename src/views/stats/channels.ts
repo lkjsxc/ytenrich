@@ -18,6 +18,7 @@ export function channelsCard(
   sort: ChannelSort,
   limit: number,
   on: ChannelActions,
+  music = false,
 ): HTMLElement {
   const max = Math.max(1, ...rows.map((c) => c[sort]));
   const th = (key: ChannelSort, label: string): HTMLElement =>
@@ -44,12 +45,12 @@ export function channelsCard(
         ),
         h('div', { class: 'mini', style: `width:${(c[sort] / max) * 100}%` }),
       ),
-      h('td', { class: 'num' }, num(c.seen)),
+      music ? null : h('td', { class: 'num' }, num(c.seen)),
       h('td', { class: 'num' }, num(c.videos)),
       h('td', { class: 'num' }, num(c.opened)),
     );
   return card(
-    'Most recommended channels (all time)',
+    music ? 'Channels' : 'Most recommended channels (all time)',
     h(
       'table',
       null,
@@ -60,7 +61,7 @@ export function channelsCard(
           'tr',
           null,
           h('th', null, 'Channel'),
-          th('seen', 'Shown'),
+          music ? null : th('seen', 'Shown'),
           h('th', { class: 'num' }, 'Videos'),
           th('opened', 'Opened'),
         ),

@@ -95,14 +95,14 @@ The files are the source of truth; do not copy their text into this file.
 - **Single purpose:** make youtube.com more personal and comfortable by adding a tiling layout and controls for recommendations (statistics, hiding repeated recommendations, one-click "Not interested").
 - **Permission justifications:**
   - `storage`: settings and pane layouts.
-  - `unlimitedStorage`: the local recommendation-statistics database (IndexedDB, capped at 100,000 videos and 200,000 open events).
+  - `unlimitedStorage`: the local recommendation-statistics database (IndexedDB, capped per origin at 100,000 videos and 200,000 open events).
   - Host `https://www.youtube.com/*`: the content script that provides the layout and the recommendation features on YouTube pages.
-  - Host `https://music.youtube.com/*`: the same content script provides the layout on YouTube Music (nothing is recorded there).
+  - Host `https://music.youtube.com/*`: the same content script provides the layout and local Music History/Stats. A track start or replay is recorded after 10 seconds of playback, including time, title, artist, thumbnail address and duration. Music is kept apart from YouTube recommendations and history.
 - **Remote code:** none. All code is bundled.
 - **Data usage (privacy practices form):** handled locally only, never transmitted to the developer.
-  - Web history: recommended and opened YouTube videos.
-  - Website content: video titles and channel names.
-  - User activity: opens and "Not interested" clicks.
+  - Web history: recommended and opened YouTube videos, and qualified Music plays (separate origin stores; legacy rows default to YouTube).
+  - Website content: video titles, channel/artist names, Music thumbnail addresses and durations.
+  - User activity: opens, Music starts/replays after 10 seconds, and "Not interested" clicks.
   - Certify all three: no sale, no use unrelated to the single purpose, no creditworthiness use.
 - **Disclosure:** stats are the extension's prominently described purpose (listing summary and description, welcome card), so they are on by default. Install opens YouTube, where the welcome card above the recommended lists states what is recorded and has **Turn stats off** until acknowledged; Settings has the same switch (`src/views/consent.ts`). Keep the first paragraph of `store/description.txt` about the record, since that is what makes default-on acceptable under the store's disclosure rule.
 - **Privacy practices answers to keep true:** images (thumbnails, avatars) are loaded from YouTube's image servers by default in the Chromium build; nothing goes to the developer.

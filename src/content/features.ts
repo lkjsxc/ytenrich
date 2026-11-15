@@ -4,6 +4,7 @@ import { SITE } from '../youtube/site.ts';
 import { collect } from './features/collect.ts';
 import { details } from './features/details.ts';
 import { hideOverexposed } from './features/hide-overexposed.ts';
+import { musicStats } from './features/music-stats.ts';
 import { quickDismiss } from './features/quick-dismiss.ts';
 import { shorts } from './features/shorts.ts';
 import { stats } from './features/stats.ts';
@@ -21,8 +22,8 @@ const YOUTUBE: readonly Feature[] = [
   details,
   wm,
 ];
-/** YouTube Music gets the tiling only: every other feature reads youtube.com's recommendation tiles. */
-export const FEATURES: readonly Feature[] = SITE === 'music' ? [wm] : YOUTUBE;
+/** YouTube Music records qualified plays and tiles: every other feature reads youtube.com's recommendation tiles. */
+export const FEATURES: readonly Feature[] = SITE === 'music' ? [musicStats, wm] : YOUTUBE;
 
 export function startFeatures(rt: Runtime): Disposer {
   const all = createDisposables();

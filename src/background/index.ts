@@ -9,6 +9,7 @@ import {
 import { DEFAULT_SETTINGS, loadSettings, onSettings, type Settings } from '../shared/settings.ts';
 import * as backup from './backup.ts';
 import * as history from './history.ts';
+import { played } from './music-repo.ts';
 import { forget, recommend, touch, wanted } from './recommend.ts';
 import * as read from './stats-read.ts';
 import * as repo from './stats-repo.ts';
@@ -48,6 +49,7 @@ const bumpRev = (): void => {
   }, REV_MS);
 };
 const MUTATING: ReadonlySet<Method> = new Set([
+  'played',
   'record',
   'offer',
   'opened',
@@ -59,6 +61,7 @@ const MUTATING: ReadonlySet<Method> = new Set([
 
 type Handlers = { [K in Method]: (req: Api[K]['req']) => Promise<Api[K]['res']> };
 const handlers: Handlers = {
+  played: (req) => played(req).then(() => null),
   async record({ items, hidden }) {
     countForPrune(items.length);
     return { suppressed: await repo.record(items, hidden, threshold) };
@@ -73,12 +76,12 @@ const handlers: Handlers = {
   dismissed: ({ id }) => repo.dismissed(id).then(() => (forget(id), null)),
   suppressed: async () => [...(await suppressedIds(threshold))],
   history: (q) => history.history(q),
-  videoOpens: ({ id }) => history.videoOpens(id),
+  videoOpens: ({ id, origin }) => history.videoOpens(id, origin),
   query: (q) => read.query(q, threshold),
   recommend: async ({ query, limit, more }) =>
     recommend(query, limit, await judge(threshold), more),
-  overview: () => read.overview(threshold),
-  channels: ({ sort, limit }) => read.channels(sort, limit),
+  overview: (q) => read.overview(threshold, q?.origin),
+  channels: ({ sort, limit, origin }) => read.channels(sort, limit, origin),
   clear: () => repo.clear().then(() => null),
   dump: ({ store, after, limit }) => backup.dump(store, after, limit),
   restore: ({ store, rows }) => backup.restore(store, rows).then(() => null),

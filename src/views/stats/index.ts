@@ -1,13 +1,16 @@
 // Stats view: period tiles and charts, top channels and the video table.
 // Live updates (background rev bump) are throttled and deferred while the view is not visible; a section is
 // repainted only when its data or state changed.
+
 import { h } from '../../shared/h.ts';
 import { onStatsChanged } from '../../shared/protocol.ts';
 import type { ChannelSort, ChannelStat, Overview, StatsQuery } from '../../shared/types.ts';
+import { SITE } from '../../youtube/site.ts';
 import { statsCard } from '../consent.ts';
 import type { ViewEnv } from '../registry.ts';
 import { CHANNEL_STEP, channelsCard } from './channels.ts';
 import { num } from './format.ts';
+import { musicTop } from './music.ts';
 import { breakdowns, dailyCard, kpis } from './overview.ts';
 import { choice } from './parts.ts';
 import { buckets, RANGES, type Range, series, span, totals } from './period.ts';
@@ -16,8 +19,10 @@ import { createVideoTable, PAGE_STEP } from './table.ts';
 const LIVE_MS = 4000; // at most one live refresh per window
 
 export function mountStats(el: HTMLElement, env: ViewEnv): () => void {
+  const music = SITE === 'music';
   const q: StatsQuery = {
-    sort: 'seen',
+    origin: SITE,
+    sort: music ? 'opened' : 'seen',
     filter: 'all',
     kind: 'all',
     channel: '',
@@ -25,7 +30,7 @@ export function mountStats(el: HTMLElement, env: ViewEnv): () => void {
     search: '',
   };
   let range: Range = 7;
-  let chSort: ChannelSort = 'seen';
+  let chSort: ChannelSort = music ? 'opened' : 'seen';
   let chLimit = CHANNEL_STEP;
   let token = 0;
   let visible = false;
@@ -67,6 +72,10 @@ export function mountStats(el: HTMLElement, env: ViewEnv): () => void {
     const now = Date.now();
     const len = range || span(o.days, now);
     const cur = series(o.days, len, now);
+    if (music) {
+      top.replaceChildren(...musicTop(o, cur, range ? series(o.days, len, now, len) : []));
+      return;
+    }
     top.replaceChildren(
       kpis(totals(cur), totals(range ? series(o.days, len, now, len) : []), o),
       dailyCard(buckets(cur, 120)),
@@ -82,16 +91,22 @@ export function mountStats(el: HTMLElement, env: ViewEnv): () => void {
     channelBox.replaceChildren(
       ...(rows.length
         ? [
-            channelsCard(rows, chSort, chLimit, {
-              sort: (s) => ((chSort = s), refresh()),
-              more: () => ((chLimit += CHANNEL_STEP * 2), refresh()),
-              pick: (name) => {
-                Object.assign(q, { channel: name, filter: 'all', limit: PAGE_STEP });
-                table.sync();
-                refresh();
-                table.el.scrollIntoView({ block: 'start', behavior: 'smooth' });
+            channelsCard(
+              rows,
+              chSort,
+              chLimit,
+              {
+                sort: (s) => ((chSort = s), refresh()),
+                more: () => ((chLimit += CHANNEL_STEP * 2), refresh()),
+                pick: (name) => {
+                  Object.assign(q, { channel: name, filter: 'all', limit: PAGE_STEP });
+                  table.sync();
+                  refresh();
+                  table.el.scrollIntoView({ block: 'start', behavior: 'smooth' });
+                },
               },
-            }),
+              music,
+            ),
           ]
         : []),
     );
@@ -101,8 +116,8 @@ export function mountStats(el: HTMLElement, env: ViewEnv): () => void {
     const my = ++token;
     const s = env.settings.get();
     void Promise.all([
-      env.call('overview', null),
-      env.call('channels', { sort: chSort, limit: chLimit }),
+      env.call('overview', { origin: SITE }),
+      env.call('channels', { sort: chSort, limit: chLimit, origin: SITE }),
       env.call('query', q),
     ]).then(
       ([o, channels, page]) => {

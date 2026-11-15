@@ -1,8 +1,10 @@
 // History: each time you opened a video while stats were enabled, newest first, grouped by day.
 // It is ytenrich's own record (this device only), so it works as a tile on every page.
+
 import { h } from '../shared/h.ts';
 import { onStatsChanged } from '../shared/protocol.ts';
 import { dayKey, type HistoryPage, type HistoryQuery } from '../shared/types.ts';
+import { SITE } from '../youtube/site.ts';
 import { historyRow } from './history-row.ts';
 import { autoMore, grow, type Keyed, keyed } from './more.ts';
 import type { ViewEnv } from './registry.ts';
@@ -12,7 +14,7 @@ const STEP = 50;
 const SEARCH_MS = 200;
 
 export function mountHistory(el: HTMLElement, env: ViewEnv): () => void {
-  const q: HistoryQuery = { limit: STEP, search: '' };
+  const q: HistoryQuery = { limit: STEP, search: '', origin: SITE };
   const expanded = new Set<string>(); // bound: event ids explicitly expanded during this tab’s lifetime
   let token = 0;
   let sig = '';
