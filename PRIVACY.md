@@ -9,7 +9,7 @@ ytenrich is a browser extension for `www.youtube.com` and `music.youtube.com`. O
 **Stats** are on from the start, because they are what ytenrich is for. After installation, ytenrich opens YouTube, where a welcome card above its recommended lists says what is recorded and has a **Turn stats off** button (it stays until you dismiss it). **Settings** has the same switch. While stats are on, ytenrich keeps a local record of:
 - each video or Short that YouTube shows you as a recommendation and that is at least half visible: its video ID, type (video, Short or Mix list), title, channel name, the kind of page it appeared on (home, watch, search, channel, subscriptions, Shorts or other), how many times it was shown, when it was first and last shown, and its view count as the tile words it (such as "1.2M views");
 - each video or Short that YouTube places on a page as a recommendation without it reaching your screen (further down a list, or in a list that your layout hides): the same details, with a shown count of zero, plus how many page views offered it and the kind of page that last did, and roughly when the video was uploaded (worked out from the age its tile shows, such as "3 months ago"). These fill the Recommended view. **Settings → Recommended: Collect** limits the record to what was on screen (`shown`);
-- how many times you opened each video and when you last opened it, which amounts to a list of the videos you watched (shown in the History view);
+- how many times you opened each video and the time of each recorded open, which amounts to a list of the videos you watched (shown in the History view);
 - when you used ytenrich's **Not interested** button on a video;
 - daily totals: recommendations shown (also by page kind, by hour of day, and how many were new, repeats or Shorts), videos opened, videos dismissed, and recommendations hidden by ytenrich;
 - per-channel totals, keyed by channel name: recommendations shown, distinct videos, opens and dismissals, and the address of the channel's avatar image when a recommendation showed one.
@@ -23,6 +23,7 @@ Everything is stored in your browser profile, in the extension's local storage a
 ## Retention and deletion
 
 - A recorded video that you never opened or dismissed is deleted 90 days after it was last shown.
+- Open events are capped at 200,000, oldest first. Deleting a video also deletes its open events. Older versions retained only each video’s latest open time; earlier times cannot be recovered.
 - The record holds at most 100,000 videos. Beyond that, the least recently shown videos are deleted first.
 - Other entries and the daily totals stay until you delete them.
 - **Settings → Clear statistics** deletes the whole record.

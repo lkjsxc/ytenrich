@@ -1,10 +1,10 @@
-// History: the videos you opened while stats were enabled, newest first, grouped by day.
+// History: each time you opened a video while stats were enabled, newest first, grouped by day.
 // It is ytenrich's own record (this device only), so it works as a tile on every page.
 import { h } from '../shared/h.ts';
 import { onStatsChanged } from '../shared/protocol.ts';
-import { dayKey, type StatsPage, type StatsQuery, type VideoStat } from '../shared/types.ts';
+import { dayKey, type HistoryPage, type HistoryQuery } from '../shared/types.ts';
+import { historyRow } from './history-row.ts';
 import { autoMore, grow, type Keyed, keyed } from './more.ts';
-import { kindBadge, openVideo, thumbUrl, videoUrl } from './open.ts';
 import type { ViewEnv } from './registry.ts';
 import { dayText } from './stats/format.ts';
 
@@ -12,14 +12,8 @@ const STEP = 50;
 const SEARCH_MS = 200;
 
 export function mountHistory(el: HTMLElement, env: ViewEnv): () => void {
-  const q: StatsQuery = {
-    sort: 'openedAt',
-    filter: 'opened',
-    kind: 'all',
-    channel: '',
-    limit: STEP,
-    search: '',
-  };
+  const q: HistoryQuery = { limit: STEP, search: '' };
+  const expanded = new Set<string>(); // bound: event ids explicitly expanded during this tab’s lifetime
   let token = 0;
   let sig = '';
   let timer: ReturnType<typeof setTimeout> | undefined;
@@ -38,52 +32,19 @@ export function mountHistory(el: HTMLElement, env: ViewEnv): () => void {
     },
   });
 
-  const row = (v: VideoStat): HTMLElement =>
-    h(
-      'a',
-      {
-        class: 'hrow',
-        href: videoUrl(v),
-        onclick: (e) => openVideo(e as MouseEvent, v, env),
-      },
-      h(
-        'span',
-        { class: 'muted num' },
-        new Date(v.openedAt).toLocaleTimeString('en', {
-          hour: '2-digit',
-          minute: '2-digit',
-          hourCycle: 'h23',
-        }),
-      ),
-      !__FIREFOX__ && env.settings.get().thumbnailsEnabled
-        ? h('img', {
-            class: v.kind === 'short' ? 'thumb tall' : 'thumb',
-            crossorigin: 'anonymous',
-            referrerpolicy: 'no-referrer',
-            src: thumbUrl(v, 'default'),
-            loading: 'lazy',
-            alt: '',
-          })
-        : null,
-      h(
-        'span',
-        { class: 'htext' },
-        v.title || v.id,
-        kindBadge(v) ? h('span', { class: 'badge' }, kindBadge(v)) : null,
-        v.opened > 1 ? h('span', { class: 'badge' }, `opened ${v.opened}×`) : null,
-        h('div', { class: 'muted' }, v.channel),
-      ),
-    );
-
-  const paint = (page: StatsPage): void => {
+  const paint = (page: HistoryPage): void => {
     const out: Keyed[] = [];
     let day = '';
     const img = env.settings.get().thumbnailsEnabled;
-    for (const v of page.rows) {
-      const key = dayKey(v.openedAt);
+    for (const event of page.rows) {
+      const v = event.row;
+      const key = dayKey(event.time);
       if (key !== day) out.push([`day${key}`, () => h('h3', null, dayText(key))]);
       day = key;
-      out.push([`${img}${v.id}${v.openedAt}${v.opened}${v.title}`, () => row(v)]);
+      out.push([
+        `${img}${event.id}${JSON.stringify(v)}`,
+        () => historyRow(event, env, expanded, list),
+      ]);
     }
     keyed(list, out);
     foot.replaceChildren(
@@ -101,7 +62,7 @@ export function mountHistory(el: HTMLElement, env: ViewEnv): () => void {
             ),
           ]),
       ...[
-        autoMore(page.more, q.limit, () => {
+        autoMore(page.next !== null, q.limit, () => {
           q.limit = grow(q.limit, STEP);
           refresh();
         }),
@@ -111,7 +72,7 @@ export function mountHistory(el: HTMLElement, env: ViewEnv): () => void {
 
   function refresh(): void {
     const my = ++token;
-    env.call('query', q).then(
+    env.call('history', q).then(
       (page) => {
         const next = JSON.stringify([page, env.settings.get()]);
         if (my !== token || next === sig) return;

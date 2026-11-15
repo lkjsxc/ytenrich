@@ -21,10 +21,11 @@ import type {
   VideoStat,
 } from '../shared/types.ts';
 import { dayKey } from '../shared/types.ts';
-import { CHANNELS, complete, DAYS, done, openDb, VIDEOS, walk } from './db.ts';
+import { CHANNELS, complete, DAYS, done, OPENS, openDb, VIDEOS, walk } from './db.ts';
+import { capOpens, removeOpens } from './history.ts';
 import { forget, judge, track, untrack } from './suppress.ts';
 
-const ALL = [VIDEOS, DAYS, CHANNELS];
+const ALL = [VIDEOS, DAYS, CHANNELS, OPENS];
 
 async function putDay(tx: IDBTransaction, now: number, delta: DayDelta): Promise<void> {
   const days = tx.objectStore(DAYS);
@@ -107,6 +108,10 @@ async function edit(
   const prev = await done<VideoStat | undefined>(videos.get(id));
   const next = fn(prev ?? emptyStat(id, now));
   videos.put(next);
+  if (next.opened > (prev?.opened ?? 0)) {
+    tx.objectStore(OPENS).add({ id: crypto.randomUUID(), video: id, time: next.openedAt });
+    await capOpens(tx);
+  }
   track(next);
   const d = deltas?.(prev);
   if (d) {
@@ -158,7 +163,7 @@ export async function clear(): Promise<void> {
 
 /** Drops stale unopened rows, then the oldest rows beyond the caps. */
 export async function prune(): Promise<number> {
-  const tx = (await openDb()).transaction([VIDEOS, CHANNELS], 'readwrite');
+  const tx = (await openDb()).transaction([VIDEOS, CHANNELS, OPENS], 'readwrite');
   const now = Date.now();
   let removed = 0;
   const videos = tx.objectStore(VIDEOS);
@@ -167,6 +172,7 @@ export async function prune(): Promise<number> {
     const s = c.value as VideoStat;
     if (excess > 0 || isPrunable(s, now)) {
       c.delete();
+      removeOpens(tx, s.id);
       untrack(s.id);
       excess--;
       removed++;
@@ -181,6 +187,7 @@ export async function prune(): Promise<number> {
       c.delete();
       return --extra > 0;
     });
+  await capOpens(tx);
   await complete(tx);
   return removed;
 }

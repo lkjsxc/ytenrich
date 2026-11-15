@@ -79,7 +79,7 @@ export type ChannelStat = {
 };
 export type ChannelDelta = Partial<Omit<ChannelStat, 'name' | 'lastSeen' | 'icon'>>;
 /** Stats stores a backup carries, each paged by its primary key. */
-export type StoreName = 'videos' | 'days' | 'channels';
+export type StoreName = 'videos' | 'days' | 'channels' | 'opens';
 export type ChannelSort = 'seen' | 'opened';
 
 /** `pending`: recommended but never opened, dismissed or over-exposed (the Recommended view). */
@@ -120,3 +120,10 @@ export function dayKey(time: number): string {
   const pad = (n: number): string => String(n).padStart(2, '0');
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
+
+/** Stable identity breaks timestamp ties, including multiple opens in one millisecond. */
+export type OpenEvent = { id: string; video: string; time: number };
+export type OpenRow = OpenEvent & { row: VideoStat };
+export type OpenCursor = [time: number, id: string];
+export type HistoryQuery = { search: string; limit: number; before?: OpenCursor };
+export type HistoryPage = { rows: OpenRow[]; next: OpenCursor | null };

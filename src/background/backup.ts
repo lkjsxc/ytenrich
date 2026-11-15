@@ -1,10 +1,10 @@
 // Backup of the stats DB: paged reads of whole stores, and writes of rows repaired to the current shape.
 import { emptyDay, emptyStat, isCountName, normDay } from '../shared/stats-rules.ts';
 import type { ChannelStat, StoreName } from '../shared/types.ts';
-import { complete, openDb, walk } from './db.ts';
+import { complete, done, openDb, VIDEOS, walk } from './db.ts';
 import { forget, prune } from './stats-repo.ts';
 
-const KEY: Record<StoreName, string> = { videos: 'id', days: 'day', channels: 'name' };
+const KEY: Record<StoreName, string> = { videos: 'id', days: 'day', channels: 'name', opens: 'id' };
 const CHANNEL: ChannelStat = {
   name: '',
   seen: 0,
@@ -39,14 +39,24 @@ function repair<T extends object>(template: T, raw: Record<string, unknown>): T 
 }
 
 export async function restore(store: StoreName, rows: readonly unknown[]): Promise<void> {
-  const tx = (await openDb()).transaction(store, 'readwrite');
+  const tx = (await openDb()).transaction(store === 'opens' ? [store, VIDEOS] : store, 'readwrite');
   const target = tx.objectStore(store);
   for (const row of rows) {
     if (typeof row !== 'object' || row === null) continue;
     const raw = row as Record<string, unknown>;
     const key = raw[KEY[store]];
     if (typeof key !== 'string' || !key) continue;
-    if (store === 'videos') {
+    if (store === 'opens') {
+      if (
+        typeof raw.video !== 'string' ||
+        typeof raw.time !== 'number' ||
+        !Number.isFinite(raw.time) ||
+        raw.time < 0
+      )
+        continue;
+      if (await done(tx.objectStore(VIDEOS).get(raw.video)))
+        target.put({ id: key, video: raw.video, time: raw.time });
+    } else if (store === 'videos') {
       const v = repair(emptyStat(key, 0), raw);
       target.put(isCountName(v.channel) ? { ...v, channel: '' } : v); // a backup from before 0.2.9 (db.ts `scrub`)
     } else if (store === 'days') target.put(normDay(repair(emptyDay(key), raw)));
@@ -54,5 +64,5 @@ export async function restore(store: StoreName, rows: readonly unknown[]): Promi
   }
   await complete(tx);
   forget();
-  void prune(); // a backup never grows the DB past its caps
+  await prune(); // a backup never grows the DB past its caps
 }

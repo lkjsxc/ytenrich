@@ -4,6 +4,7 @@
 
 import { h } from '../shared/h.ts';
 import type { Settings } from '../shared/settings.ts';
+import historyCss from '../ui/history.css';
 import css from '../ui/ui.css';
 
 export type Host = {
@@ -23,7 +24,7 @@ export function createHost(): Host {
   const shadow = host.attachShadow({ mode: 'open' });
   const root = h('div', { class: 'wm' });
   const layer = h('div', { class: 'layer' });
-  shadow.append(h('style', null, css), root, layer);
+  shadow.append(h('style', null, css + historyCss), root, layer);
   // YouTube's hotkeys see our host as the event target, not the field inside it: keep typing to ourselves.
   for (const type of ['keydown', 'keypress', 'keyup'] as const)
     shadow.addEventListener(type, (e) => {

@@ -4,8 +4,9 @@ import { addChannel, isCountName } from '../shared/stats-rules.ts';
 import type { ChannelStat, VideoStat } from '../shared/types.ts';
 
 const DB_NAME = 'ytenrich';
-const DB_VERSION = 3;
+const DB_VERSION = 4;
 export const VIDEOS = 'videos';
+export const OPENS = 'opens';
 export const DAYS = 'days';
 export const CHANNELS = 'channels';
 
@@ -29,6 +30,12 @@ export function openDb(): Promise<IDBDatabase> {
           ? tx.objectStore(name)
           : db.createObjectStore(name, { keyPath: def.keyPath });
         for (const i of def.indexes) if (!store.indexNames.contains(i)) store.createIndex(i, i);
+      }
+      if (!db.objectStoreNames.contains(OPENS)) {
+        const opens = db.createObjectStore(OPENS, { keyPath: 'id' });
+        opens.createIndex('time', ['time', 'id']);
+        opens.createIndex('video', ['video', 'time', 'id']);
+        backfillOpens(tx);
       }
       if (fresh) backfill(tx);
       else if (e.oldVersion < 3) scrub(tx);
@@ -68,6 +75,20 @@ function scrub(tx: IDBTransaction): void {
   });
   void walk(tx.objectStore(CHANNELS), null, 'next', (c) => {
     if (isCountName((c.value as ChannelStat).name)) c.delete();
+    return true;
+  });
+}
+
+/** Only the latest time was retained before v4; never invent earlier opens. */
+export function backfillOpens(tx: IDBTransaction): void {
+  void walk(tx.objectStore(VIDEOS), null, 'next', (c) => {
+    const v = c.value as VideoStat;
+    if (v.opened > 0)
+      tx.objectStore(OPENS).put({
+        id: `legacy:${v.id}`,
+        video: v.id,
+        time: v.openedAt ?? v.lastSeen,
+      });
     return true;
   });
 }

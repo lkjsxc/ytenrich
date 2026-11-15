@@ -10,6 +10,7 @@ import {
   type Settings,
 } from '../../shared/settings.ts';
 import { createSignal, type Disposer } from '../../shared/signal.ts';
+import historyCss from '../../ui/history.css';
 import css from '../../ui/ui.css';
 import { VIEWS, type ViewEnv } from '../../views/registry.ts';
 import { welcome } from './welcome.ts';
@@ -40,7 +41,7 @@ const show = (id: string): void => {
 nav.append(
   ...tabs.map((t) => h('button', { 'data-id': t.id, onclick: () => show(t.id) }, t.title)),
 );
-document.head.append(h('style', null, css));
+document.head.append(h('style', null, css + historyCss));
 const first = location.hash === '#welcome';
 const intro = first ? [welcome(settings)] : [];
 // The welcome page waits for stored settings so an earlier "yes" is not offered again.

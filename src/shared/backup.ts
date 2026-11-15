@@ -6,7 +6,7 @@ import type { StoreName } from './types.ts';
 
 const APP = 'ytenrich';
 const FORMAT = 1;
-const STORES: readonly StoreName[] = ['videos', 'days', 'channels'];
+const STORES: readonly StoreName[] = ['videos', 'days', 'channels', 'opens'];
 const CHUNK = 2000; // rows per message, far below the browser's message size limit
 const kept = (key: string): boolean =>
   key === SETTINGS_KEY || key.startsWith(LAYOUT_PREFIX) || key.startsWith('view:');
@@ -21,7 +21,7 @@ export type Backup = {
 
 export async function exportData(call: typeof Call): Promise<Backup> {
   const all = await chrome.storage.local.get(null);
-  const stats: Backup['stats'] = { videos: [], days: [], channels: [] }; // bound: the DB's own caps
+  const stats: Backup['stats'] = { videos: [], days: [], channels: [], opens: [] }; // bound: the DB's own caps
   for (const store of STORES) {
     for (let after: string | null = null, first = true; first || after !== null; first = false) {
       const page: { rows: unknown[]; next: string | null } = await call('dump', {
@@ -50,6 +50,19 @@ export async function importData(call: typeof Call, data: unknown): Promise<numb
   if (typeof b.format !== 'number' || b.format > FORMAT)
     throw new Error('This export comes from a newer ytenrich. Update the extension first.');
   const lists = STORES.map((s) => (Array.isArray(b.stats?.[s]) ? b.stats[s] : []));
+  // Old exports retained only the latest open, just like the v4 database upgrade.
+  if (!Array.isArray(b.stats?.opens))
+    lists[3] = (lists[0] ?? []).flatMap((raw) => {
+      const v = raw as {
+        id?: string;
+        opened?: number;
+        openedAt?: number;
+        lastSeen?: number;
+      } | null;
+      return v && typeof v.id === 'string' && (v.opened ?? 0) > 0
+        ? [{ id: `legacy:${v.id}`, video: v.id, time: v.openedAt ?? v.lastSeen ?? 0 }]
+        : [];
+    });
   await call('clear', null);
   for (const [i, store] of STORES.entries()) {
     const rows = lists[i] ?? [];

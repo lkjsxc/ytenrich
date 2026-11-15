@@ -1,7 +1,7 @@
 // Shared launcher for live smokes: Chromium (Playwright's, else newest cached, or YTE_CHROME) + unpacked dist/.
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, readdirSync } from 'node:fs';
-import { homedir, tmpdir } from 'node:os';
+import { homedir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { chromium, type Page } from 'playwright';
 
@@ -35,7 +35,7 @@ export async function launch(settings: Record<string, unknown> = {}, opts: Launc
   const exe =
     process.env.YTE_CHROME ?? (existsSync(chromium.executablePath()) ? undefined : cached());
   mkdirSync('tmp', { recursive: true });
-  const ctx = await chromium.launchPersistentContext(mkdtempSync(join(tmpdir(), 'yte-')), {
+  const ctx = await chromium.launchPersistentContext(mkdtempSync(resolve('tmp/yte-')), {
     headless: true,
     ...(exe ? { executablePath: exe } : {}),
     viewport: { width: opts.width ?? 1600, height: opts.height ?? 1000 },

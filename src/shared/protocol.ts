@@ -2,8 +2,11 @@
 import type {
   ChannelSort,
   ChannelStat,
+  HistoryPage,
+  HistoryQuery,
   Impression,
   Kind,
+  OpenEvent,
   Overview,
   RecoPage,
   RecoQuery,
@@ -22,6 +25,8 @@ export type Api = {
   describe: { req: { id: string; title: string }; res: null };
   dismissed: { req: { id: string }; res: null };
   suppressed: { req: null; res: string[] };
+  history: { req: HistoryQuery; res: HistoryPage };
+  videoOpens: { req: { id: string }; res: OpenEvent[] };
   query: { req: StatsQuery; res: StatsPage };
   /** `more`: the next page of the list on screen, so the ranking it shows goes on instead of being redone. */
   recommend: { req: { query: RecoQuery; limit: number; more?: boolean }; res: RecoPage };

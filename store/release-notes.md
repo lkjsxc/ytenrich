@@ -1,6 +1,11 @@
 <!-- Newest version first. The top section must match package.json (pnpm check): it becomes the GitHub release text
 and the Firefox version notes. Write it for users, in a few lines. -->
 
+## 0.2.14
+- History shows every recorded open, including return visits to the same video.
+- Click ×N beside a time to see that video's recorded opens; click a time to jump to its loaded row.
+- Existing history keeps each video's latest recorded time. Earlier visits whose times were never stored are counted separately.
+
 ## 0.2.13
 - YouTube Music: Up next, Lyrics and Related are tiles of their own, so the queue stays in view while you read the lyrics.
 - The queue follows the playing track. Lyrics are larger, start from the top on each track, and say so when a track has none.

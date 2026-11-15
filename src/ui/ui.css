@@ -157,13 +157,6 @@ td button.link:hover { background: none; text-decoration: underline; }
 .page nav { display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin-bottom: 8px; }
 .page nav button { padding: 6px 12px; color: var(--muted); }
 .page nav button.active { color: var(--fg); box-shadow: inset 0 -2px var(--accent); }
-/* History */
-.history h3 { margin: 14px 0 4px; font-size: 12px; font-weight: 600; color: var(--muted); }
-.hrow { display: grid; grid-template-columns: 38px 64px minmax(0, 1fr); align-items: start; gap: 10px; padding: 5px 0; border-bottom: 1px solid var(--line); color: var(--fg); text-decoration: none; }
-.hrow:not(:has(img)) { grid-template-columns: 38px minmax(0, 1fr); }
-.hrow .num { text-align: left; }
-.htext { overflow-wrap: anywhere; }
-.hrow:hover { background: var(--hover); }
 /* Recommended: no heading (the tab names it); a sticky bar with ▶ (this tab's settings, views/reco-panel.ts) and search. */
 .rbar { position: sticky; top: 0; z-index: 2; display: flex; gap: 6px; margin-top: -10px; padding: 10px 0 8px; background: var(--bg); }
 .rtoggle { flex: 0 0 34px; height: 32px; border: 1px solid var(--line); border-radius: 6px; background: none; color: var(--muted); font-size: 13px; }
