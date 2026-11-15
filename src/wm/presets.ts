@@ -64,17 +64,38 @@ export function shortsPreset(): LayoutNode {
   );
 }
 
+/** YouTube Music's player column: the cover or video over Up next, with Lyrics and Related behind it. */
+const listening = (): LayoutNode =>
+  split('col', [pane(['music-player']), pane(['queue', 'lyrics', 'related'])], [0.45, 0.55]);
+/** Below this width the guide is left out of the Music default (☰ brings it): the page and the queue need the room. */
+export const MUSIC_GUIDE_MIN = 1100;
 /** Default for YouTube Music: guide | the app's page (Settings and Log behind it) | the player over Up next. The
  * last column exists only while something is loaded in the player; until then the page has its room. */
 export function musicPreset(width = globalThis.innerWidth || 1600): LayoutNode {
-  const f = Math.min(0.3, GUIDE_PX / Math.max(width, 800));
-  const playing = split('col', [pane(['music-player']), pane(['queue'])], [0.45, 0.55]);
   const page = pane(['page', 'settings', 'log']);
-  return split('row', [pane(['guide']), page, playing], [f, (1 - f) * 0.6, (1 - f) * 0.4]);
+  if (width < MUSIC_GUIDE_MIN) return split('row', [page, listening()], [0.58, 0.42]);
+  const f = GUIDE_PX / width;
+  return split('row', [pane(['guide']), page, listening()], [f, (1 - f) * 0.6, (1 - f) * 0.4]);
 }
-/** Music workspace 2: the player large, Up next and the page beside it. */
+/** Music workspace 2, for reading along: the player over Up next | Lyrics at full height | the page. */
+const musicLyrics = (): LayoutNode =>
+  split(
+    'row',
+    [
+      split('col', [pane(['music-player']), pane(['queue', 'related'])], [0.5, 0.5]),
+      pane(['lyrics']),
+      pane(['page']),
+    ],
+    [0.3, 0.36, 0.34],
+  );
+/** Music workspace 3: the player large (a video, or the cover), everything else as tabs beside it. Like the app's
+ * own player page: the page is behind Up next while something plays, and comes forward on a navigation. */
 const musicWide = (): LayoutNode =>
-  split('row', [pane(['music-player']), pane(['queue', 'page'])], [0.62, 0.38]);
+  split(
+    'row',
+    [pane(['music-player']), pane(['queue', 'lyrics', 'related', 'page'])],
+    [0.62, 0.38],
+  );
 
 const BELOW = ['playlist', 'recommended', 'channel-videos', 'history', 'stats', 'settings', 'log'];
 /** Watch workspaces 2–4: the player over the other tabs, and `tabs` at full height beside them. */
@@ -119,7 +140,7 @@ const PRESETS: Record<WmFamily, () => LayoutNode> = {
 };
 const BY_SPACE: Partial<Record<WmFamily, readonly (() => LayoutNode)[]>> = {
   watch: WATCH,
-  music: [musicPreset, musicWide],
+  music: [musicPreset, musicLyrics, musicWide],
 };
 /** Every family has `SPACES` workspaces (`wm/spaces.ts`). Those without a layout of their own start as a New tab page. */
 export const presetOf = (family: WmFamily, space = 1): LayoutNode =>

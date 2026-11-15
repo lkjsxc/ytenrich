@@ -20,11 +20,11 @@ awkward natively are rebuilt as own views. Steps, in order:
 - Compact related-list density options (thumbnail size) in the Videos pane.
 - MAIN-world bridge (manifest `world: "MAIN"`) for data-level access (SPA navigation to arbitrary URLs, guide data), only when DOM automation proves fragile.
 
-## YouTube Music (tiling since 2026-11-14)
-- Lyrics as a tile of its own beside Up next: the app swaps both into one renderer, so it needs a second copy or an own view.
+## YouTube Music (tiling since 2026-11-14; [friction list](music-ux.md))
+- Comments (the app's third side tab) as a tile; Lyrics and Related at once (one element of the app: it needs a second copy or an own view).
 - A play record for Music (History, Stats) kept apart from youtube.com's recommendations, and quick dismiss ("Not interested" on shelves).
-- A direct load of `/watch?v=` leaves the page tile empty (the app has no page behind its player): open Home there.
-- Unverified signed in: the Song / Video switch above the player (`#av-id`), Library pages, the account menu. Unverified in Firefox (no live smoke there).
+- Panes that drop out by window width (a guide saved on a wide window stays on a narrow one).
+- Unverified signed in: the Song / Video switch above the player (`#av-id`), Library pages, the account menu, reordering the queue by dragging. Unverified in Firefox (no live smoke there).
 - The player bar's ▲ only flips the app's own state while tiling; it could toggle the Player tile instead.
 
 ## Left for a stronger model (noted 2026-11-13)

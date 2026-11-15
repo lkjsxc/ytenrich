@@ -1,6 +1,6 @@
 // Live smoke for YouTube Music: one layout for every page, the player's tiles while something is loaded.
 // Signed out. Prints JSON facts and writes tmp/smoke-music-*.png.
-import { launch, rect, tabs } from './smoke-lib.ts';
+import { dismissPromo, launch, rect, tabs } from './smoke-lib.ts';
 
 const { ctx, page, sw, errors } = await launch({}, { desktopUa: true });
 const PAGE = '[ytenrich-slot=page]';
@@ -80,6 +80,7 @@ const playing = {
 };
 await page.screenshot({ path: 'tmp/smoke-music-playing.png' });
 // Moving on in the app closes its player page; the tiles stay.
+await dismissPromo(page);
 await page.locator('[ytenrich-slot=guide] ytmusic-guide-entry-renderer').nth(1).click(); // Explore
 await page.waitForTimeout(5000);
 const explore = {
@@ -89,17 +90,41 @@ const explore = {
   scrollTop: await page.evaluate((s) => document.querySelector(s)?.scrollTop, PAGE),
 };
 await page.screenshot({ path: 'tmp/smoke-music-explore.png' });
-// Workspace 2: the player large.
+// Workspace 2: Lyrics at full height beside the player and Up next, the page too. Workspace 3: the player large.
 await page.keyboard.press('Alt+Shift+Digit2');
+await page.waitForTimeout(3500);
+const side = () =>
+  page.evaluate(() => {
+    const el = document.querySelector('[ytenrich-slot=side]');
+    const on = [...document.querySelectorAll('ytmusic-player-page #side-panel tp-yt-paper-tab')];
+    return {
+      part: el?.getAttribute('ytenrich-part'),
+      appTab: on.findIndex((t) => t.classList.contains('iron-selected')),
+      none: el?.hasAttribute('ytenrich-none'), // the track has no lyrics: the tile says so
+      filled: (el?.querySelector('ytmusic-section-list-renderer')?.scrollHeight ?? 0) > 100,
+    };
+  });
+const lyrics = {
+  tabs: await tabs(page),
+  queue: await same('queue', 'queue'),
+  lyrics: await same('side', 'lyrics'),
+  page: await same('page', 'page'),
+  ...(await side()),
+};
+await page.screenshot({ path: 'tmp/smoke-music-lyrics.png' });
+await page.keyboard.press('Alt+Shift+Digit3');
 await page.waitForTimeout(1500);
 const wide = { tabs: await tabs(page), player: await same('player', 'music-player') };
+// A search there (the page is behind Up next) brings the Page tab to the front.
+await dismissPromo(page);
+await page.locator('ytmusic-search-box input').fill('lofi hip hop');
+await page.keyboard.press('Enter');
+await page.waitForTimeout(5000);
+const pageFront = await same('page', 'page');
 await page.screenshot({ path: 'tmp/smoke-music-wide.png' });
 await page.keyboard.press('Alt+Shift+Digit1');
 // Search (a page of its own element): the switcher keeps clear of the search box. A song plays as a cover.
-await page.goto('https://music.youtube.com/search?q=lofi+hip+hop', {
-  waitUntil: 'domcontentloaded',
-});
-await page.waitForTimeout(7000);
+await page.waitForTimeout(1500);
 const span = async (sel: string): Promise<[number, number]> => {
   const [left = 0, , width = 0] = (await rect(page, sel))?.split(',').map(Number) ?? [];
   return [left, left + width];
@@ -107,9 +132,10 @@ const span = async (sel: string): Promise<[number, number]> => {
 const [boxL, boxR] = await span('ytmusic-search-box');
 const [barL, barR] = await span('ytenrich-spaces');
 const search = { ...(await facts()), switcherClear: barL >= boxR || barR <= boxL };
+await dismissPromo(page);
 await page
   .locator(
-    `${PAGE} ytmusic-responsive-list-item-renderer:has-text("Song •") ytmusic-play-button-renderer`,
+    `${PAGE} ytmusic-responsive-list-item-renderer:has-text("Song •") ytmusic-play-button-renderer >> visible=true`,
   )
   .first()
   .click();
@@ -120,31 +146,20 @@ const song = {
   player: await rect(page, '[ytenrich-slot=player] ytmusic-player'),
   cover: await rect(page, '[ytenrich-slot=player] #song-image img'),
 };
-// The app's own tabs work inside the Up next tile (Lyrics or Related, whichever this song has).
-await page
-  .locator('[ytenrich-slot=queue] tp-yt-paper-tab:not([disabled], .iron-selected)')
-  .first()
-  .click({ timeout: 3000 })
-  .catch(() => undefined);
-await page.waitForTimeout(2500);
-const sideTab = await page.evaluate(() =>
-  document
-    .querySelector('[ytenrich-slot=queue] tp-yt-paper-tab.iron-selected')
-    ?.textContent?.trim(),
-);
+// Related is a tab behind Up next: it selects the app's own (last) tab, and the queue tile gives way.
+await page.locator('ytenrich-root .tab[data-view=related]').click();
+await page.waitForTimeout(3000);
+const related = { ...(await side()), shown: await same('side', 'related') };
 await page.screenshot({ path: 'tmp/smoke-music-song.png' });
 // A detail page, opened while it plays: the page changes, the player's tiles stay.
-await page.locator(`${PAGE} a[href^="browse/"]`).first().click();
+await dismissPromo(page);
+await page.locator(`${PAGE} a[href^="browse/"] >> visible=true`).first().click();
 await page.waitForTimeout(6000);
 const detail = {
   ...(await facts()),
   player: await same('player', 'music-player'),
-  // The selected side tab keeps its list although the app's player page is closed now.
-  sideFilled: await page.evaluate(
-    () =>
-      (document.querySelector('[ytenrich-slot=queue] ytmusic-tab-renderer')?.scrollHeight ?? 0) >
-      500,
-  ),
+  // The Related tile keeps its list although the app's player page is closed now.
+  side: await side(),
 };
 await page.screenshot({ path: 'tmp/smoke-music-detail.png' });
 // Tiling off gives the app back untouched.
@@ -166,10 +181,12 @@ console.log(
       guideBack,
       playing,
       explore,
+      lyrics,
       wide,
+      pageFront,
       search,
       song,
-      sideTab,
+      related,
       detail,
       off,
       errors,

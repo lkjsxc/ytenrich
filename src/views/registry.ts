@@ -10,6 +10,7 @@ import type { WmFamily } from '../shared/types.ts';
 import type { NativeSlot } from '../youtube/selectors.ts';
 import { mountHistory } from './history.ts';
 import { mountLog } from './log.ts';
+import { MUSIC_VIEWS } from './music.ts';
 import { recoSpec } from './reco-spec.ts';
 import { mountRecommended } from './recommended.ts';
 import { mountSettings } from './settings.ts';
@@ -48,7 +49,6 @@ export type ViewDef = {
 };
 
 const W: readonly WmFamily[] = ['watch'];
-const M: readonly WmFamily[] = ['music'];
 /** youtube.com's families: the recommendation lists are of its videos. */
 const YT: readonly WmFamily[] = ['watch', 'browse', 'home', 'channel', 'shorts'];
 
@@ -123,22 +123,7 @@ export const VIEWS: readonly ViewDef[] = [
     slot: 'shorts',
     families: W,
   },
-  {
-    id: 'music-player',
-    title: 'Player',
-    hint: 'YouTube Music: the video or cover of what is playing (shown while something is loaded)',
-    slot: 'player',
-    optional: true,
-    families: M,
-  },
-  {
-    id: 'queue',
-    title: 'Up next',
-    hint: 'YouTube Music: Up next, Lyrics and Related (shown while something is loaded)',
-    slot: 'queue',
-    optional: true,
-    families: M,
-  },
+  ...MUSIC_VIEWS,
   // ytenrich's own recommendations take the plain names; YouTube's own lists are the "Default · …" views.
   {
     id: 'recommended',

@@ -96,8 +96,8 @@ export const NATIVE_SLOTS = {
   shorts: `ytd-watch-flexy #related :is(${SHELVES}):has(a[href^="/shorts/"])`,
   guide: 'tp-yt-app-drawer#guide #guide-inner-content',
 } as const;
-/** `queue` exists in YouTube Music only (`music.ts`), which also has a `page`, a `player` and a `guide`. */
-export type NativeSlot = keyof typeof NATIVE_SLOTS | 'queue';
+/** `queue` and `side` exist in YouTube Music only (`music.ts`), which also has a `page`, a `player` and a `guide`. */
+export type NativeSlot = keyof typeof NATIVE_SLOTS | 'queue' | 'side';
 
 export const MASTHEAD = '#masthead-container';
 /** The masthead's left section (hamburger, logo): the workspace switcher follows it, before the search box. */

@@ -111,6 +111,10 @@ export function activate(root: LayoutNode, view: ViewId): LayoutNode {
   return mapPanes(root, (p) => (p.tabs.includes(view) ? { ...p, active: view } : p)) as LayoutNode;
 }
 
+/** `view` is a tab behind another one of its pane. */
+export const behind = (root: LayoutNode, view: ViewId): boolean =>
+  (paneOfView(root, view)?.active ?? view) !== view;
+
 export function removeView(root: LayoutNode, view: ViewId): LayoutNode | null {
   return normalize(mapPanes(root, (p) => ({ ...p, tabs: p.tabs.filter((t) => t !== view) })));
 }

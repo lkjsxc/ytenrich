@@ -1,4 +1,5 @@
 import * as M from './music.ts';
+import { createMusicLive } from './music-live.ts';
 import {
   CHAPTERS_PANEL,
   GUIDE_RENDERER,
@@ -28,14 +29,20 @@ const isPlayerPage = (): boolean => location.pathname === '/watch';
  * but not that page, so neither opening it nor coming back from it is a reason to scroll. */
 let browsed = MUSIC && !isPlayerPage() ? location.href : '';
 
-/** After a navigation: the page tile starts at its top. */
-export function resetPageScroll(): void {
+/** After a navigation: the page tile starts at its top. Answers whether the Page tab should come to the front:
+ * in YouTube Music the page changes in any workspace (the search box is always there), also behind other tabs. */
+export function resetPageScroll(): boolean {
   if (MUSIC) {
-    if (isPlayerPage() || location.href === browsed) return;
+    if (isPlayerPage() || location.href === browsed) return false;
     browsed = location.href;
   }
   resolveSlot('page')?.scrollTo(0, 0);
+  return MUSIC;
 }
+
+/** Keeps the site's tiles in step with the site while tiled (YouTube Music only: `music-live.ts`). */
+export const liveSlots = (ticks: (fn: () => void) => () => void): (() => void) =>
+  MUSIC ? createMusicLive(ticks) : () => {};
 
 /** Room the site's own bars take: the masthead above, and YouTube Music's player bar below while it shows. */
 export function chromeInsets(): { top: number; bottom: number } {

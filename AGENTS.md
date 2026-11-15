@@ -5,7 +5,7 @@ MV3 browser extension (Chromium + Firefox ≥140) that enriches youtube.com:
 - hiding over-exposed unopened videos
 - a one-click "Not interested" button
 - a tiling window manager (WM) on every page (layout families `watch`, `home`, `channel`, `shorts` and `browse`, each with nine workspaces switched from the masthead; home defaults to ytenrich's recommended Videos and Shorts; Shorts open in the watch player; unknown page types tile as `page`), with ytenrich's own views (recommended Videos/Shorts/Mix lists/Channels/This channel, each with search and its own ▶ settings, Stats/History/Settings/Log) as WM tabs. YouTube's own lists are the views titled "Default · …"
-- on YouTube Music (music.youtube.com), the tiling WM only: one layout family `music` for every page, with the app's page, player and Up next panel as tiles (the player's tiles exist while something is loaded)
+- on YouTube Music (music.youtube.com), the tiling WM only: one layout family `music` for every page, with the app's page, player, Up next, Lyrics and Related as tiles (the player's tiles exist while something is loaded; `docs/music-ux.md` is its friction list)
 
 AI-first repo: no human ergonomics, no backward compatibility, no migrations. Move fast.
 
@@ -18,7 +18,7 @@ AI-first repo: no human ergonomics, no backward compatibility, no migrations. Mo
 - `pnpm smoke`: live Chromium + extension runs on youtube.com (`scripts/smoke.ts` watch page, `scripts/smoke-browse.ts` search/channel and family switches, `scripts/smoke-music.ts` YouTube Music; launcher in `smoke-lib.ts`). Prints JSON facts and writes `tmp/smoke-*.png`. Read the PNGs to judge layout. It is not canonical (depends on the network and on YouTube). It auto-falls back to the newest cached Chromium; `YTE_CHROME=<path>` overrides.
 
 ## Rules (enforced by scripts/check.ts)
-- **YouTube DOM names only in `src/youtube/`** (selectors.ts, youtube.css, slots, menu, extract, guide, wait; YouTube Music's in music.ts and music.css). When YouTube changes, fix only there, and refresh `tests/fixtures/` from live DOM.
+- **YouTube DOM names only in `src/youtube/`** (selectors.ts, youtube.css, slots, menu, extract, guide, wait; YouTube Music's in music.ts, music-live.ts and music.css). When YouTube changes, fix only there, and refresh `tests/fixtures/` from live DOM.
 - No HTML string sinks (`innerHTML` etc.), because YouTube enforces Trusted Types. Build DOM with `src/shared/h.ts`.
 - No `class`. Use `create*` factories that return handles with idempotent `dispose`. Prefer pure functions and reducers.
 - Every file ≤200 lines. Every long-lived collection documents its bound in a comment.

@@ -95,3 +95,12 @@ export const tabs = (page: Page): Promise<string> =>
       .map((t) => (t as HTMLElement).dataset.view)
       .join('|'),
   );
+
+/** YouTube Music, signed out: after an advertisement the app may open its Premium promotion ("Want music without
+ * the ads?") and hold its whole layout `inert` until it is answered. Answers it when it is there. */
+export const dismissPromo = (page: Page): Promise<void> =>
+  page
+    .locator('ytmusic-mealbar-promo-renderer :text("No thanks")')
+    .first()
+    .click({ timeout: 700 })
+    .catch(() => undefined);

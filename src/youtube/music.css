@@ -13,16 +13,45 @@ html[ytenrich-wm] [ytenrich-slot="page"] ytmusic-search-page { --ytmusic-content
    fixed tiles; hidden, it paints no background over the page tile and takes no clicks. */
 html[ytenrich-wm] ytmusic-player-page { visibility: hidden !important; transform: none !important; will-change: auto !important; }
 /* Player tile: the main panel. The player fills it under the Song / Video switch, in every state (as a miniplayer the
-   app would fix it to the window corner at 226px). Cover and video fit the tile instead of the window. */
+   app would fix it to the window corner at 226px). A video fits the tile; a cover is drawn as large as the tile
+   allows, whole, over a blurred enlargement of itself (music-live.ts hands its address over), so a tile of any shape
+   is filled and never shows bars. */
 html[ytenrich-wm] [ytenrich-slot="player"] { display: flex !important; flex-direction: column !important; align-items: stretch !important; overflow: hidden !important; background: #000; }
 html[ytenrich-wm] [ytenrich-slot="player"] > #av-id { flex: none; align-self: center; margin: 8px 0 !important; }
-html[ytenrich-wm] [ytenrich-slot="player"] > ytmusic-player { position: relative !important; inset: auto !important; flex: 1 1 0 !important; width: auto !important; height: auto !important; min-height: 0 !important; max-width: none !important; max-height: none !important; margin: 0 !important; border-radius: 0 !important; transform: none !important; }
+html[ytenrich-wm] [ytenrich-slot="player"] > ytmusic-player { position: relative !important; inset: auto !important; flex: 1 1 0 !important; width: auto !important; height: auto !important; min-height: 0 !important; max-width: none !important; max-height: none !important; margin: 0 !important; border-radius: 0 !important; transform: none !important; overflow: hidden !important; background: #000 !important; }
+html[ytenrich-wm] [ytenrich-slot="player"] > ytmusic-player::before { content: ""; position: absolute; inset: -64px; background: var(--ytenrich-cover, none) center / cover no-repeat; filter: blur(40px) brightness(0.45) saturate(1.3); pointer-events: none; }
 html[ytenrich-wm] [ytenrich-slot="player"] :is(#song-image, #song-video) { position: absolute !important; inset: 0 !important; width: auto !important; height: auto !important; padding: 0 !important; margin: 0 !important; }
-html[ytenrich-wm] [ytenrich-slot="player"] #song-image #thumbnail { position: absolute !important; inset: 0 !important; width: 100% !important; height: 100% !important; border-radius: 0 !important; background: transparent !important; }
-html[ytenrich-wm] [ytenrich-slot="player"] #song-image #thumbnail img { width: 100% !important; height: 100% !important; object-fit: contain !important; }
-/* Up next tile: the side panel, with the app's own tabs. With its player page closed the app stops drawing what
-   Lyrics and Related list (the tab renderer carries `page-type` while one of them is selected); a tile shows it. */
-html[ytenrich-wm] [ytenrich-slot="queue"] ytmusic-tab-renderer[page-type] > ytmusic-section-list-renderer { display: block !important; }
+html[ytenrich-wm] [ytenrich-slot="player"] #song-image { container-type: size; background: transparent !important; }
+html[ytenrich-wm] [ytenrich-slot="player"] #song-image #thumbnail { position: absolute !important; inset: 0 !important; width: 100% !important; height: 100% !important; border-radius: 0 !important; background: transparent !important; display: flex !important; align-items: center; justify-content: center; }
+html[ytenrich-wm] [ytenrich-slot="player"] #song-image #thumbnail img { position: static !important; flex: none; width: min(100cqw - 24px, 100cqh - 24px) !important; height: min(100cqw - 24px, 100cqh - 24px) !important; max-width: none !important; max-height: none !important; object-fit: contain !important; border-radius: 8px !important; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5); }
+/* Up next tile: the queue's own container (the playlist's name, Save, autoplay, the rows), taken out of the side
+   panel: a tile of its own, shown also while the app has another of its tabs selected (it hides the container
+   then). The side panel may be an inactive tile around it. */
+html[ytenrich-wm] [ytenrich-slot="queue"] { display: block !important; pointer-events: auto; }
+/* The app insets its player page, not the panel's parts: in a tile the queue's heading, its Save button, the autoplay
+   switch and the mood chips would touch the edges (Save was cut off). One 12px edge for all of them. */
+html[ytenrich-wm] [ytenrich-slot="queue"] > ytmusic-queue-header-renderer { margin: 12px 12px 8px !important; }
+html[ytenrich-wm] [ytenrich-slot="queue"] > .autoplay { margin: 8px 12px !important; }
+html[ytenrich-wm] [ytenrich-slot="queue"] ytmusic-chip-cloud-renderer #chips { padding: 0 12px !important; box-sizing: border-box; }
+/* Lyrics / Related tile: the side panel's scroller, drawing the list of the app tab music-live.ts selects for the
+   tile's part. With its player page closed the app stops drawing that list (the panel carries `page-type` while
+   one is selected); a tile shows it, but never the other part's list while the app is still switching. */
+html[ytenrich-wm] [ytenrich-slot="side"] > div:not([ytenrich-slot]) { display: none !important; }
+html[ytenrich-wm] [ytenrich-slot="side"][page-type] > ytmusic-section-list-renderer { display: block !important; }
+html[ytenrich-wm] [ytenrich-slot="side"][ytenrich-part="lyrics"]:not([page-type$="LYRICS"]) > ytmusic-section-list-renderer,
+html[ytenrich-wm] [ytenrich-slot="side"][ytenrich-part="related"]:not([page-type$="RELATED"]) > ytmusic-section-list-renderer,
+html[ytenrich-wm] [ytenrich-slot="side"][ytenrich-none] > ytmusic-section-list-renderer { display: none !important; }
+html[ytenrich-wm] [ytenrich-slot="side"][ytenrich-none]::before { content: "Nothing related for this track."; display: block; padding: 24px; color: #aaa; font: 400 14px Roboto, Arial, sans-serif; animation: ytenrich-late 0s 0.8s both; }
+html[ytenrich-wm] [ytenrich-slot="side"][ytenrich-part="lyrics"][ytenrich-none]::before { content: "No lyrics for this track."; }
+html[ytenrich-wm] [ytenrich-slot="side"] > ytmusic-section-list-renderer > #contents { padding: 0 12px; box-sizing: border-box; }
+/* Lyrics: text to read along with, so larger than the app's 14px and growing with the tile (17px at 480px wide, at
+   most 22px), in a column that stays readable when the tile is wide. The container is the shelf, not the tile: a
+   size container would become the containing block of the fixed queue tile inside the panel. */
+html[ytenrich-wm] [ytenrich-slot="side"][ytenrich-part="lyrics"] ytmusic-description-shelf-renderer { container-type: inline-size; }
+html[ytenrich-wm] [ytenrich-slot="side"][ytenrich-part="lyrics"] ytmusic-description-shelf-renderer > .wrapper { max-width: 640px; margin: 0 auto !important; padding: 4px 24px 24px !important; box-sizing: border-box; }
+html[ytenrich-wm] [ytenrich-slot="side"][ytenrich-part="lyrics"] ytmusic-description-shelf-renderer .description { font-size: clamp(15px, 2.4cqw + 6px, 22px) !important; line-height: 1.7 !important; color: #fff !important; }
+html[ytenrich-wm] [ytenrich-slot="side"][ytenrich-part="lyrics"] ytmusic-description-shelf-renderer .footer { color: #aaa !important; font-size: 12px !important; }
+@keyframes ytenrich-late { from { visibility: hidden; } to { visibility: visible; } }
 /* Guide tile: the full guide. Its drawer (fixed, z 4, a transformed inner container) would cover our tab bar and be
    the tile's containing block; the mini guide and its backdrop have no place while tiling. ☰ toggles the tile. */
 html[ytenrich-wm] tp-yt-app-drawer#guide { z-index: 1 !important; visibility: hidden !important; pointer-events: none !important; }
@@ -30,8 +59,14 @@ html[ytenrich-wm] tp-yt-app-drawer#guide #contentContainer { transform: none !im
 html[ytenrich-wm] ytmusic-app-layout :is(#mini-guide, #mini-guide-background) { display: none !important; }
 html[ytenrich-wm] [ytenrich-slot="guide"] { pointer-events: auto !important; --ytmusic-nav-bar-height: 0px; --ytmusic-player-bar-height: 0px; }
 html[ytenrich-wm] [ytenrich-slot="guide"] #guide-content { height: 100% !important; }
+/* On narrow windows the app's guide is a drawer with a hamburger and logo row of its own (no height, drawn over the
+   first entries): the nav bar has both already. */
+html[ytenrich-wm] [ytenrich-slot="guide"] .guide-nav { display: none !important; }
 html[ytenrich-wm] [ytenrich-slot="guide"] ytmusic-guide-renderer { width: 100% !important; height: 100% !important; box-sizing: border-box !important; }
 /* Workspace switcher, leading the nav bar's right-hand group. That group is absolute and as wide as its content, so
-   the bar is capped to the room the window leaves between the search box (to 820px) and the group's own buttons
-   (about 300px); narrower, it scrolls, then hides (`.tiny`, wm.css). */
-ytmusic-nav-bar #right-content > ytenrich-spaces { align-self: center; max-width: max(0px, 100vw - 1140px); }
+   the bar is capped to the room the window leaves between the search box (it ends 166px right of the centre on
+   search pages, where it is widest) and the group's own buttons (about 190px wide, 80px from the edge), less a
+   12px gap; narrower, it scrolls, then hides (`.tiny`, wm.css). */
+ytmusic-nav-bar #right-content > ytenrich-spaces { align-self: center; max-width: max(0px, 50vw - 445px); }
+/* Up to 1500px the nine chips do not fit that room at 32px each; at 28px they do from 1430px on. */
+@media (max-width: 1500px) { ytmusic-nav-bar #right-content > ytenrich-spaces button { flex-basis: 28px; width: 28px; } }

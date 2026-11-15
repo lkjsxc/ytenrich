@@ -12,6 +12,8 @@ const LATE: readonly (readonly [string, string, boolean?])[] = [
   ['recommended', 'videos'],
   ['playlist', 'recommended'],
   ['chapters', 'details', true],
+  ['lyrics', 'queue', true], // YouTube Music: until 0.2.12 Up next held the app's own Lyrics and Related tabs
+  ['related', 'lyrics', true],
 ];
 
 /** `node` with the room of every pane that holds only `gone` views handed to the sibling before it (after it, for

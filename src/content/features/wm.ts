@@ -10,7 +10,7 @@ import { parseActive } from '../../wm/spaces.ts';
 import { createSpacesBar } from '../../wm/spaces-bar.ts';
 import { createWmStore } from '../../wm/store.ts';
 import { placeInMasthead } from '../../youtube/masthead.ts';
-import { isFullscreen } from '../../youtube/slots.ts';
+import { isFullscreen, liveSlots } from '../../youtube/slots.ts';
 import type { Feature } from '../features.ts';
 
 export const wm: Feature = {
@@ -63,6 +63,7 @@ export const wm: Feature = {
     d.add(rt.settings.subscribe(update));
     d.add(rt.page.subscribe(update));
     d.add(rt.scanner.onTick(() => placeInMasthead(bar.el))); // the masthead renders after us
+    d.add(liveSlots(rt.scanner.onTick));
     document.addEventListener('fullscreenchange', update);
     window.addEventListener('keydown', onKey, true);
     d.add(() => {

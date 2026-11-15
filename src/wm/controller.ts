@@ -173,7 +173,9 @@ export function createWmController(
   // Same-element navigations (search → search) would otherwise keep the old scroll offset.
   let nav = rt.page.get().nav;
   const offPage = rt.page.subscribe((p) => {
-    if (p.nav !== nav) (nav = p.nav), resetPageScroll();
+    if (p.nav === nav) return;
+    nav = p.nav;
+    if (resetPageScroll() && L.behind(root, 'page')) set(L.activate(root, 'page'));
   });
 
   return {
