@@ -95,6 +95,20 @@ try {
     (await tile.locator('.hopens:not([hidden])').first().textContent()) ?? '',
     /\+ 2 earlier, time not recorded/,
   );
+  const alignment = await tile.evaluate((el) => {
+    const rows = [...el.querySelectorAll('.hrow')].slice(0, 2);
+    const x = (row: Element, selector: string) =>
+      row.querySelector(selector)!.getBoundingClientRect().x;
+    const mark = rows[0]!.querySelector('.hcount')!;
+    mark.textContent = '×99';
+    const fits =
+      mark.getBoundingClientRect().right <= rows[0]!.children[0]!.getBoundingClientRect().right;
+    mark.textContent = '×5';
+    return { titles: rows.map((r) => x(r, '.htext')), thumbs: rows.map((r) => x(r, 'img')), fits };
+  });
+  assert.equal(alignment.titles[0], alignment.titles[1]);
+  assert.equal(alignment.thumbs[0], alignment.thumbs[1]);
+  assert(alignment.fits);
   assert((await tile.boundingBox())!.width >= 480);
   assert.equal(await page.locator('ytenrich-root').getAttribute('theme'), 'dark');
   mkdirSync('tmp/shots', { recursive: true });

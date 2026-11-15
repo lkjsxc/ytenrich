@@ -3,6 +3,7 @@ import { h } from '../../shared/h.ts';
 import type { ChannelSort, ChannelStat } from '../../shared/types.ts';
 import { num } from './format.ts';
 import { card } from './parts.ts';
+import { type StatsWords, WORDS } from './table-options.ts';
 
 export const CHANNEL_STEP = 8;
 const CHANNEL_MAX = 80;
@@ -19,6 +20,7 @@ export function channelsCard(
   limit: number,
   on: ChannelActions,
   music = false,
+  words: StatsWords = WORDS,
 ): HTMLElement {
   const max = Math.max(1, ...rows.map((c) => c[sort]));
   const th = (key: ChannelSort, label: string): HTMLElement =>
@@ -50,7 +52,7 @@ export function channelsCard(
       h('td', { class: 'num' }, num(c.opened)),
     );
   return card(
-    music ? 'Channels' : 'Most recommended channels (all time)',
+    words.channels,
     h(
       'table',
       null,
@@ -60,10 +62,10 @@ export function channelsCard(
         h(
           'tr',
           null,
-          h('th', null, 'Channel'),
+          h('th', null, words.channel),
           music ? null : th('seen', 'Shown'),
-          h('th', { class: 'num' }, 'Videos'),
-          th('opened', 'Opened'),
+          h('th', { class: 'num' }, words.videos),
+          th('opened', words.opened),
         ),
       ),
       h('tbody', null, rows.map(row)),

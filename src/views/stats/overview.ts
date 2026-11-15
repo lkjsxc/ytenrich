@@ -5,7 +5,12 @@ import { dayLong, dayText, num, pct } from './format.ts';
 import { card, columns, hbars, legend } from './parts.ts';
 import { change, ratio, type Totals } from './period.ts';
 
-function tile(label: string, value: string, sub: string, delta?: number | null): HTMLElement {
+export function tile(
+  label: string,
+  value: string,
+  sub: string,
+  delta?: number | null,
+): HTMLElement {
   const d =
     delta === null || delta === undefined || Math.abs(delta) < 0.005
       ? null

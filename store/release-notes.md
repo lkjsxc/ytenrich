@@ -3,10 +3,10 @@ and the Firefox version notes. Write it for users, in a few lines. -->
 
 ## 0.2.14
 
-- YouTube Music has its own History and Stats: track starts and replays count after 10 seconds of playback, with title, artist, thumbnail and duration from the player. Short skips leave no record.
+- YouTube Music has its own History and Stats: track starts and replays count after 10 seconds of playback, with title, artist, thumbnail and duration from the player. Short skips leave no record. Music Stats uses Plays, Tracks and Artists.
 - Music plays stay separate from YouTube history, statistics and recommendations. Existing records keep their times and counts; unmarked older rows belong to YouTube.
 - History shows every recorded open, including return visits to the same video.
-- Click ×N beside a time to see that video's recorded opens; click a time to jump to its loaded row.
+- History thumbnails and titles align with or without ×N. Click ×N beside a time to see that video's recorded opens; click a time to jump to its loaded row.
 - Existing history keeps each video's latest recorded time. Earlier visits whose times were never stored are counted separately.
 
 ## 0.2.13

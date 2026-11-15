@@ -133,6 +133,25 @@ export async function musicRecordSmoke(): Promise<void> {
     const text = (await stats.textContent()) ?? '';
     assert.match(text, /Rick Astley/);
     assert.match(text, /a-ha/);
+    assert.match(text, /2 tracks and 2 artists recorded on this device\./);
+    assert.equal(await stats.locator('.tile .k').textContent(), 'Plays');
+    assert.deepEqual(await stats.locator('h3').allTextContents(), [
+      'Plays',
+      'Time of day',
+      'Artists',
+      'Tracks',
+    ]);
+    assert.deepEqual(await stats.locator('thead').allTextContents(), [
+      'ArtistTracksPlays ↓',
+      'TrackPlays ↓Last',
+    ]);
+    assert.equal(
+      await stats.locator('input').getAttribute('placeholder'),
+      'Search title or artist',
+    );
+    await stats.locator('.bcol').nth(3).hover();
+    assert.match((await stats.locator('.readout').first().textContent()) ?? '', /1 play$/);
+    await page.mouse.move(0, 0);
     assert.doesNotMatch(
       text,
       /Recommendations shown|Pick rate|Hidden by ytenrich|Not interested|Still recommended|Shown/,

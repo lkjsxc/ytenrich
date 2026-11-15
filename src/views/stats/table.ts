@@ -6,14 +6,19 @@ import { kindBadge, openVideo, thumbUrl, videoUrl } from '../open.ts';
 import type { ViewEnv } from '../registry.ts';
 import { ago, num } from './format.ts';
 import { choice } from './parts.ts';
-import { COLUMNS, FILTERS, KINDS } from './table-options.ts';
+import { COLUMNS, FILTERS, KINDS, type StatsWords, WORDS } from './table-options.ts';
 
 export const PAGE_STEP = 50;
 const SEARCH_MS = 200;
 export type VideoTable = { readonly el: HTMLElement; sync(): void; show(page: StatsPage): void };
 
 /** `q` is mutated in place by the controls; `refresh` re-queries. */
-export function createVideoTable(env: ViewEnv, q: StatsQuery, refresh: () => void): VideoTable {
+export function createVideoTable(
+  env: ViewEnv,
+  q: StatsQuery,
+  refresh: () => void,
+  words: StatsWords = WORDS,
+): VideoTable {
   const music = q.origin === 'music';
   const set = (patch: Partial<StatsQuery>): void => {
     Object.assign(q, patch, { limit: PAGE_STEP });
@@ -23,7 +28,7 @@ export function createVideoTable(env: ViewEnv, q: StatsQuery, refresh: () => voi
   let searchTimer: ReturnType<typeof setTimeout> | undefined;
   const search = h('input', {
     type: 'search',
-    placeholder: 'Search title or channel',
+    placeholder: words.search,
     oninput: () => {
       clearTimeout(searchTimer);
       searchTimer = setTimeout(() => set({ search: search.value }), SEARCH_MS);
@@ -66,12 +71,16 @@ export function createVideoTable(env: ViewEnv, q: StatsQuery, refresh: () => voi
     );
     headRow.replaceChildren(
       h('th'),
-      h('th', null, 'Video'),
+      h('th', null, words.video),
       ...COLUMNS.filter(([key]) => !music || key !== 'seen').map(([key, label]) =>
         h(
           'th',
           { class: key === q.sort ? 'num sort on' : 'num sort', onclick: () => set({ sort: key }) },
-          key === q.sort ? `${label} ↓` : label,
+          key === q.sort
+            ? `${key === 'opened' ? words.opened : label} ↓`
+            : key === 'opened'
+              ? words.opened
+              : label,
         ),
       ),
     );
@@ -138,7 +147,7 @@ export function createVideoTable(env: ViewEnv, q: StatsQuery, refresh: () => voi
     el: h(
       'section',
       { class: 'card' },
-      h('h3', null, 'Videos'),
+      h('h3', null, words.videos),
       chips,
       h('table', null, h('thead', null, headRow), body),
       foot,

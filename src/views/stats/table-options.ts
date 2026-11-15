@@ -20,3 +20,13 @@ export const COLUMNS: readonly (readonly [StatsSort, string])[] = [
   ['opened', 'Opened'],
   ['lastSeen', 'Last'],
 ];
+
+export const WORDS = {
+  channels: 'Most recommended channels (all time)',
+  channel: 'Channel',
+  videos: 'Videos',
+  video: 'Video',
+  opened: 'Opened',
+  search: 'Search title or channel',
+};
+export type StatsWords = typeof WORDS;

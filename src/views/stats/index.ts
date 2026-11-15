@@ -10,7 +10,7 @@ import { statsCard } from '../consent.ts';
 import type { ViewEnv } from '../registry.ts';
 import { CHANNEL_STEP, channelsCard } from './channels.ts';
 import { num } from './format.ts';
-import { musicTop } from './music.ts';
+import { MUSIC_WORDS, musicTop } from './music.ts';
 import { breakdowns, dailyCard, kpis } from './overview.ts';
 import { choice } from './parts.ts';
 import { buckets, RANGES, type Range, series, span, totals } from './period.ts';
@@ -43,7 +43,8 @@ export function mountStats(el: HTMLElement, env: ViewEnv): () => void {
   const top = h('div', { class: 'stack' });
   const channelBox = h('div');
   const main = h('div', { class: 'stack' });
-  const table = createVideoTable(env, q, () => refresh());
+  const words = music ? MUSIC_WORDS : undefined;
+  const table = createVideoTable(env, q, () => refresh(), words);
 
   const paintRange = (): void =>
     rangeBox.replaceChildren(
@@ -106,6 +107,7 @@ export function mountStats(el: HTMLElement, env: ViewEnv): () => void {
                 },
               },
               music,
+              words,
             ),
           ]
         : []),

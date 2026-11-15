@@ -1,10 +1,21 @@
-// Music keeps the existing visual language and labels, omitting recommendation-only figures.
+// Music wording and charts, omitting recommendation-only figures.
 import { h } from '../../shared/h.ts';
 import type { DayStat, Overview } from '../../shared/types.ts';
 import { dayLong, dayText, num } from './format.ts';
-import { kpis } from './overview.ts';
+import { tile } from './overview.ts';
 import { card, columns } from './parts.ts';
-import { buckets, totals } from './period.ts';
+import { buckets, change, totals } from './period.ts';
+import type { StatsWords } from './table-options.ts';
+
+export const MUSIC_WORDS: StatsWords = {
+  channels: 'Artists',
+  channel: 'Artist',
+  videos: 'Tracks',
+  video: 'Track',
+  opened: 'Plays',
+  search: 'Search title or artist',
+};
+const plays = (n: number): string => `${num(n)} ${n === 1 ? 'play' : 'plays'}`;
 
 export function musicTop(
   o: Overview,
@@ -13,16 +24,17 @@ export function musicTop(
 ): HTMLElement[] {
   const t = totals(days);
   const p = totals(previous);
-  // Reuse the Videos opened tile, without its recommendation subtitle.
-  const tiles = kpis(t, p, o);
-  const opened = tiles.children[2] as HTMLElement;
-  opened.querySelector('.sub')?.remove();
-  tiles.replaceChildren(opened);
+  const tiles = h(
+    'div',
+    { class: 'tiles' },
+    tile('Plays', num(t.opened), '', change(t.opened, p.opened)),
+  );
+  tiles.querySelector('.sub')?.remove();
   const list = buckets(days, 120);
   const daily = columns(
     list.map((d) => ({
       parts: [['fresh', d.opened]],
-      tip: `${dayLong(d.day)} · ${num(d.opened)} opened`,
+      tip: `${dayLong(d.day)} · ${plays(d.opened)}`,
     })),
     [list[0], list[Math.floor(list.length / 2)], list.at(-1)].map((d) => (d ? dayText(d.day) : '')),
     'Point at a day for details.',
@@ -30,19 +42,19 @@ export function musicTop(
   const hours = columns(
     t.hours.map((n, hour) => ({
       parts: [['fresh', n]],
-      tip: `${hour}:00–${hour + 1}:00 · ${num(n)} opened`,
+      tip: `${hour}:00–${hour + 1}:00 · ${plays(n)}`,
     })),
     ['0h', '6h', '12h', '18h', '24h'],
     'Time of day',
   );
   return [
     tiles,
-    card('Videos opened', daily),
+    card('Plays', daily),
     card('Time of day', hours),
     h(
       'p',
       { class: 'muted' },
-      `${num(o.videos)} videos and ${num(o.channels)} channels tracked on this device.`,
+      `${num(o.videos)} ${o.videos === 1 ? 'track' : 'tracks'} and ${num(o.channels)} ${o.channels === 1 ? 'artist' : 'artists'} recorded on this device.`,
     ),
   ];
 }
