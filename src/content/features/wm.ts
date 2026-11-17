@@ -37,7 +37,7 @@ export const wm: Feature = {
     function update(): void {
       if (!ready) return;
       const on = rt.settings.get().wmEnabled && !isFullscreen();
-      const family = on ? familyOf(rt.page.get().kind) : null;
+      const family = on ? (rt.playback.kept.get() ? 'watch' : familyOf(rt.page.get().kind)) : null;
       const n = family ? active(family) : 0;
       document.documentElement.toggleAttribute('ytenrich-wm', family !== null);
       if (ctl && (ctl.family !== family || shown !== n)) ctl.dispose(), (ctl = undefined);
@@ -62,7 +62,13 @@ export const wm: Feature = {
     });
     d.add(rt.settings.subscribe(update));
     d.add(rt.page.subscribe(update));
-    d.add(rt.scanner.onTick(() => placeInMasthead(bar.el))); // the masthead renders after us
+    d.add(rt.playback.kept.subscribe(update));
+    d.add(
+      rt.scanner.onTick(() => {
+        placeInMasthead(bar.el); // the masthead and player container can render after navigation completion
+        projector.reconcile();
+      }),
+    );
     d.add(liveSlots(rt.scanner.onTick));
     document.addEventListener('fullscreenchange', update);
     window.addEventListener('keydown', onKey, true);

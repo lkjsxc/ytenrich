@@ -4,6 +4,7 @@ import { call } from '../shared/protocol.ts';
 import { DEFAULT_SETTINGS, loadSettings, onSettings, type Settings } from '../shared/settings.ts';
 import { createSignal, type Signal } from '../shared/signal.ts';
 import { pageChannel } from '../youtube/extract.ts';
+import { createPlayback, type Playback } from '../youtube/session.ts';
 import { SITE } from '../youtube/site.ts';
 import { createRouteSignal, type Page } from './route-signal.ts';
 import { createScanner, type Scanner } from './scanner.ts';
@@ -12,6 +13,7 @@ export type Runtime = {
   readonly settings: Signal<Settings>;
   readonly page: Signal<Page>;
   readonly scanner: Scanner;
+  readonly playback: Playback;
   /** Name of the channel the page is about (watch owner, channel page), '' elsewhere or before it renders. */
   readonly channel: Signal<string>;
   readonly log: Log;
@@ -29,6 +31,7 @@ export function createRuntime(): Runtime {
   const offSettings = onSettings(settings.set);
   const route = createRouteSignal();
   const scanner = createScanner(route.page);
+  const playback = createPlayback(settings, route.page, scanner.onTick);
   const channel = createSignal('');
   const readChannel = (): void => channel.set(pageChannel(route.page.get().kind));
   const offChannel = [scanner.onTick(readChannel), route.page.subscribe(readChannel)];
@@ -38,6 +41,7 @@ export function createRuntime(): Runtime {
     settings,
     page: route.page,
     scanner,
+    playback,
     channel,
     log: createLog(),
     call,
@@ -46,6 +50,7 @@ export function createRuntime(): Runtime {
     dispose() {
       for (const off of offChannel) off();
       offSettings();
+      playback.dispose();
       route.dispose();
       scanner.dispose();
     },

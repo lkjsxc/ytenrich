@@ -1,6 +1,7 @@
 // Open a video in the current tab. Inside YouTube, prefer clicking a native anchor (SPA navigation, no reload).
 // Modified/middle clicks fall through to the browser so "open in new tab" gestures still work.
 import type { VideoStat } from '../shared/types.ts';
+import { navigateWatch } from '../youtube/open.ts';
 import type { ViewEnv } from './registry.ts';
 
 type Ref = Pick<VideoStat, 'id' | 'kind' | 'origin' | 'thumbnail'> & { readonly video?: string };
@@ -28,5 +29,5 @@ export function openVideo(e: MouseEvent, v: Ref, env: ViewEnv): void {
   // A Mix anchor starts the radio; for a plain video that would be the wrong thing.
   const list = Boolean(native?.search.includes('list='));
   if (native?.isConnected && list === (v.kind === 'mix')) native.click();
-  else location.assign(videoUrl(v));
+  else if (!navigateWatch(videoUrl(v))) location.assign(videoUrl(v));
 }

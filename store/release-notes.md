@@ -1,6 +1,14 @@
 <!-- Newest version first. The top section must match package.json (pnpm check): it becomes the GitHub release text
 and the Firefox version notes. Write it for users, in a few lines. -->
 
+## 0.2.15
+
+- Keep watching while you browse Home, search, channels or playlists in a neighbouring tile. The Player stays where you put it, and Back and Forward move the page without restarting the video.
+- The browsed Page uses an existing neighbouring pane. Your watch tabs stay available and return when you go back to the watch page. Choosing another video plays it in the same Player and brings its watch page back.
+- Browsing while a video plays uses its watch workspace; your other layouts return when the Player closes. All saved layouts and all nine workspaces per page type are kept. Layouts without a neighbouring pane use ordinary navigation.
+- Returning to the same playing video does not add another History or Stats open.
+- Close the Player to stop playback, or turn off Settings → Layout: Keep playing while browsing. Shorts keep their existing behaviour; fullscreen stays with YouTube.
+
 ## 0.2.14
 
 - YouTube Music has its own History and Stats: track starts and replays count after 10 seconds of playback, with title, artist, thumbnail and duration from the player. Short skips leave no record. Music Stats uses Plays, Tracks and Artists.

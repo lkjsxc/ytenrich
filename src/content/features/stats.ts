@@ -100,6 +100,8 @@ export const stats: Feature = {
       const mix = pageMixId(new URL(url));
       const tile = mix ? recent.get(mix) : undefined;
       if (mix && tile && !mixes.has(mix)) mixes.add(mix), send({ id: mix, ...tile, kind: 'mix' });
+      // Returning to the same kept player is the original open, even though the page changed.
+      if (rt.playback.continued(nav)) return;
       const meta = recent.get(videoId);
       const short = kind === 'shorts' || movedShort() === videoId;
       const req = {

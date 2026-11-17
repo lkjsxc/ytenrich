@@ -16,6 +16,7 @@ const common = {
   action: { default_title: 'ytenrich' },
   options_ui: { page: 'options.html', open_in_tab: true },
   content_scripts: [
+    { matches: [youtube], js: ['bridge.js'], world: 'MAIN', run_at: 'document_start' },
     {
       matches: [youtube],
       js: ['content.js'],

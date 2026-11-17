@@ -20,14 +20,13 @@ export function createRouteSignal(): { page: Signal<Page>; sync(): void; dispose
   const sync = (): void => {
     if (page.get().url !== location.href) page.set(read());
   };
+  // Publish the completed native page, after playback preparation; popstate only announces an address.
   document.addEventListener(NAV_EVENT, sync);
-  window.addEventListener('popstate', sync);
   return {
     page,
     sync,
     dispose() {
       document.removeEventListener(NAV_EVENT, sync);
-      window.removeEventListener('popstate', sync);
     },
   };
 }

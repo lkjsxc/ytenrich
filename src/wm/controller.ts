@@ -1,28 +1,27 @@
-// WM controller for one page kind: layout state, persistence, rendering, own-view mounts, projection.
+// WM controller for a layout family: state, persistence, own views and native projection.
 import type { Runtime } from '../content/runtime.ts';
 import type { WmFamily } from '../shared/types.ts';
 import { kindOf, viewOf, viewsOf } from '../views/registry.ts';
-import { onGuideButton } from '../youtube/guide.ts';
-import { chromeInsets, onChaptersOpen, resetPageScroll } from '../youtube/slots.ts';
+import { chromeInsets, resetPageScroll } from '../youtube/slots.ts';
 import { createHost } from './host.ts';
 import { NEW_TAB } from './launcher.ts';
 import * as L from './layout.ts';
-import { addEdge } from './layout-edge.ts';
 import { parseLayout } from './layout-parse.ts';
 import { openMenu } from './menus.ts';
+import { nativeActions } from './native-actions.ts';
 import { createOptional, INTRODUCED_KEY } from './optional.ts';
 import { createOwnViews } from './own-views.ts';
-import { GUIDE_PX, presetOf } from './presets.ts';
+import { presetOf } from './presets.ts';
 import type { Projector } from './projector.ts';
 import { type Rendered, renderLayout } from './render.ts';
 import { startResize } from './resize.ts';
+import { createSessionViews } from './session-views.ts';
 import type { Space } from './spaces.ts';
 import { startTabDrag } from './tab-drag.ts';
 
 export type Wm = { readonly family: WmFamily; refresh(): void; dispose(): void };
 
-/** `projector` outlives the controller: the next workspace takes the native elements over where this one left
- * them, so YouTube never sees them released (the player would refit to its default size for a frame). */
+/** The shared projector lets the next workspace take over native elements without releasing them for a frame. */
 export function createWmController(
   rt: Runtime,
   family: WmFamily,
@@ -32,8 +31,6 @@ export function createWmController(
   const preset = (): L.LayoutNode => presetOf(family, at.index);
   const VIEWS = viewsOf(family);
   const host = createHost();
-  const { call, log, settings, scanner, page, channel } = rt;
-  const env = { call, log, settings, scanner, page, channel };
   const kinds = new Set(VIEWS.map((v) => v.id));
   /** Tabs this family can show: its views (own ones in any number) and New tab pages. */
   const known = {
@@ -41,19 +38,24 @@ export function createWmController(
       kindOf(tab) === NEW_TAB ||
       (kinds.has(kindOf(tab)) && (tab === kindOf(tab) || Boolean(viewOf(tab)?.mount))),
   };
-  /** A stored layout as this family can draw it (`undefined`: nothing stored, so the preset). */
   const load = (value: unknown): L.LayoutNode | null => {
     const saved = value === undefined ? preset() : parseLayout(value);
     return saved && L.retainViews(saved, known);
   };
   let root: L.LayoutNode = load(at.stored) ?? preset();
+  const session = createSessionViews(rt, family);
   let rendered: Rendered | undefined;
   let disposed = false;
 
   const set = (next: L.LayoutNode | null, save = true): void => {
+    const closing =
+      family === 'watch' &&
+      L.paneOfView(root, 'player') &&
+      (!next || !L.paneOfView(next, 'player'));
     root = next ?? preset();
+    if (save) at.save(session.saved(root));
+    if (closing) rt.playback.close();
     render();
-    if (save) at.save(root);
   };
 
   /** The New tab page `tab` becomes `kind`: a native view moves here, an own view opens (again). */
@@ -75,7 +77,7 @@ export function createWmController(
     },
     close: () => set(L.removeView(root, tab)),
   });
-  const own = createOwnViews(env, family, launcher, (tab, title) => {
+  const own = createOwnViews(rt, family, launcher, (tab, title) => {
     const span = rendered?.el.querySelector(`.tab[data-view="${tab}"] > span`);
     if (span) span.textContent = title;
     span?.parentElement?.setAttribute('title', title);
@@ -100,7 +102,13 @@ export function createWmController(
         { label: 'Split right', run: splitTo('right'), disabled: p.tabs.length < 2 },
         { label: 'Split down', run: splitTo('bottom'), disabled: p.tabs.length < 2 },
         { label: 'Close pane', run: () => set(L.closePane(root, p.id)) },
-        { label: 'Reset layout', run: () => set(preset()) },
+        {
+          label: 'Reset layout',
+          run: () => {
+            session.reset();
+            set(preset());
+          },
+        },
       ]);
     },
     onAdd(p: L.PaneNode) {
@@ -117,9 +125,13 @@ export function createWmController(
   function render(): void {
     if (disposed) return;
     host.inset(chromeInsets()); // YouTube Music's player bar comes and goes with its optional views
+    root = session.navigate(root, optional.visible(root));
     const shown = optional.visible(root);
+    session.allow(shown);
     rendered = renderLayout(shown, ctx);
     host.root.replaceChildren(rendered.el);
+    for (const tab of rendered.el.querySelectorAll('.tab.active'))
+      tab.scrollIntoView({ block: 'nearest', inline: 'nearest' });
     for (const [view, body] of rendered.bodies) {
       const el = own.el(view);
       if (el) body.append(el);
@@ -137,30 +149,15 @@ export function createWmController(
 
   const optional = createOptional(VIEWS, () => render(), rt.scanner.onTick);
 
-  // Follow layout changes made elsewhere (a reset from Settings, an edit in another tab).
   const offStore = at.watch((value) => {
     const next = load(value);
-    if (next && !disposed && JSON.stringify(next) !== JSON.stringify(root)) set(next, false);
+    if (next && !disposed && JSON.stringify(next) !== JSON.stringify(session.saved(root))) {
+      session.reset();
+      set(next, false);
+    }
   });
 
-  // Hamburger toggles the Guide tile: add it on the far left, focus it, or close it.
-  const offGuide = onGuideButton(() => {
-    const p = L.paneOfView(root, 'guide');
-    if (!p) set(addEdge(root, 'guide', 'left', GUIDE_PX / Math.max(innerWidth, 1)));
-    else if (p.active !== 'guide') set(L.activate(root, 'guide'));
-    else set(L.removeView(root, 'guide'));
-  });
-
-  // Opening chapters in YouTube brings the Chapters tab to the front (beside Details if it has none yet).
-  const offChapters = onChaptersOpen(() => {
-    const p = L.paneOfView(root, 'chapters') ?? L.paneOfView(root, 'details');
-    if (p && kinds.has('chapters'))
-      set(
-        p.tabs.includes('chapters')
-          ? L.activate(root, 'chapters')
-          : L.addView(root, p.id, 'chapters', 'center'),
-      );
-  });
+  const offNative = nativeActions(() => root, set, kinds);
   const offLook = rt.settings.subscribe(host.look);
   host.look(rt.settings.get());
   render();
@@ -170,7 +167,6 @@ export function createWmController(
     if (next !== root) set(next);
   });
 
-  // Same-element navigations (search → search) would otherwise keep the old scroll offset.
   let nav = rt.page.get().nav;
   const offPage = rt.page.subscribe((p) => {
     if (p.nav === nav) return;
@@ -181,14 +177,17 @@ export function createWmController(
   return {
     family,
     refresh() {
-      host.inset(chromeInsets());
+      const next = session.navigate(root, optional.visible(root));
+      if (next !== root) {
+        root = next;
+        render();
+      } else host.inset(chromeInsets());
       projector.refresh();
     },
     dispose() {
       disposed = true;
       offStore();
-      offGuide();
-      offChapters();
+      offNative();
       optional.dispose();
       offLook();
       offPage();

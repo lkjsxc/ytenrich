@@ -59,7 +59,7 @@ export const VIEWS: readonly ViewDef[] = [
     title: 'Page',
     hint: 'The YouTube page itself',
     slot: 'page',
-    families: ['browse', 'channel', 'shorts', 'music'],
+    families: ['watch', 'browse', 'channel', 'shorts', 'music'],
   },
   {
     id: 'home-videos',

@@ -1,13 +1,13 @@
 {
   "name": "ytenrich",
-  "version": "0.2.14",
+  "version": "0.2.15",
   "private": true,
   "type": "module",
   "scripts": {
     "build": "node scripts/build.ts",
     "dev": "node scripts/build.ts --watch",
     "check": "node scripts/check.ts",
-    "smoke": "node scripts/build.ts && node scripts/smoke.ts && node scripts/smoke-browse.ts && node scripts/smoke-music.ts && node scripts/smoke-history.ts",
+    "smoke": "node scripts/build.ts && node scripts/smoke.ts && node scripts/smoke-browse.ts && node scripts/smoke-music.ts && node scripts/smoke-history.ts && node scripts/smoke-session.ts && node scripts/smoke-session-modes.ts",
     "package": "node scripts/package.ts",
     "bump": "node scripts/version.ts",
     "store-assets": "node scripts/build.ts && node scripts/store-assets.ts",

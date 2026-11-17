@@ -87,3 +87,13 @@ html[ytenrich-wm] ytd-app #frosted-glass { display: none !important; }
 html[ytenrich-wm][ytenrich-harvest] :is(ytd-watch-flexy #related, ytd-page-manager > ytd-browse):is(:not([ytenrich-slot]), [ytenrich-slot-inactive]) ytd-continuation-item-renderer { position: fixed !important; top: 0 !important; left: 0 !important; width: 10px !important; height: 10px !important; overflow: hidden !important; visibility: hidden !important; pointer-events: none !important; }
 /* The search box keeps a comfortable 400px beside the workspace switcher (wm.css). */
 html[ytenrich-wm] ytd-masthead #center { flex: 1 1 400px !important; max-width: 732px !important; min-width: 0 !important; }
+/* A playback session keeps the watch companions drawable while YouTube hides the watch page. Only projected
+   slots regain visibility; the page itself and the native miniplayer's floating furniture stay out of the WM. */
+html[ytenrich-wm][ytenrich-session] ytd-watch-flexy[hidden] { display: block !important; visibility: hidden !important; }
+html[ytenrich-wm] ytd-miniplayer:has([ytenrich-slot="player"]) { position: static !important; width: 0 !important; height: 0 !important; visibility: hidden !important; transform: none !important; contain: none !important; z-index: auto !important; }
+html[ytenrich-wm] ytd-miniplayer:has([ytenrich-slot="player"]) :is(.ytdMiniplayerComponentContent, yt-draggable, ytd-miniplayer-player-container) { transform: none !important; contain: none !important; filter: none !important; will-change: auto !important; }
+html[ytenrich-wm] ytd-miniplayer [ytenrich-slot="player"] { display: block !important; border-radius: 0 !important; }
+html[ytenrich-wm] [ytenrich-slot="player"] > ytd-player { width: 100% !important; height: 100% !important; }
+/* The app measures mini video pixels from its floating 400px shell. Fit media to the projected player instead. */
+html[ytenrich-wm] ytd-miniplayer [ytenrich-slot="player"] .html5-video-container { width: 100% !important; height: 100% !important; }
+html[ytenrich-wm] ytd-miniplayer [ytenrich-slot="player"] video { width: 100% !important; height: 100% !important; left: 0 !important; top: 0 !important; object-fit: contain !important; }

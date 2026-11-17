@@ -10,6 +10,7 @@ import {
   PANELS,
   PLAYLIST_PANEL,
 } from './selectors.ts';
+import { sessionPlayerSlot } from './session-dom.ts';
 import { SITE } from './site.ts';
 import { waitFor } from './wait.ts';
 
@@ -19,6 +20,7 @@ const SLOTS: Partial<Record<NativeSlot, string>> = MUSIC ? M.SLOTS : NATIVE_SLOT
 /** The guide's scroller exists before its content: below ~1312px YouTube shows the mini guide and stamps
  * `ytd-guide-renderer` only on first drawer open. Report it missing until then so the projector wakes it. */
 export function resolveSlot(slot: NativeSlot): HTMLElement | null {
+  if (!MUSIC && slot === 'player') return sessionPlayerSlot();
   if (!MUSIC && slot === 'guide' && !document.querySelector(GUIDE_RENDERER)) return null;
   const sel = SLOTS[slot];
   return sel ? document.querySelector<HTMLElement>(sel) : null;

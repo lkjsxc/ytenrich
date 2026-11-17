@@ -13,6 +13,8 @@ export type ProjEntry = {
 export type Projector = {
   sync(entries: readonly ProjEntry[]): void;
   refresh(): void;
+  /** A native player may move after navigation finishes; refresh only when a slot owner changed. */
+  reconcile(): void;
   /** Gives every element back to YouTube at once (tiling off, fullscreen). */
   release(): void;
   dispose(): void;
@@ -38,6 +40,7 @@ export function createProjector(log: Log): Projector {
   let entries: readonly ProjEntry[] = [];
   const tagged = new Map<NativeSlot, { el: HTMLElement; rect: string }>(); // bound: one per slot kind
   let frame = 0;
+  let fitFrame = 0;
   let retryTimer: ReturnType<typeof setTimeout> | undefined;
   let retries = 0;
   let resizeTimer: ReturnType<typeof setTimeout> | undefined;
@@ -78,7 +81,16 @@ export function createProjector(log: Log): Projector {
       PROPS.forEach((p, i) => el.style.setProperty(p, `${values[i]}px`, 'important'));
       if (REFIT.includes(slot)) {
         clearTimeout(resizeTimer);
-        resizeTimer = setTimeout(() => window.dispatchEvent(new Event('resize')), 120);
+        resizeTimer = setTimeout(() => {
+          window.dispatchEvent(new Event('resize'));
+          cancelAnimationFrame(fitFrame);
+          fitFrame = requestAnimationFrame(() => {
+            fitFrame = 0;
+            tagged
+              .get('player')
+              ?.el.dispatchEvent(new Event('ytenrich-player-resize', { bubbles: true }));
+          });
+        }, 120);
       }
     }
     for (const [slot, t] of tagged) if (!live.has(slot)) release(t.el), tagged.delete(slot);
@@ -116,6 +128,8 @@ export function createProjector(log: Log): Projector {
     frame = 0;
     clearTimeout(retryTimer);
     clearTimeout(resizeTimer);
+    cancelAnimationFrame(fitFrame);
+    fitFrame = 0;
     if (!tagged.size) return;
     for (const t of tagged.values()) release(t.el);
     tagged.clear();
@@ -132,6 +146,10 @@ export function createProjector(log: Log): Projector {
     refresh() {
       retries = RETRIES;
       invalidate();
+    },
+    reconcile() {
+      if (entries.some(({ slot }) => resolveSlot(slot) !== (tagged.get(slot)?.el ?? null)))
+        schedule();
     },
     release: releaseAll,
     dispose() {

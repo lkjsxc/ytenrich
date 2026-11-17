@@ -1,6 +1,6 @@
 # ytenrich privacy policy
 
-Last updated: November 15, 2026
+Last updated: November 18, 2026
 
 ytenrich is a browser extension for `www.youtube.com` and `music.youtube.com`. On YouTube Music it arranges the page into panes and keeps a separate local play record for History and Stats. It runs entirely in your browser. It has no developer-operated server, account, analytics, telemetry or advertising, and it never sends data to the developer.
 
@@ -41,7 +41,8 @@ ytenrich makes no network requests of its own except images, which you can turn 
 
 - **Not interested.** When you click ytenrich's **Not interested** button on a video, ytenrich selects that same option in YouTube's own menu for that video. YouTube receives this feedback as part of your YouTube session, exactly as if you had chosen it yourself. ytenrich never does this without your click.
 - **Loading more recommendations (on with stats; `more` in Settings → Collect for Recommended).** On a watch page, the home page or another feed page whose YouTube list your layout does not show, ytenrich lets YouTube load further pages of that list, as scrolling it would, until about 300 recommendations are on the page (about 80 once ytenrich already holds 1,500 unopened recommendations from the last three days). These are YouTube's own requests in your YouTube session; ytenrich sends nothing itself. Choose `page` or `shown` to turn this off.
-- **Opening videos.** Opening a video from the Stats, History or Recommended view uses YouTube's normal navigation.
+- **Opening videos.** Opening a video from Stats, History or Recommended uses YouTube’s normal navigation. A small script in YouTube’s page context can pass the selected video and its playlist, when present, to YouTube’s router so the page need not reload. This covers an own-view card with no matching native link. The script validates the selected watch-page address; it does not read extension storage or send data to the developer. YouTube handles the resulting navigation requests.
+- **Keep playing while browsing.** With a companion pane, ytenrich uses YouTube’s own miniplayer to keep the same video in its tile while you browse Home, search, channels or playlists. This is on by default and records no additional open for returning to that same playback. If YouTube’s miniplayer loads a different selected or next video without changing pages, the page script reads that content video’s ID and uses YouTube’s own Expand control to restore its watch page and companions. It does not start the video a second time. The existing History and Stats record the new video as an ordinary open, with no additional recorded fields. When using Back or Forward during playback, the page script can pass YouTube’s current navigation-history entry back to its router so YouTube can retain the player. ytenrich does not save that entry. The page script also reads the current tile’s dimensions and asks YouTube’s existing player to fit its video and controls to the tile. It does not clone the video, seek it or record those dimensions. Settings can turn it off. Without a companion pane, or when native playback cannot be retained, ordinary navigation is used.
 
 Your use of YouTube is subject to [Google's privacy policy](https://policies.google.com/privacy).
 

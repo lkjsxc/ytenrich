@@ -24,6 +24,12 @@ const common: esbuild.BuildOptions = {
 const builds: esbuild.BuildOptions[] = [
   {
     ...common,
+    entryPoints: ['src/youtube/bridge.ts'],
+    outfile: `${out}/bridge.js`,
+    format: 'iife',
+  },
+  {
+    ...common,
     entryPoints: ['src/content/index.ts'],
     outfile: `${out}/content.js`,
     format: 'iife',

@@ -5,6 +5,7 @@ export type Collect = 'more' | 'page' | 'shown';
 
 export const DEFAULT_SETTINGS = {
   wmEnabled: true,
+  sessionPlayback: true, // youtube.com keeps the current video while its page tile changes
   hideMode: 'off' as HideMode,
   hideThreshold: 5,
   dismissEnabled: true,
@@ -42,6 +43,12 @@ const num = (min: number, max: number, step?: number): Kind =>
 
 const SCHEMA: readonly SettingField[] = [
   field('wmEnabled', 'Layout: Tiling', 'Tile every YouTube page into panes.', BOOL),
+  field(
+    'sessionPlayback',
+    'Layout: Keep playing while browsing',
+    'Keep the video in its tile while browsing YouTube. YouTube Music always keeps playing.',
+    BOOL,
+  ),
   field(
     'shortsAsVideos',
     'Layout: Shorts in the watch player',
